@@ -1,57 +1,89 @@
-<div class="page-header">
-  <h1>Terrains sélectionnés</h1>
-  <p>Terrains documentés et classés par niveau de vérification. Vérification finale obligatoire chez un notaire.</p>
+<div class="page-hero" style="background:linear-gradient(135deg,#1A2F1A 0%,#1E3D1E 60%,#0F2010 100%)">
+  <div class="hero-tag">✦ Terrains sélectionnés</div>
+  <h1>Terrains documentés<br>et classés par fiabilité</h1>
+  <p>Sélectionnés par MaMaison. Vendeur identifié. Vérification finale notaire obligatoire.</p>
 </div>
 
 <div class="avertissement">
-  ⚠️ MaMaison effectue une vérification préliminaire. Toute acquisition doit faire l'objet d'une vérification finale auprès d'un notaire, d'un géomètre et des autorités compétentes.
+  <span class="avertissement-icon">⚠️</span>
+  <span>
+    MaMaison effectue une vérification préliminaire des informations transmises.
+    <strong>Toute acquisition doit faire l'objet d'une vérification finale auprès d'un notaire, d'un géomètre et des autorités compétentes.</strong>
+    Ne jamais payer sans titre foncier ou ACD validé.
+  </span>
 </div>
 
-<div class="filters" style="margin-top:16px">
-  <div class="filter-group">
+<div class="filter-bar">
+  <div class="filter-field">
     <label>Commune</label>
-    <input type="text" [(ngModel)]="filtreCommune" placeholder="Ex: Bingerville…">
+    <input type="text" [(ngModel)]="filtreCommune" placeholder="Bingerville, Songon, Anyama…">
   </div>
-  <button class="btn-filter" (click)="charger()">Rechercher</button>
-  <button class="btn-filter" style="background:#6b7280" (click)="filtreCommune=''; charger()">Réinitialiser</button>
+  <div class="filter-actions">
+    <button class="btn btn-primary" (click)="charger()">Rechercher</button>
+    <button class="btn btn-ghost" (click)="filtreCommune=''; charger()">Réinitialiser</button>
+  </div>
 </div>
 
 @if (loading) {
-  <div class="loading-state"><div class="spinner"></div></div>
+  <div class="loading-wrap"><div class="spinner"></div><span>Chargement…</span></div>
 }
 
 @if (!loading && error) {
   <div class="empty-state">
-    <div class="empty-icon">⚠️</div>
-    <h3>Impossible de charger les terrains</h3>
+    <span class="empty-icon">⚠️</span>
+    <h3>API non disponible</h3>
   </div>
 }
 
 @if (!loading && !error && terrains.length === 0) {
   <div class="empty-state">
-    <div class="empty-icon">📍</div>
+    <span class="empty-icon">📍</span>
     <h3>Aucun terrain disponible</h3>
-    <p>Revenez prochainement.</p>
+    <p>MaMaison sélectionne chaque terrain avec soin. Revenez prochainement.</p>
   </div>
 }
 
 @if (!loading && !error && terrains.length > 0) {
-  <p class="result-count" style="margin-top:16px">{{ terrains.length }} terrain(s) disponible(s)</p>
+  <div class="results-bar">
+    <p class="results-count"><strong>{{ terrains.length }}</strong> terrain(s) sélectionné(s)</p>
+  </div>
+
   <div class="card-grid">
     @for (terrain of terrains; track terrain.id) {
-      <div class="card">
-        <div class="card-img">📍</div>
+      <div class="prop-card">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#1A2F1A 0%,#1E3D1E 60%,#2A4A2A 100%)">
+          <span class="card-thumb-icon">📍</span>
+          <span class="card-thumb-price">{{ formatPrix(terrain.prix) }}</span>
+          <div class="card-thumb-badge">
+            <span class="badge badge-green">Niv. {{ terrain.niveauVerification }}</span>
+          </div>
+        </div>
         <div class="card-body">
           <div class="card-title">{{ terrain.titre }}</div>
-          <div class="card-meta">{{ terrain.commune }}{{ terrain.quartier ? ', ' + terrain.quartier : '' }}</div>
-          <div class="card-meta">{{ terrain.surface }} m²</div>
-          <div class="card-price">{{ formatPrix(terrain.prix) }}</div>
-        </div>
-        <div class="card-footer">
-          <span class="badge badge-blue">{{ niveauLabel(terrain.niveauVerification) }}</span>
-          <div class="score">
-            <div class="score-bar"><div class="score-fill" [style.width.%]="terrain.scoreMaMaison"></div></div>
-            <span>{{ terrain.scoreMaMaison }}/100</span>
+          <div class="card-location">
+            <span>📍</span>
+            <span>{{ terrain.commune }}{{ terrain.quartier ? ', ' + terrain.quartier : '' }}</span>
+          </div>
+          <div class="card-specs">
+            <div class="spec-item">
+              <span class="spec-val">{{ terrain.surface }} m²</span>
+              <span class="spec-lbl">Surface</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val" style="font-size:.85rem;color:var(--text-mid)">{{ niveauLabel(terrain.niveauVerification) }}</span>
+              <span class="spec-lbl">Niveau</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="score-wrap">
+              <div class="score-track">
+                <div class="score-fill" [style.width.%]="terrain.scoreMaMaison"></div>
+              </div>
+              <span>Score {{ terrain.scoreMaMaison }}/100</span>
+            </div>
+            <button class="btn btn-ghost" style="height:32px;padding:0 12px;font-size:.78rem">
+              Dossier →
+            </button>
           </div>
         </div>
       </div>

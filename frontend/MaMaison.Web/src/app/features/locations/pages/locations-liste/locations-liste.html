@@ -1,68 +1,90 @@
-<div class="page-header">
-  <h1>Locations vérifiées</h1>
-  <p>Trouvez un logement disponible, avec propriétaire identifié et conditions claires.</p>
+<div class="page-hero" style="background:linear-gradient(135deg,#0F1F3D 0%,#1A3B6E 60%,#0F2A50 100%)">
+  <div class="hero-tag">✦ Locations vérifiées</div>
+  <h1>Logements disponibles,<br>propriétaires identifiés</h1>
+  <p>Frais affichés clairement. Disponibilité confirmée. Zéro arnaque.</p>
 </div>
 
-<div class="filters">
-  <div class="filter-group">
+<div class="filter-bar">
+  <div class="filter-field">
     <label>Quartier</label>
-    <input type="text" [(ngModel)]="filtreQuartier" placeholder="Ex: Cocody…">
+    <input type="text" [(ngModel)]="filtreQuartier" placeholder="Cocody, Yopougon…">
   </div>
-  <div class="filter-group">
+  <div class="filter-field">
     <label>Commune</label>
-    <input type="text" [(ngModel)]="filtreCommune" placeholder="Ex: Abidjan…">
+    <input type="text" [(ngModel)]="filtreCommune" placeholder="Abidjan, Bouaké…">
   </div>
-  <div class="filter-group">
-    <label>Loyer max (FCFA)</label>
-    <input type="number" [(ngModel)]="filtreLoyerMax" placeholder="Ex: 200000">
+  <div class="filter-field">
+    <label>Loyer maximum</label>
+    <input type="number" [(ngModel)]="filtreLoyerMax" placeholder="Ex : 300 000 FCFA">
   </div>
-  <button class="btn-filter" (click)="charger()">Rechercher</button>
-  <button class="btn-filter" style="background:#6b7280" (click)="resetFiltres()">Réinitialiser</button>
+  <div class="filter-actions">
+    <button class="btn btn-primary" (click)="charger()">Rechercher</button>
+    <button class="btn btn-ghost" (click)="resetFiltres()">Réinitialiser</button>
+  </div>
 </div>
 
 @if (loading) {
-  <div class="loading-state"><div class="spinner"></div></div>
+  <div class="loading-wrap"><div class="spinner"></div><span>Chargement…</span></div>
 }
 
 @if (!loading && error) {
   <div class="empty-state">
-    <div class="empty-icon">⚠️</div>
-    <h3>Impossible de charger les locations</h3>
+    <span class="empty-icon">⚠️</span>
+    <h3>API non disponible</h3>
+    <p>Démarrez l'API sur le port 5121.</p>
   </div>
 }
 
 @if (!loading && !error && locations.length === 0) {
   <div class="empty-state">
-    <div class="empty-icon">🔑</div>
-    <h3>Aucune location trouvée</h3>
-    <p>Modifiez vos critères de recherche.</p>
+    <span class="empty-icon">🔑</span>
+    <h3>Aucune location disponible</h3>
+    <p>Revenez prochainement ou modifiez vos critères.</p>
   </div>
 }
 
 @if (!loading && !error && locations.length > 0) {
-  <p class="result-count">{{ locations.length }} bien(s) disponible(s)</p>
+  <div class="results-bar">
+    <p class="results-count"><strong>{{ locations.length }}</strong> bien(s) disponible(s)</p>
+  </div>
+
   <div class="card-grid">
     @for (loc of locations; track loc.id) {
-      <a class="card" [routerLink]="['/locations', loc.id]">
-        <div class="card-img">🔑</div>
-        <div class="card-body">
-          <div class="card-title">{{ loc.titre }}</div>
-          <div class="card-meta">{{ TypeLocationLabels[loc.typeBien] }} · {{ loc.quartier }}, {{ loc.commune }}</div>
-          <div class="card-meta">{{ loc.nombrePieces }} pièce(s)</div>
-          <div class="card-price">{{ formatPrix(loc.loyer) }} / mois</div>
-          <div class="card-meta" style="margin-top:4px;font-size:0.78rem">
-            Total à prévoir : {{ formatPrix(loc.totalAPrevoir) }}
+      <a class="prop-card" [routerLink]="['/locations', loc.id]">
+        <div class="card-thumb" style="background:linear-gradient(135deg,#1A3B6E 0%,#0F1F3D 60%,#2A4A7E 100%)">
+          <span class="card-thumb-icon">🔑</span>
+          <span class="card-thumb-price">{{ formatPrix(loc.loyer) }}<span style="font-size:.75rem;font-weight:500;opacity:.8">/mois</span></span>
+          <div class="card-thumb-badge">
+            @if (loc.estDisponible) {
+              <span class="badge badge-green">● Disponible</span>
+            }
           </div>
         </div>
-        <div class="card-footer">
-          @if (loc.estDisponible) {
-            <span class="badge badge-green">✓ Disponible</span>
-          } @else {
-            <span class="badge badge-gray">Indisponible</span>
-          }
-          <div class="score">
-            <div class="score-bar"><div class="score-fill" [style.width.%]="loc.scoreMaMaison"></div></div>
-            <span>{{ loc.scoreMaMaison }}/100</span>
+        <div class="card-body">
+          <div class="card-title">{{ loc.titre }}</div>
+          <div class="card-location">
+            <span>📍</span>
+            <span>{{ loc.quartier }}, {{ loc.commune }}</span>
+            <span class="badge badge-navy" style="margin-left:auto">{{ TypeLocationLabels[loc.typeBien] }}</span>
+          </div>
+          <div class="card-specs">
+            <div class="spec-item">
+              <span class="spec-val">{{ loc.nombrePieces }}</span>
+              <span class="spec-lbl">Pièces</span>
+            </div>
+            <div class="spec-item">
+              <span class="spec-val" style="font-size:.85rem">{{ formatPrix(loc.totalAPrevoir) }}</span>
+              <span class="spec-lbl">Total à prévoir</span>
+            </div>
+          </div>
+          <div class="card-footer">
+            <div class="score-wrap">
+              <div class="score-track">
+                <div class="score-fill" [style.width.%]="loc.scoreMaMaison"></div>
+              </div>
+              <span>Score {{ loc.scoreMaMaison }}/100</span>
+            </div>
+            <span class="badge badge-gold">Vérifié</span>
           </div>
         </div>
       </a>

@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocationService } from '../../../../core/services/location.service';
 import { LocationDetail as LocationDetailModel, TypeLocationLabels } from '../../../../core/models/location.model';
 
 @Component({
   selector: 'app-location-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './location-detail.html',
   styleUrl: './location-detail.scss'
 })

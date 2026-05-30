@@ -1,16 +1,35 @@
 <nav class="navbar">
-  <a routerLink="/villas" class="navbar-brand">
-    <span class="brand-icon">🏠</span>
-    <span class="brand-name">MaMaison</span>
-    <span class="brand-tag">Verified</span>
-  </a>
-  <div class="navbar-links">
-    <a routerLink="/villas" routerLinkActive="active">Villas & Logements</a>
-    <a routerLink="/locations" routerLinkActive="active">Locations</a>
-    <a routerLink="/terrains" routerLinkActive="active">Terrains</a>
-  </div>
-  <div class="navbar-actions">
-    <a routerLink="/villas" class="btn-publish">Publier un bien</a>
+  <div class="navbar-inner">
+    <a routerLink="/" class="brand">
+      <div class="brand-logo">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="7" fill="#0F1F3D"/>
+          <path d="M14 6L4 13h3v9h6v-5h2v5h6V13h3L14 6z" fill="#C8972A"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-name">MaMaison</span>
+        <span class="brand-tag">VERIFIED</span>
+      </div>
+    </a>
+
+    <div class="navbar-nav">
+      <a routerLink="/villas" routerLinkActive="nav-active" class="nav-link">
+        Villas &amp; Logements
+      </a>
+      <a routerLink="/locations" routerLinkActive="nav-active" class="nav-link">
+        Locations
+      </a>
+      <a routerLink="/terrains" routerLinkActive="nav-active" class="nav-link">
+        Terrains
+      </a>
+    </div>
+
+    <div class="navbar-end">
+      <a routerLink="/villas" class="btn-cta">
+        Publier un bien
+      </a>
+    </div>
   </div>
 </nav>
 
@@ -18,9 +37,16 @@
   <router-outlet />
 </main>
 
-<footer class="footer">
+<footer class="site-footer">
   <div class="footer-inner">
-    <span>© 2025 MaMaison Verified — Côte d'Ivoire</span>
-    <span class="footer-tagline">Louer, acheter, visiter et investir en confiance.</span>
+    <div class="footer-brand">
+      <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
+        <rect width="28" height="28" rx="7" fill="#C8972A"/>
+        <path d="M14 6L4 13h3v9h6v-5h2v5h6V13h3L14 6z" fill="white"/>
+      </svg>
+      <span>MaMaison Verified</span>
+    </div>
+    <p class="footer-tagline">Louer, acheter, visiter et investir en confiance — Côte d'Ivoire</p>
+    <p class="footer-legal">© 2025 MaMaison Verified. Tous droits réservés.</p>
   </div>
 </footer>
