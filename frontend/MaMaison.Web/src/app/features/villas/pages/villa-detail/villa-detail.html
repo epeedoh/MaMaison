@@ -1,122 +1,146 @@
-<a routerLink="/villas" class="back-link">← Toutes les villas</a>
+<div class="page-container" style="padding-top:32px">
 
-@if (loading) {
-  <div class="loading-wrap"><div class="spinner"></div><span>Chargement…</span></div>
-}
+  <a routerLink="/villas" class="back-link">← Toutes les villas</a>
 
-@if (!loading && error) {
-  <div class="empty-state">
-    <span class="empty-icon">⚠️</span>
-    <h3>Villa introuvable</h3>
-    <p>Ce bien n'existe pas ou a été retiré.</p>
-  </div>
-}
+  @if (loading) {
+    <div class="loading-wrap"><div class="spinner"></div><span>Chargement…</span></div>
+  }
+  @if (!loading && error) {
+    <div class="empty-state">
+      <span class="empty-icon">⚠️</span>
+      <h3>Villa introuvable</h3>
+    </div>
+  }
 
-@if (!loading && !error && villa) {
-  <div class="detail-layout">
+  @if (!loading && !error && villa) {
+    <div class="detail-layout">
 
-    <!-- Colonne principale -->
-    <div>
-      <div class="detail-gallery">
-        <span class="detail-gallery-icon">🏠</span>
-      </div>
-
-      @if (villa.modele3DUrl) {
-        <button class="btn-visite-3d" (click)="ouvrirVisite3D()">
-          <span class="visite-icon">▶</span>
-          Lancer la visite immersive 3D
-        </button>
-      }
-
-      <div class="detail-section">
-        <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:4px">
-          <div>
-            <div style="display:flex;gap:8px;margin-bottom:10px">
-              <span class="badge badge-navy">{{ TypeVillaLabels[villa.typeVilla] }}</span>
-              <span class="badge badge-gold">Vérifié MaMaison</span>
-            </div>
-            <h2>{{ villa.titre }}</h2>
-            <div class="card-location" style="margin-top:6px;margin-bottom:0">
-              <span>📍</span><span>{{ villa.quartier }}, {{ villa.ville }}</span>
-            </div>
+      <!-- Colonne principale -->
+      <div>
+        <!-- Gallery -->
+        <div class="detail-gallery">
+          <span style="font-size:5rem;opacity:.12">🏠</span>
+          <!-- Orbes décoratifs internes -->
+          <div style="position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(200,151,42,.12) 0%,transparent 65%);top:-60px;right:-60px;pointer-events:none"></div>
+          <div style="position:absolute;width:200px;height:200px;border-radius:50%;background:radial-gradient(circle,rgba(29,78,216,.1) 0%,transparent 65%);bottom:-40px;left:-40px;pointer-events:none"></div>
+          <!-- Badges -->
+          <div style="position:absolute;top:16px;left:16px;display:flex;gap:8px">
+            <span class="badge badge-gold">● Vérifié MaMaison</span>
           </div>
-          <div class="detail-price">{{ formatPrix(villa.prix) }}</div>
+          <div style="position:absolute;top:16px;right:16px">
+            <span class="badge badge-navy" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);border:1px solid rgba(255,255,255,.15)">
+              {{ TypeVillaLabels[villa.typeVilla] }}
+            </span>
+          </div>
+          <!-- Prix en bas -->
+          <div style="position:absolute;bottom:20px;left:20px;z-index:2">
+            <div class="detail-price">{{ formatPrix(villa.prix) }}</div>
+          </div>
+          <!-- Dégradé bas -->
+          <div style="position:absolute;inset:0;background:linear-gradient(to top,rgba(5,13,26,.7) 0%,transparent 50%);pointer-events:none"></div>
         </div>
-      </div>
 
-      <div class="detail-section">
-        <h3>Caractéristiques</h3>
-        <div class="detail-specs">
-          <div class="detail-spec">
-            <span class="detail-spec-val">{{ villa.surfaceHabitable }} m²</span>
-            <span class="detail-spec-lbl">Surface habitable</span>
+        @if (villa.modele3DUrl) {
+          <button class="btn-3d-hero" (click)="ouvrirVisite3D()">
+            <span style="font-size:1.3rem">▶</span>
+            Lancer la visite immersive 3D
+            <span style="margin-left:auto;opacity:.6;font-size:.78rem">{{ villa.pointsVisite.length }} pièce(s)</span>
+          </button>
+        }
+
+        <!-- Infos principales -->
+        <div class="detail-section">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap">
+            <div>
+              <h2>{{ villa.titre }}</h2>
+              <div class="card-loc" style="margin-top:6px">
+                <span>📍</span><span>{{ villa.quartier }}, {{ villa.ville }}</span>
+              </div>
+            </div>
           </div>
-          @if (villa.surfaceTerrain) {
+        </div>
+
+        <!-- Specs -->
+        <div class="detail-section">
+          <h3>Caractéristiques</h3>
+          <div class="detail-specs">
             <div class="detail-spec">
-              <span class="detail-spec-val">{{ villa.surfaceTerrain }} m²</span>
-              <span class="detail-spec-lbl">Terrain</span>
+              <span class="detail-spec-val">{{ villa.surfaceHabitable }} m²</span>
+              <span class="detail-spec-lbl">Surface habitable</span>
             </div>
-          }
-          <div class="detail-spec">
-            <span class="detail-spec-val">{{ villa.nombrePieces }}</span>
-            <span class="detail-spec-lbl">Pièces</span>
+            @if (villa.surfaceTerrain) {
+              <div class="detail-spec">
+                <span class="detail-spec-val">{{ villa.surfaceTerrain }} m²</span>
+                <span class="detail-spec-lbl">Terrain</span>
+              </div>
+            }
+            <div class="detail-spec">
+              <span class="detail-spec-val">{{ villa.nombrePieces }}</span>
+              <span class="detail-spec-lbl">Pièces</span>
+            </div>
           </div>
+          @if (villa.description) {
+            <p class="detail-desc">{{ villa.description }}</p>
+          }
         </div>
-        @if (villa.description) {
-          <p class="detail-desc">{{ villa.description }}</p>
+
+        <!-- Points visite -->
+        @if (villa.pointsVisite.length > 0) {
+          <div class="detail-section">
+            <h3>Parcours visite 3D — {{ villa.pointsVisite.length }} pièce(s)</h3>
+            <div class="visite-pts">
+              @for (pt of villa.pointsVisite; track pt.id) {
+                <div class="visite-pt">
+                  <div style="display:flex;align-items:center;gap:8px">
+                    <span>📍</span>
+                    <strong>{{ pt.nomPiece }}</strong>
+                    @if (pt.description) {
+                      <span style="color:var(--text-soft);font-size:.8rem">— {{ pt.description }}</span>
+                    }
+                  </div>
+                  @if (pt.hotspots.length > 0) {
+                    <span class="badge badge-gold">{{ pt.hotspots.length }} infos</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
         }
       </div>
 
-      @if (villa.pointsVisite.length > 0) {
-        <div class="detail-section">
-          <h3>Parcours de visite 3D — {{ villa.pointsVisite.length }} pièces</h3>
-          <div class="visite-points">
-            @for (pt of villa.pointsVisite; track pt.id) {
-              <div class="visite-point">
-                <div class="point-name">
-                  <span class="point-icon">📍</span>
-                  <strong>{{ pt.nomPiece }}</strong>
-                  @if (pt.description) { <span style="color:var(--text-soft);font-size:.82rem">— {{ pt.description }}</span> }
+      <!-- Aside -->
+      <div class="aside-sticky">
+        <div class="aside-card">
+          <div class="aside-head">
+            <p style="font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin-bottom:4px">Promoteur certifié</p>
+            <h3>{{ villa.nomPromoteur || 'SICOGI Prestige' }}</h3>
+            <p>Partenaire vérifié MaMaison</p>
+          </div>
+          <div class="aside-body">
+            <div class="aside-score">
+              <span>Score MaMaison</span>
+              <div style="display:flex;align-items:center;gap:8px">
+                <div class="score-track" style="width:56px">
+                  <div class="score-fill" [style.width.%]="villa.scoreMaMaison"></div>
                 </div>
-                @if (pt.hotspots.length > 0) {
-                  <span class="badge badge-gold">{{ pt.hotspots.length }} info</span>
-                }
+                <span class="aside-score-num">{{ villa.scoreMaMaison }}</span>
               </div>
-            }
-          </div>
-        </div>
-      }
-    </div>
-
-    <!-- Aside -->
-    <div class="aside-sticky">
-      <div class="aside-card">
-        <div class="aside-card-header">
-          <p style="font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:4px">Promoteur</p>
-          <h3>{{ villa.nomPromoteur || 'SICOGI Prestige' }}</h3>
-          <p>Promoteur certifié MaMaison</p>
-        </div>
-        <div class="aside-card-body">
-          <div class="aside-score">
-            <span>Score MaMaison</span>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div class="score-track" style="width:60px">
-                <div class="score-fill" [style.width.%]="villa.scoreMaMaison"></div>
-              </div>
-              <span class="aside-score-num">{{ villa.scoreMaMaison }}</span>
             </div>
+            <button class="btn btn-navy btn-full">📞 Demander un rappel</button>
+            <button class="btn btn-gold btn-full">🗓 Planifier une visite physique</button>
+            @if (villa.modele3DUrl) {
+              <button class="btn btn-outline btn-full" (click)="ouvrirVisite3D()">
+                ▶ Visite 3D immersive
+              </button>
+            }
+            <p style="font-size:.72rem;color:var(--text-soft);text-align:center;line-height:1.55;margin-top:4px">
+              Mise en relation gratuite · Aucun frais caché<br>
+              Ne jamais payer sans avoir visité
+            </p>
           </div>
-          <button class="btn btn-primary btn-full" style="margin-top:4px">📞 Demander un rappel</button>
-          <button class="btn btn-gold btn-full">🗓 Planifier une visite physique</button>
-          @if (villa.modele3DUrl) {
-            <button class="btn btn-ghost btn-full" (click)="ouvrirVisite3D()">▶ Visite 3D immersive</button>
-          }
-          <p style="font-size:.73rem;color:var(--text-soft);text-align:center;line-height:1.5;margin-top:4px">
-            Mise en relation gratuite.<br>Aucun frais caché.
-          </p>
         </div>
       </div>
-    </div>
 
-  </div>
-}
+    </div>
+  }
+</div>

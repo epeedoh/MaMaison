@@ -1,14 +1,14 @@
-/* Navbar — scoped to App component */
+/* Navbar — glassmorphism premium */
 .navbar {
   position: sticky;
   top: 0;
   z-index: 200;
   height: var(--navbar-h);
-  background: rgba(255,255,255,.88);
-  backdrop-filter: blur(20px) saturate(180%);
-  -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border-bottom: 1px solid rgba(221,216,206,.6);
-  box-shadow: 0 1px 0 rgba(15,31,61,.04);
+  background: rgba(5, 13, 26, .82);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid rgba(255, 255, 255, .06);
+  box-shadow: 0 1px 0 rgba(255,255,255,.04), 0 4px 32px rgba(0,0,0,.2);
 }
 
 .navbar-inner {
@@ -18,7 +18,7 @@
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 28px;
 }
 
 /* Brand */
@@ -33,7 +33,7 @@
 .brand-logo {
   display: flex;
   align-items: center;
-  filter: drop-shadow(0 2px 6px rgba(15,31,61,.15));
+  filter: drop-shadow(0 2px 8px rgba(200,151,42,.3));
 }
 
 .brand-text {
@@ -43,20 +43,20 @@
 }
 
 .brand-name {
-  font-family: var(--font-display);
+  font-family: var(--font-disp);
   font-size: 1.15rem;
   font-weight: 700;
-  color: var(--navy);
+  color: white;
   letter-spacing: -.02em;
 }
 
 .brand-tag {
-  font-size: 0.5rem;
+  font-size: .5rem;
   font-weight: 800;
-  letter-spacing: .18em;
+  letter-spacing: .2em;
   text-transform: uppercase;
   color: var(--gold);
-  margin-top: 1px;
+  margin-top: 2px;
 }
 
 /* Nav links */
@@ -70,39 +70,40 @@
 .nav-link {
   position: relative;
   padding: 8px 16px;
-  font-size: 0.875rem;
+  font-size: .875rem;
   font-weight: 500;
-  color: var(--text-mid);
-  border-radius: var(--radius-sm);
-  transition: color var(--transition), background var(--transition);
+  color: rgba(255,255,255,.55);
+  border-radius: var(--r-sm);
+  transition: color .2s, background .2s;
   letter-spacing: -.01em;
   text-decoration: none;
 
   &:hover {
-    color: var(--navy);
-    background: rgba(15,31,61,.04);
+    color: rgba(255,255,255,.9);
+    background: rgba(255,255,255,.06);
   }
 
   &.nav-active {
-    color: var(--navy);
+    color: white;
     font-weight: 600;
-    background: var(--navy-soft);
+    background: rgba(255,255,255,.08);
 
     &::after {
       content: '';
       position: absolute;
-      bottom: 4px;
+      bottom: 5px;
       left: 50%;
       transform: translateX(-50%);
-      width: 16px;
+      width: 18px;
       height: 2px;
-      background: var(--gold);
+      background: linear-gradient(90deg, var(--gold), var(--gold-lt));
       border-radius: 2px;
+      box-shadow: 0 0 8px rgba(200,151,42,.6);
     }
   }
 }
 
-/* CTA button */
+/* CTA */
 .navbar-end { flex-shrink: 0; }
 
 .btn-cta {
@@ -110,32 +111,32 @@
   align-items: center;
   height: 38px;
   padding: 0 20px;
-  background: var(--navy);
+  background: linear-gradient(135deg, var(--gold) 0%, #E8B84B 100%);
   color: white;
-  font-size: 0.82rem;
+  font-size: .82rem;
   font-weight: 700;
   letter-spacing: -.005em;
-  border-radius: var(--radius-sm);
+  border-radius: var(--r-sm);
   text-decoration: none;
-  transition: all var(--transition);
+  transition: all .25s var(--ease-out);
+  box-shadow: 0 4px 16px rgba(200,151,42,.3);
 
   &:hover {
-    background: var(--gold);
-    box-shadow: var(--shadow-gold);
+    box-shadow: 0 6px 28px rgba(200,151,42,.5);
     transform: translateY(-1px);
   }
 }
 
 /* Footer */
 .site-footer {
-  border-top: 1px solid var(--border-soft);
-  background: var(--white);
+  border-top: 1px solid rgba(255,255,255,.04);
+  background: var(--navy);
 }
 
 .footer-inner {
   max-width: 1240px;
   margin: 0 auto;
-  padding: 28px 24px;
+  padding: 32px 24px;
   display: flex;
   align-items: center;
   gap: 20px;
@@ -147,24 +148,23 @@
   align-items: center;
   gap: 8px;
   font-weight: 700;
-  font-size: 0.9rem;
-  color: var(--navy);
+  font-size: .9rem;
+  color: rgba(255,255,255,.9);
   margin-right: 8px;
 }
 
 .footer-tagline {
   flex: 1;
-  font-size: 0.8rem;
-  color: var(--text-soft);
+  font-size: .8rem;
+  color: rgba(255,255,255,.35);
 }
 
 .footer-legal {
-  font-size: 0.75rem;
-  color: var(--text-soft);
+  font-size: .75rem;
+  color: rgba(255,255,255,.25);
 }
 
-/* Mobile */
 @media (max-width: 768px) {
   .navbar-nav { display: none; }
-  .navbar-inner { gap: 16px; }
+  .navbar-inner { gap: 12px; }
 }

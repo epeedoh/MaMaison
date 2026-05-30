@@ -1,105 +1,145 @@
-<div class="page-hero">
-  <div class="hero-tag">✦ Villas &amp; Logements neufs</div>
-  <h1>Trouvez votre villa idéale<br>en Côte d'Ivoire</h1>
-  <p>Biens vérifiés, promoteurs certifiés, visites immersives en 3D avant d'acheter.</p>
-</div>
+<!-- ============ HERO PLEIN ÉCRAN ============ -->
+<section class="hero">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
 
-<div class="filter-bar">
-  <div class="filter-field">
-    <label>Type de bien</label>
-    <select [(ngModel)]="filtreType">
-      <option value="">Tous les types</option>
-      @for (opt of typeVillaOptions; track opt.value) {
-        <option [value]="opt.value">{{ opt.label }}</option>
-      }
-    </select>
-  </div>
-  <div class="filter-field">
-    <label>Quartier / Zone</label>
-    <input type="text" [(ngModel)]="filtreQuartier" placeholder="Cocody, Bassam, Bingerville…">
-  </div>
-  <div class="filter-field">
-    <label>Budget maximum</label>
-    <input type="number" [(ngModel)]="filtrePrixMax" placeholder="Ex : 50 000 000 FCFA">
-  </div>
-  <div class="filter-actions">
-    <button class="btn btn-primary" (click)="charger()">Rechercher</button>
-    <button class="btn btn-ghost" (click)="resetFiltres()">Réinitialiser</button>
-  </div>
-</div>
-
-@if (loading) {
-  <div class="loading-wrap">
-    <div class="spinner"></div>
-    <span>Chargement des biens…</span>
-  </div>
-}
-
-@if (!loading && error) {
-  <div class="empty-state">
-    <span class="empty-icon">⚠️</span>
-    <h3>API non disponible</h3>
-    <p>Démarrez l'API sur le port 5121 avec <code>dotnet run --launch-profile http</code></p>
-  </div>
-}
-
-@if (!loading && !error && villas.length === 0) {
-  <div class="empty-state">
-    <span class="empty-icon">🏡</span>
-    <h3>Aucune villa trouvée</h3>
-    <p>Modifiez vos critères ou revenez prochainement.</p>
-  </div>
-}
-
-@if (!loading && !error && villas.length > 0) {
-  <div class="results-bar">
-    <p class="results-count"><strong>{{ villas.length }}</strong> bien(s) disponible(s)</p>
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ Côte d'Ivoire — Immobilier de confiance</div>
+    <h1 class="hero-title">
+      Votre villa idéale,<br>
+      <span class="gold-text">visitée avant d'acheter</span>
+    </h1>
+    <p class="hero-sub">
+      Biens vérifiés · Promoteurs certifiés · Visites immersives 3D
+    </p>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <strong>{{ villas.length || '—' }}</strong>
+        <span>Villa(s)</span>
+      </div>
+      <div class="hero-stat">
+        <strong>3D</strong>
+        <span>Visite immersive</span>
+      </div>
+      <div class="hero-stat">
+        <strong>100%</strong>
+        <span>Biens vérifiés</span>
+      </div>
+    </div>
   </div>
 
-  <div class="card-grid">
-    @for (villa of villas; track villa.id) {
-      <a class="prop-card" [routerLink]="['/villas', villa.id]">
-        <div class="card-thumb">
-          <span class="card-thumb-icon">🏠</span>
-          <span class="card-thumb-price">{{ formatPrix(villa.prix) }}</span>
-          <div class="card-thumb-badge">
-            @if (villa.a3DVisite) {
-              <span class="badge badge-gold">▶ Visite 3D</span>
-            }
-          </div>
-        </div>
-        <div class="card-body">
-          <div class="card-title">{{ villa.titre }}</div>
-          <div class="card-location">
-            <span>📍</span>
-            <span>{{ villa.quartier }}, {{ villa.ville }}</span>
-            <span class="badge badge-navy" style="margin-left:auto">{{ TypeVillaLabels[villa.typeVilla] }}</span>
-          </div>
-          <div class="card-specs">
-            <div class="spec-item">
-              <span class="spec-val">{{ villa.surfaceHabitable }} m²</span>
-              <span class="spec-lbl">Surface</span>
-            </div>
-            <div class="spec-item">
-              <span class="spec-val">{{ villa.nombrePieces }}</span>
-              <span class="spec-lbl">Pièces</span>
-            </div>
-          </div>
-          <div class="card-footer">
-            <div class="score-wrap">
-              <div class="score-track">
-                <div class="score-fill" [style.width.%]="villa.scoreMaMaison"></div>
-              </div>
-              <span>Score {{ villa.scoreMaMaison }}/100</span>
-            </div>
-            @if (villa.a3DVisite) {
-              <button class="btn-3d" (click)="ouvrirVisite3D(villa, $event)">
-                Visite 3D
-              </button>
-            }
-          </div>
-        </div>
-      </a>
+  <!-- Filter glassmorphism -->
+  <div class="hero-filter">
+    <div class="filter-field">
+      <label>Type de bien</label>
+      <select [(ngModel)]="filtreType">
+        <option value="">Tous les types</option>
+        @for (opt of typeVillaOptions; track opt.value) {
+          <option [value]="opt.value">{{ opt.label }}</option>
+        }
+      </select>
+    </div>
+    <div class="filter-field">
+      <label>Quartier / Zone</label>
+      <input type="text" [(ngModel)]="filtreQuartier" placeholder="Cocody, Bassam, Bingerville…">
+    </div>
+    <div class="filter-field">
+      <label>Budget max (FCFA)</label>
+      <input type="number" [(ngModel)]="filtrePrixMax" placeholder="50 000 000">
+    </div>
+    <button class="btn btn-navy" (click)="charger()" style="flex-shrink:0">
+      Rechercher
+    </button>
+    <button class="btn btn-outline" (click)="resetFiltres()" style="flex-shrink:0">
+      ✕
+    </button>
+  </div>
+</section>
+
+<!-- ============ CONTENU ============ -->
+<div class="page-container">
+  <div class="page-content">
+
+    @if (loading) {
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <span>Chargement des biens…</span>
+      </div>
     }
+
+    @if (!loading && error) {
+      <div class="empty-state">
+        <span class="empty-icon">⚡</span>
+        <h3>API non disponible</h3>
+        <p>Démarrez l'API : <code>dotnet run --launch-profile http</code></p>
+      </div>
+    }
+
+    @if (!loading && !error && villas.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">🏡</span>
+        <h3>Aucune villa trouvée</h3>
+        <p>Modifiez vos critères ou revenez prochainement.</p>
+      </div>
+    }
+
+    @if (!loading && !error && villas.length > 0) {
+      <div class="results-bar">
+        <p class="results-count"><strong>{{ villas.length }}</strong> villa(s) disponible(s)</p>
+      </div>
+
+      <div class="card-grid">
+        @for (villa of villas; track villa.id) {
+          <a class="prop-card" [routerLink]="['/villas', villa.id]">
+            <div class="card-visual">
+              <div class="card-visual-bg"></div>
+              <span class="card-visual-icon">🏠</span>
+              <div class="card-price">
+                {{ formatPrix(villa.prix) }}
+              </div>
+              <div class="card-badges">
+                @if (villa.a3DVisite) {
+                  <button class="badge-3d" (click)="ouvrirVisite3D(villa, $event)">
+                    Visite 3D
+                  </button>
+                }
+                <span class="badge badge-navy" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15)">
+                  {{ TypeVillaLabels[villa.typeVilla] }}
+                </span>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="card-title">{{ villa.titre }}</div>
+              <div class="card-loc">
+                <span>📍</span>
+                <span>{{ villa.quartier }}, {{ villa.ville }}</span>
+              </div>
+              <div class="card-specs">
+                <div class="spec">
+                  <span class="spec-v">{{ villa.surfaceHabitable }} m²</span>
+                  <span class="spec-l">Surface</span>
+                </div>
+                <div class="spec">
+                  <span class="spec-v">{{ villa.nombrePieces }}</span>
+                  <span class="spec-l">Pièces</span>
+                </div>
+              </div>
+              <div class="card-footer">
+                <div class="score-wrap">
+                  <div class="score-track">
+                    <div class="score-fill" [style.width.%]="villa.scoreMaMaison"></div>
+                  </div>
+                  <span>{{ villa.scoreMaMaison }}/100</span>
+                </div>
+                <span class="badge badge-gold">● Vérifié</span>
+              </div>
+            </div>
+          </a>
+        }
+      </div>
+    }
+
   </div>
-}
+</div>
