@@ -1,0 +1,116 @@
+<!-- Backdrop -->
+<div class="modal-backdrop" (click)="fermerModal()"></div>
+
+<!-- Panel slide-in -->
+<div class="modal-panel">
+
+  <!-- Header -->
+  <div class="modal-header">
+    <div>
+      <p class="modal-eyebrow">{{ titreBien }}</p>
+      <h2 class="modal-titre">{{ titre }}</h2>
+      <p class="modal-sous-titre">{{ sousTitre }}</p>
+    </div>
+    <button class="modal-close" (click)="fermerModal()" aria-label="Fermer">✕</button>
+  </div>
+
+  <!-- États -->
+  @if (etat() === 'succes') {
+    <div class="modal-succes">
+      <div class="succes-icon">✓</div>
+      <h3>Demande enregistrée !</h3>
+      <p>Nous vous contacterons dans les 24h au numéro indiqué.</p>
+      <button class="btn btn-gold btn-full" (click)="fermerModal()" style="margin-top:24px">
+        Fermer
+      </button>
+    </div>
+  }
+
+  @if (etat() === 'erreur') {
+    <div class="modal-body">
+      <div class="modal-erreur">⚠️ {{ messageErreur }}</div>
+      <button class="btn btn-outline btn-full" (click)="etat.set('form')">
+        Réessayer
+      </button>
+    </div>
+  }
+
+  @if (etat() === 'form' || etat() === 'chargement') {
+    <div class="modal-body">
+
+      <div class="form-field">
+        <label>Nom complet <span class="required">*</span></label>
+        <input
+          type="text"
+          [(ngModel)]="nom"
+          placeholder="Jean-Baptiste Koné"
+          [disabled]="etat() === 'chargement'"
+          autocomplete="name">
+      </div>
+
+      <div class="form-field">
+        <label>Téléphone <span class="required">*</span></label>
+        <input
+          type="tel"
+          [(ngModel)]="telephone"
+          placeholder="+225 07 00 00 00 00"
+          [disabled]="etat() === 'chargement'"
+          autocomplete="tel">
+      </div>
+
+      <div class="form-field">
+        <label>Email <span class="optional">(optionnel)</span></label>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          placeholder="jean@exemple.com"
+          [disabled]="etat() === 'chargement'"
+          autocomplete="email">
+      </div>
+
+      @if (mode !== 'rappel') {
+        <div class="form-field">
+          <label>Date souhaitée <span class="optional">(optionnel)</span></label>
+          <input
+            type="date"
+            [(ngModel)]="dateSouhaitee"
+            [disabled]="etat() === 'chargement'"
+            [min]="today">
+        </div>
+      }
+
+      <div class="form-field">
+        <label>Message <span class="optional">(optionnel)</span></label>
+        <textarea
+          [(ngModel)]="commentaire"
+          rows="3"
+          placeholder="Précisions, questions, disponibilités…"
+          [disabled]="etat() === 'chargement'">
+        </textarea>
+      </div>
+
+      <div class="modal-notice">
+        🔒 Vos données sont confidentielles et ne seront jamais revendues.
+      </div>
+
+      <button
+        class="btn btn-gold btn-full"
+        (click)="soumettre()"
+        [disabled]="!nom.trim() || !telephone.trim() || etat() === 'chargement'"
+        style="height:52px;font-size:1rem;margin-top:4px">
+        @if (etat() === 'chargement') {
+          <span class="btn-spinner"></span>
+          Envoi en cours…
+        } @else {
+          {{ titre }}
+        }
+      </button>
+
+      <p class="modal-legal">
+        En soumettant ce formulaire, vous acceptez d'être contacté par MaMaison Verified.
+      </p>
+
+    </div>
+  }
+
+</div>

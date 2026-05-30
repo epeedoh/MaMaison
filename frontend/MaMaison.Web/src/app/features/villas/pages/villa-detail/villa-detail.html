@@ -131,8 +131,12 @@
                 <span class="aside-score-num">{{ villa.scoreMaMaison }}</span>
               </div>
             </div>
-            <button class="btn btn-navy btn-full">📞 Demander un rappel</button>
-            <button class="btn btn-gold btn-full">🗓 Planifier une visite physique</button>
+            <button class="btn btn-navy btn-full" (click)="ouvrirModal('rappel')">
+              📞 Demander un rappel
+            </button>
+            <button class="btn btn-gold btn-full" (click)="ouvrirModal('visite')">
+              🗓 Planifier une visite physique
+            </button>
             @if (villa.modele3DUrl) {
               <button class="btn btn-outline btn-full" (click)="ouvrirVisite3D()">
                 ▶ Visite 3D immersive
@@ -149,3 +153,13 @@
     </div>
   }
 </div>
+
+<!-- Modal demande de visite -->
+@if (modalOuvert() && villa) {
+  <app-demande-visite-modal
+    [bienId]="villa.id"
+    [titreBien]="villa.titre"
+    [mode]="modalMode()"
+    (fermer)="fermerModal()">
+  </app-demande-visite-modal>
+}
