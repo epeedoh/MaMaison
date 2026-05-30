@@ -1,11 +1,12 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocationService } from '../../../../core/services/location.service';
 import { LocationDetail as LocationDetailModel, TypeLocationLabels } from '../../../../core/models/location.model';
+import { DemandeVisiteModalComponent, ModalMode } from '../../../../shared/components/demande-visite-modal/demande-visite-modal.component';
 
 @Component({
   selector: 'app-location-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, DemandeVisiteModalComponent],
   templateUrl: './location-detail.html',
   styleUrl: './location-detail.scss'
 })
@@ -17,6 +18,10 @@ export class LocationDetailComponent implements OnInit {
   loading = true;
   error = false;
   readonly TypeLocationLabels = TypeLocationLabels;
+  modalOuvert = signal(false);
+  modalMode = signal<ModalMode>('visite');
+  ouvrirModal(mode: ModalMode) { this.modalMode.set(mode); this.modalOuvert.set(true); }
+  fermerModal() { this.modalOuvert.set(false); }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;

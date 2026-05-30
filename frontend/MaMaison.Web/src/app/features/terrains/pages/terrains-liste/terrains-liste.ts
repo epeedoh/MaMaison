@@ -1,11 +1,12 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { RouterLink } from '@angular/router';
 import { TerrainService } from '../../../../core/services/terrain.service';
 import { TerrainListe, NiveauVerificationTerrain, NiveauVerificationLabels } from '../../../../core/models/terrain.model';
 
 @Component({
   selector: 'app-terrains-liste',
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   templateUrl: './terrains-liste.html',
   styleUrl: './terrains-liste.scss'
 })

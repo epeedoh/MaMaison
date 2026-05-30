@@ -37,5 +37,23 @@ export const routes: Routes = [
       import('./features/terrains/pages/terrains-liste/terrains-liste')
         .then(m => m.TerrainsListeComponent)
   },
-  { path: '**', redirectTo: 'villas' }
+  {
+    path: 'terrains/:id',
+    loadComponent: () =>
+      import('./features/terrains/pages/terrain-detail/terrain-detail.component')
+        .then(m => m.TerrainDetailComponent)
+  },
+  {
+    path: 'admin',
+    loadComponent: () =>
+      import('./features/admin/admin-dashboard/admin-dashboard.component')
+        .then(m => m.AdminDashboardComponent)
+  },
+  {
+    path: 'publier',
+    loadComponent: () =>
+      import('./features/proprietaire/soumettre-location/soumettre-location.component')
+        .then(m => m.SoumettreLocationComponent)
+  },
+  { path: '**', redirectTo: '' }
 ];

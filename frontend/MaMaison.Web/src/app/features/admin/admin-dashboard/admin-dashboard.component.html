@@ -1,0 +1,104 @@
+<!-- HEADER ADMIN -->
+<section class="hero" style="min-height:260px;padding:60px 24px 80px">
+  <div class="orb orb-1" style="opacity:.5"></div>
+  <div class="orb orb-3" style="opacity:.4"></div>
+  <div class="hero-content" style="max-width:900px">
+    <div class="hero-eyebrow">✦ Back-office MaMaison</div>
+    <h1 class="hero-title" style="font-size:2.2rem">Tableau de bord admin</h1>
+    <p class="hero-sub" style="margin-bottom:0">Gérez les demandes, validez les annonces, supervisez la plateforme.</p>
+  </div>
+</section>
+
+<div class="hero-filter-wrap" style="margin-bottom:0">
+  <div class="hero-filter" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+    <div style="font-size:.82rem;color:var(--text-mid);font-weight:600">Navigation rapide</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <a routerLink="/villas" class="btn btn-outline btn-sm">🏠 Villas</a>
+      <a routerLink="/locations" class="btn btn-outline btn-sm">🔑 Locations</a>
+      <a routerLink="/terrains" class="btn btn-outline btn-sm">📍 Terrains</a>
+      <a routerLink="/publier" class="btn btn-gold btn-sm">+ Publier un bien</a>
+    </div>
+  </div>
+</div>
+
+<div class="page-container" style="padding-top:48px">
+
+  <!-- Stats -->
+  @if (!loading) {
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:40px">
+      @for (s of stats; track s.label) {
+        <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--shadow-sm)">
+          <div style="font-size:1.8rem;margin-bottom:8px">{{ s.icon }}</div>
+          <div style="font-size:2rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.03em;font-family:var(--font-disp)">{{ s.valeur }}</div>
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);margin-top:2px">{{ s.label }}</div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Demandes de visite -->
+  <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+      <h2 style="font-family:var(--font-disp);font-size:1.2rem;font-weight:700;color:var(--navy-mid)">Demandes de visite</h2>
+      <span class="badge badge-navy">{{ demandes.length }} total</span>
+    </div>
+
+    @if (loading) {
+      <div class="loading-wrap"><div class="spinner"></div><span>Chargement…</span></div>
+    }
+
+    @if (!loading && demandes.length === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">📋</span>
+        <h3>Aucune demande</h3>
+        <p>Les demandes de visite apparaîtront ici.</p>
+      </div>
+    }
+
+    @if (!loading && demandes.length > 0) {
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
+          <thead>
+            <tr style="background:var(--cream)">
+              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">ID Bien</th>
+              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">Statut</th>
+              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">Date</th>
+              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">Commentaire</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (d of demandes; track d.id) {
+              <tr style="border-top:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='#F8F5F0'" onmouseout="this.style.background=''">
+                <td style="padding:14px 20px;font-family:monospace;font-size:.78rem;color:var(--text-mid)">{{ d.bienId | slice:0:8 }}…</td>
+                <td style="padding:14px 20px">
+                  <span style="padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;background:rgba(0,0,0,.05)"
+                        [style.color]="statutColors[d.statut]">
+                    {{ statutLabels[d.statut] }}
+                  </span>
+                </td>
+                <td style="padding:14px 20px;color:var(--text-soft)">{{ formatDate(d.dateCreation) }}</td>
+                <td style="padding:14px 20px;color:var(--text-mid);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                  {{ d.commentaire || '—' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+
+  <!-- Prochains modules -->
+  <div style="margin-top:32px;background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:24px 28px;box-shadow:var(--shadow-sm)">
+    <h3 style="font-family:var(--font-disp);font-size:1rem;font-weight:700;color:var(--navy-mid);margin-bottom:16px">Modules à venir — Back-office MVP2</h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
+      @for (item of ['Valider les annonces locations','Publier des terrains','Gérer les promoteurs','Vérifier les démarcheurs','Voir les signalements','Statistiques plateforme']; track item) {
+        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--cream);border-radius:var(--r-sm);font-size:.82rem;color:var(--text-mid)">
+          <span style="width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0"></span>
+          {{ item }}
+        </div>
+      }
+    </div>
+  </div>
+
+</div>

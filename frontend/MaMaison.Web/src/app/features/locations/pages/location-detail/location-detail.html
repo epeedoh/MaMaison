@@ -95,8 +95,8 @@
               <div style="font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);margin-bottom:6px">Total à prévoir</div>
               <div style="font-size:1.3rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.02em">{{ formatPrix(location.totalAPrevoir) }}</div>
             </div>
-            <button class="btn btn-navy btn-full">📞 Demander une visite</button>
-            <button class="btn btn-gold btn-full">💬 Contacter le propriétaire</button>
+            <button class="btn btn-navy btn-full" (click)="ouvrirModal('visite')">📞 Demander une visite</button>
+            <button class="btn btn-gold btn-full" (click)="ouvrirModal('rappel')">💬 Contacter le propriétaire</button>
             <button class="btn btn-outline btn-full">🚨 Signaler une anomalie</button>
             <p style="font-size:.72rem;color:var(--text-soft);text-align:center;line-height:1.55;margin-top:4px">
               Propriétaire identifié par MaMaison<br>
@@ -109,3 +109,12 @@
     </div>
   }
 </div>
+
+@if (modalOuvert() && location) {
+  <app-demande-visite-modal
+    [bienId]="location.id"
+    [titreBien]="location.titre"
+    [mode]="modalMode()"
+    (fermer)="fermerModal()">
+  </app-demande-visite-modal>
+}

@@ -71,7 +71,7 @@
       </div>
       <div class="card-grid">
         @for (terrain of terrains; track terrain.id) {
-          <div class="prop-card">
+          <a class="prop-card" [routerLink]="['/terrains', terrain.id]">
             <div class="card-visual" style="background:linear-gradient(140deg,#071A07 0%,#0D2810 50%,#102E14 100%)">
               <div class="card-visual-bg" style="background:linear-gradient(135deg,rgba(34,197,94,.06) 0%,transparent 60%)"></div>
               <span class="card-visual-icon">📍</span>
@@ -105,7 +105,7 @@
                 <button class="btn btn-outline btn-sm">Dossier →</button>
               </div>
             </div>
-          </div>
+          </a>
         }
       </div>
     }

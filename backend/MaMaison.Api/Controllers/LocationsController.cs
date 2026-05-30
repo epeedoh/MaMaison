@@ -1,4 +1,5 @@
 using MaMaison.Application.Features.Locations;
+using MaMaison.Domain.Entities;
 using MaMaison.Domain.Enums;
 using MaMaison.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -44,5 +45,24 @@ public class LocationsController(ILocationRepository locationRepository) : Contr
             location.ScoreMaMaison);
 
         return Ok(dto);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Soumettre(
+        [FromBody] SoumettreLocationCommand cmd,
+        CancellationToken ct)
+    {
+        var proprietaireId = Guid.NewGuid();
+
+        var location = Location.Creer(
+            proprietaireId, cmd.Titre, cmd.TypeBien,
+            cmd.Quartier, cmd.Commune, cmd.NombrePieces,
+            cmd.Loyer, cmd.Caution, cmd.Avance, cmd.FraisAgence);
+
+        await locationRepository.AjouterAsync(location, ct);
+        await locationRepository.SauvegarderAsync(ct);
+
+        return Created($"/api/locations/{location.Id}", new { id = location.Id,
+            message = "Votre bien a été soumis. Vérification en cours (48h)." });
     }
 }
