@@ -100,8 +100,8 @@ button { font-family: inherit; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 120px 24px 160px;
-  min-height: 620px;
+  padding: 120px 24px 80px;
+  min-height: 540px;
 }
 
 /* Orbes flottantes */
@@ -239,14 +239,20 @@ button { font-family: inherit; }
   color: rgba(255,255,255,.4);
 }
 
-/* Filter flottant — glassmorphism */
+/* Filter wrap — positionné dans le flux sous le hero */
+.hero-filter-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 0 24px;
+  margin-top: -44px;
+  position: relative;
+  z-index: 20;
+  margin-bottom: 16px;
+}
+
+/* Filter glassmorphism */
 .hero-filter {
-  position: absolute;
-  bottom: -36px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: min(960px, calc(100vw - 48px));
-  z-index: 10;
+  width: min(1000px, 100%);
   background: rgba(255,255,255,.95);
   backdrop-filter: blur(28px) saturate(180%);
   -webkit-backdrop-filter: blur(28px) saturate(180%);
