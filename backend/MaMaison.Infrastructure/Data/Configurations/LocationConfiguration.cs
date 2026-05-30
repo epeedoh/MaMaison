@@ -18,6 +18,6 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
         builder.Property(l => l.FraisAgence).HasPrecision(18, 0);
         builder.Property(l => l.FraisVisite).HasPrecision(18, 0);
 
-        builder.Ignore(l => l.TotalAPrévoir);
+        builder.Ignore(l => l.TotalAPrevoir);
     }
 }

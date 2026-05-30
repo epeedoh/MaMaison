@@ -1,5 +1,6 @@
 using MaMaison.Application.Configuration;
 using MaMaison.Infrastructure;
+using MaMaison.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,7 +28,14 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/openapi/v1.json", "MaMaison API v1"));
+}
+
+// Seed demo data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<MaMaisonDbContext>();
+    var logger = scope.ServiceProvider.GetRequiredService<ILogger<MaMaisonDbContext>>();
+    await DataSeeder.SeedAsync(db, logger);
 }
 
 app.UseHttpsRedirection();
