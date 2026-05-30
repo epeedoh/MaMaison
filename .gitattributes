@@ -1,0 +1,6 @@
+# Force LF on all text files
+* text=auto eol=lf
+
+# Explicitly declare Windows-specific files
+*.bat text eol=crlf
+*.cmd text eol=crlf

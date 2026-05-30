@@ -1,0 +1,62 @@
+@if (loading) {
+  <div class="loading-state"><div class="spinner"></div></div>
+}
+@if (!loading && error) {
+  <div class="empty-state">
+    <div class="empty-icon">⚠️</div>
+    <h3>Location introuvable</h3>
+    <a routerLink="/locations" class="btn-filter" style="display:inline-block;margin-top:12px">← Retour</a>
+  </div>
+}
+@if (!loading && location) {
+  <div class="detail-header">
+    <a routerLink="/locations" class="back-link">← Toutes les locations</a>
+    <div class="detail-badges">
+      <span class="badge badge-blue">{{ TypeLocationLabels[location.typeBien] }}</span>
+      <span class="badge badge-gray">{{ location.quartier }}, {{ location.commune }}</span>
+      @if (location.estDisponible) {
+        <span class="badge badge-green">✓ Disponible</span>
+      }
+    </div>
+  </div>
+
+  <div class="detail-layout">
+    <div class="detail-main">
+      <div class="detail-img">🔑</div>
+      <div class="detail-section">
+        <h2>{{ location.titre }}</h2>
+        <div class="detail-specs">
+          <div class="spec"><span class="spec-val">{{ location.nombrePieces }}</span><span class="spec-lbl">Pièces</span></div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Détail des frais</h3>
+        <table class="frais-table">
+          <tr><td>Loyer mensuel</td><td class="val">{{ formatPrix(location.loyer) }}</td></tr>
+          <tr><td>Caution</td><td class="val">{{ formatPrix(location.caution) }}</td></tr>
+          <tr><td>Avance</td><td class="val">{{ formatPrix(location.avance) }}</td></tr>
+          <tr><td>Frais d'agence</td><td class="val">{{ formatPrix(location.fraisAgence) }}</td></tr>
+          @if (location.fraisVisite) {
+            <tr><td>Frais de visite</td><td class="val">{{ formatPrix(location.fraisVisite) }}</td></tr>
+          }
+          <tr class="total-row"><td><strong>Total à prévoir</strong></td><td class="val"><strong>{{ formatPrix(location.totalAPrevoir) }}</strong></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="detail-aside">
+      <div class="aside-card">
+        <div class="score">
+          <div class="score-bar" style="width:80px">
+            <div class="score-fill" [style.width.%]="location.scoreMaMaison"></div>
+          </div>
+          <span>Score : {{ location.scoreMaMaison }}/100</span>
+        </div>
+        <hr>
+        <button class="btn-filter" style="width:100%;margin-top:12px">Demander une visite</button>
+        <button class="btn-filter" style="width:100%;margin-top:8px;background:#10b981">Contacter le propriétaire</button>
+      </div>
+    </div>
+  </div>
+}

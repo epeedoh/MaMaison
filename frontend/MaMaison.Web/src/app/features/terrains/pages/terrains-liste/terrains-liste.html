@@ -1,0 +1,60 @@
+<div class="page-header">
+  <h1>Terrains sélectionnés</h1>
+  <p>Terrains documentés et classés par niveau de vérification. Vérification finale obligatoire chez un notaire.</p>
+</div>
+
+<div class="avertissement">
+  ⚠️ MaMaison effectue une vérification préliminaire. Toute acquisition doit faire l'objet d'une vérification finale auprès d'un notaire, d'un géomètre et des autorités compétentes.
+</div>
+
+<div class="filters" style="margin-top:16px">
+  <div class="filter-group">
+    <label>Commune</label>
+    <input type="text" [(ngModel)]="filtreCommune" placeholder="Ex: Bingerville…">
+  </div>
+  <button class="btn-filter" (click)="charger()">Rechercher</button>
+  <button class="btn-filter" style="background:#6b7280" (click)="filtreCommune=''; charger()">Réinitialiser</button>
+</div>
+
+@if (loading) {
+  <div class="loading-state"><div class="spinner"></div></div>
+}
+
+@if (!loading && error) {
+  <div class="empty-state">
+    <div class="empty-icon">⚠️</div>
+    <h3>Impossible de charger les terrains</h3>
+  </div>
+}
+
+@if (!loading && !error && terrains.length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">📍</div>
+    <h3>Aucun terrain disponible</h3>
+    <p>Revenez prochainement.</p>
+  </div>
+}
+
+@if (!loading && !error && terrains.length > 0) {
+  <p class="result-count" style="margin-top:16px">{{ terrains.length }} terrain(s) disponible(s)</p>
+  <div class="card-grid">
+    @for (terrain of terrains; track terrain.id) {
+      <div class="card">
+        <div class="card-img">📍</div>
+        <div class="card-body">
+          <div class="card-title">{{ terrain.titre }}</div>
+          <div class="card-meta">{{ terrain.commune }}{{ terrain.quartier ? ', ' + terrain.quartier : '' }}</div>
+          <div class="card-meta">{{ terrain.surface }} m²</div>
+          <div class="card-price">{{ formatPrix(terrain.prix) }}</div>
+        </div>
+        <div class="card-footer">
+          <span class="badge badge-blue">{{ niveauLabel(terrain.niveauVerification) }}</span>
+          <div class="score">
+            <div class="score-bar"><div class="score-fill" [style.width.%]="terrain.scoreMaMaison"></div></div>
+            <span>{{ terrain.scoreMaMaison }}/100</span>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

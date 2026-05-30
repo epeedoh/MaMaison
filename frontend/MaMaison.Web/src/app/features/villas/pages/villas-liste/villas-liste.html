@@ -1,0 +1,74 @@
+<div class="page-header">
+  <h1>Villas &amp; Logements neufs</h1>
+  <p>Recherchez votre villa idéale et visitez-la en 3D avant de décider.</p>
+</div>
+
+<div class="filters">
+  <div class="filter-group">
+    <label>Type de bien</label>
+    <select [(ngModel)]="filtreType">
+      <option value="">Tous les types</option>
+      @for (opt of typeVillaOptions; track opt.value) {
+        <option [value]="opt.value">{{ opt.label }}</option>
+      }
+    </select>
+  </div>
+  <div class="filter-group">
+    <label>Quartier / Zone</label>
+    <input type="text" [(ngModel)]="filtreQuartier" placeholder="Ex: Cocody, Bassam…">
+  </div>
+  <div class="filter-group">
+    <label>Budget max (FCFA)</label>
+    <input type="number" [(ngModel)]="filtrePrixMax" placeholder="Ex: 50000000">
+  </div>
+  <button class="btn-filter" (click)="charger()">Rechercher</button>
+  <button class="btn-filter" style="background:#6b7280" (click)="resetFiltres()">Réinitialiser</button>
+</div>
+
+@if (loading) {
+  <div class="loading-state"><div class="spinner"></div></div>
+}
+
+@if (!loading && error) {
+  <div class="empty-state">
+    <div class="empty-icon">⚠️</div>
+    <h3>Impossible de charger les villas</h3>
+    <p>Vérifiez que l'API est démarrée sur localhost:5000</p>
+  </div>
+}
+
+@if (!loading && !error && villas.length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">🏡</div>
+    <h3>Aucune villa trouvée</h3>
+    <p>Modifiez vos critères de recherche.</p>
+  </div>
+}
+
+@if (!loading && !error && villas.length > 0) {
+  <p class="result-count">{{ villas.length }} bien(s) trouvé(s)</p>
+  <div class="card-grid">
+    @for (villa of villas; track villa.id) {
+      <a class="card" [routerLink]="['/villas', villa.id]">
+        <div class="card-img">🏠</div>
+        <div class="card-body">
+          <div class="card-title">{{ villa.titre }}</div>
+          <div class="card-meta">{{ TypeVillaLabels[villa.typeVilla] }} · {{ villa.quartier }}, {{ villa.ville }}</div>
+          <div class="card-meta">{{ villa.surfaceHabitable }} m² · {{ villa.nombrePieces }} pièces</div>
+          <div class="card-price">{{ formatPrix(villa.prix) }}</div>
+        </div>
+        <div class="card-footer">
+          <div class="score">
+            <div class="score-bar"><div class="score-fill" [style.width.%]="villa.scoreMaMaison"></div></div>
+            <span>{{ villa.scoreMaMaison }}/100</span>
+          </div>
+          @if (villa.a3DVisite) {
+            <button class="btn-3d" (click)="ouvrirVisite3D(villa, $event)">
+              ▶ Visite 3D
+            </button>
+          }
+        </div>
+      </a>
+    }
+  </div>
+}

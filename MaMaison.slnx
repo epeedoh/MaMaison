@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/backend/">
+    <Project Path="backend/MaMaison.Api/MaMaison.Api.csproj" />
+    <Project Path="backend/MaMaison.Application/MaMaison.Application.csproj" />
+    <Project Path="backend/MaMaison.Domain/MaMaison.Domain.csproj" />
+    <Project Path="backend/MaMaison.Infrastructure/MaMaison.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/MaMaison.Api.Tests/MaMaison.Api.Tests.csproj" />
+    <Project Path="tests/MaMaison.Application.Tests/MaMaison.Application.Tests.csproj" />
+    <Project Path="tests/MaMaison.Domain.Tests/MaMaison.Domain.Tests.csproj" />
+  </Folder>
+</Solution>

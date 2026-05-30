@@ -1,0 +1,71 @@
+<div class="page-header">
+  <h1>Locations vérifiées</h1>
+  <p>Trouvez un logement disponible, avec propriétaire identifié et conditions claires.</p>
+</div>
+
+<div class="filters">
+  <div class="filter-group">
+    <label>Quartier</label>
+    <input type="text" [(ngModel)]="filtreQuartier" placeholder="Ex: Cocody…">
+  </div>
+  <div class="filter-group">
+    <label>Commune</label>
+    <input type="text" [(ngModel)]="filtreCommune" placeholder="Ex: Abidjan…">
+  </div>
+  <div class="filter-group">
+    <label>Loyer max (FCFA)</label>
+    <input type="number" [(ngModel)]="filtreLoyerMax" placeholder="Ex: 200000">
+  </div>
+  <button class="btn-filter" (click)="charger()">Rechercher</button>
+  <button class="btn-filter" style="background:#6b7280" (click)="resetFiltres()">Réinitialiser</button>
+</div>
+
+@if (loading) {
+  <div class="loading-state"><div class="spinner"></div></div>
+}
+
+@if (!loading && error) {
+  <div class="empty-state">
+    <div class="empty-icon">⚠️</div>
+    <h3>Impossible de charger les locations</h3>
+  </div>
+}
+
+@if (!loading && !error && locations.length === 0) {
+  <div class="empty-state">
+    <div class="empty-icon">🔑</div>
+    <h3>Aucune location trouvée</h3>
+    <p>Modifiez vos critères de recherche.</p>
+  </div>
+}
+
+@if (!loading && !error && locations.length > 0) {
+  <p class="result-count">{{ locations.length }} bien(s) disponible(s)</p>
+  <div class="card-grid">
+    @for (loc of locations; track loc.id) {
+      <a class="card" [routerLink]="['/locations', loc.id]">
+        <div class="card-img">🔑</div>
+        <div class="card-body">
+          <div class="card-title">{{ loc.titre }}</div>
+          <div class="card-meta">{{ TypeLocationLabels[loc.typeBien] }} · {{ loc.quartier }}, {{ loc.commune }}</div>
+          <div class="card-meta">{{ loc.nombrePieces }} pièce(s)</div>
+          <div class="card-price">{{ formatPrix(loc.loyer) }} / mois</div>
+          <div class="card-meta" style="margin-top:4px;font-size:0.78rem">
+            Total à prévoir : {{ formatPrix(loc.totalAPrevoir) }}
+          </div>
+        </div>
+        <div class="card-footer">
+          @if (loc.estDisponible) {
+            <span class="badge badge-green">✓ Disponible</span>
+          } @else {
+            <span class="badge badge-gray">Indisponible</span>
+          }
+          <div class="score">
+            <div class="score-bar"><div class="score-fill" [style.width.%]="loc.scoreMaMaison"></div></div>
+            <span>{{ loc.scoreMaMaison }}/100</span>
+          </div>
+        </div>
+      </a>
+    }
+  </div>
+}

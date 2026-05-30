@@ -1,0 +1,39 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+*.nupkg
+*.snupkg
+TestResults/
+[Pp]ublish/
+
+# EF Migrations (garder les fichiers, ignorer les artefacts)
+# Les migrations sont volontairement versionnées
+
+# Angular
+frontend/**/node_modules/
+frontend/**/.angular/
+frontend/**/dist/
+frontend/**/*.js.map
+
+# Environnements sensibles
+backend/**/appsettings.Development.json
+backend/**/appsettings.Production.json
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Assets 3D volumineux (gérer séparément)
+assets/models/*.glb
+assets/textures/*.png
+assets/textures/*.jpg
+
+# IDE
+.idea/
+*.swp
+*.swo

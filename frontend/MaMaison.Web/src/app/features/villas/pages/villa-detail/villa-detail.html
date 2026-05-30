@@ -1,0 +1,81 @@
+@if (loading) {
+  <div class="loading-state"><div class="spinner"></div></div>
+}
+
+@if (!loading && error) {
+  <div class="empty-state">
+    <div class="empty-icon">⚠️</div>
+    <h3>Villa introuvable</h3>
+    <a routerLink="/villas" class="btn-filter" style="display:inline-block;margin-top:12px">← Retour aux villas</a>
+  </div>
+}
+
+@if (!loading && villa) {
+  <div class="detail-header">
+    <a routerLink="/villas" class="back-link">← Toutes les villas</a>
+    <div class="detail-badges">
+      <span class="badge badge-blue">{{ TypeVillaLabels[villa.typeVilla] }}</span>
+      <span class="badge badge-gray">{{ villa.quartier }}, {{ villa.ville }}</span>
+    </div>
+  </div>
+
+  <div class="detail-layout">
+    <div class="detail-main">
+      <div class="detail-img">🏠</div>
+
+      @if (villa.modele3DUrl) {
+        <button class="btn-3d btn-3d-lg" (click)="ouvrirVisite3D()">
+          ▶ Lancer la visite 3D immersive
+        </button>
+      }
+
+      <div class="detail-section">
+        <h2>{{ villa.titre }}</h2>
+        <p class="detail-price">{{ formatPrix(villa.prix) }}</p>
+        <div class="detail-specs">
+          <div class="spec"><span class="spec-val">{{ villa.surfaceHabitable }} m²</span><span class="spec-lbl">Surface habitable</span></div>
+          @if (villa.surfaceTerrain) {
+            <div class="spec"><span class="spec-val">{{ villa.surfaceTerrain }} m²</span><span class="spec-lbl">Terrain</span></div>
+          }
+          <div class="spec"><span class="spec-val">{{ villa.nombrePieces }}</span><span class="spec-lbl">Pièces</span></div>
+        </div>
+        @if (villa.description) {
+          <p class="detail-desc">{{ villa.description }}</p>
+        }
+      </div>
+
+      @if (villa.pointsVisite.length > 0) {
+        <div class="detail-section">
+          <h3>Points de visite 3D</h3>
+          <div class="visite-list">
+            @for (point of villa.pointsVisite; track point.id) {
+              <div class="visite-item">
+                <span class="visite-icon">📍</span>
+                <span>{{ point.nomPiece }}</span>
+                @if (point.hotspots.length > 0) {
+                  <span class="badge badge-amber">{{ point.hotspots.length }} hotspot(s)</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <div class="detail-aside">
+      <div class="aside-card">
+        <div class="score">
+          <div class="score-bar" style="width:80px">
+            <div class="score-fill" [style.width.%]="villa.scoreMaMaison"></div>
+          </div>
+          <span>Score MaMaison : {{ villa.scoreMaMaison }}/100</span>
+        </div>
+        <hr>
+        <p class="aside-promoteur">Promoteur</p>
+        <p style="font-weight:600">{{ villa.nomPromoteur || 'Non renseigné' }}</p>
+        <button class="btn-filter" style="width:100%;margin-top:16px">Demander un rappel</button>
+        <button class="btn-filter" style="width:100%;margin-top:8px;background:#10b981">Demander une visite</button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,0 +1,26 @@
+<nav class="navbar">
+  <a routerLink="/villas" class="navbar-brand">
+    <span class="brand-icon">🏠</span>
+    <span class="brand-name">MaMaison</span>
+    <span class="brand-tag">Verified</span>
+  </a>
+  <div class="navbar-links">
+    <a routerLink="/villas" routerLinkActive="active">Villas & Logements</a>
+    <a routerLink="/locations" routerLinkActive="active">Locations</a>
+    <a routerLink="/terrains" routerLinkActive="active">Terrains</a>
+  </div>
+  <div class="navbar-actions">
+    <a routerLink="/villas" class="btn-publish">Publier un bien</a>
+  </div>
+</nav>
+
+<main class="app-content">
+  <router-outlet />
+</main>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <span>© 2025 MaMaison Verified — Côte d'Ivoire</span>
+    <span class="footer-tagline">Louer, acheter, visiter et investir en confiance.</span>
+  </div>
+</footer>

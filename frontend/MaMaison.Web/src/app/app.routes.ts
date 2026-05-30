@@ -1,0 +1,36 @@
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { path: '', redirectTo: 'villas', pathMatch: 'full' },
+  {
+    path: 'villas',
+    loadComponent: () =>
+      import('./features/villas/pages/villas-liste/villas-liste')
+        .then(m => m.VillasListeComponent)
+  },
+  {
+    path: 'villas/:id',
+    loadComponent: () =>
+      import('./features/villas/pages/villa-detail/villa-detail')
+        .then(m => m.VillaDetailComponent)
+  },
+  {
+    path: 'locations',
+    loadComponent: () =>
+      import('./features/locations/pages/locations-liste/locations-liste')
+        .then(m => m.LocationsListeComponent)
+  },
+  {
+    path: 'locations/:id',
+    loadComponent: () =>
+      import('./features/locations/pages/location-detail/location-detail')
+        .then(m => m.LocationDetailComponent)
+  },
+  {
+    path: 'terrains',
+    loadComponent: () =>
+      import('./features/terrains/pages/terrains-liste/terrains-liste')
+        .then(m => m.TerrainsListeComponent)
+  },
+  { path: '**', redirectTo: 'villas' }
+];
