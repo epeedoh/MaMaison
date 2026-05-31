@@ -15,11 +15,22 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("MaMaisonCors", policy =>
     {
-        policy.WithOrigins(
-                builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-                ?? ["http://localhost:4200"])
-              .AllowAnyHeader()
-              .AllowAnyMethod();
+        if (builder.Environment.IsDevelopment())
+        {
+            // Dev : accepte tout localhost quel que soit le port
+            policy.SetIsOriginAllowed(origin =>
+                    new Uri(origin).Host is "localhost" or "127.0.0.1")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
+        else
+        {
+            policy.WithOrigins(
+                    builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
+                    ?? ["https://mamaison.ci"])
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        }
     });
 });
 
@@ -38,7 +49,12 @@ using (var scope = app.Services.CreateScope())
     await DataSeeder.SeedAsync(db, logger);
 }
 
-app.UseHttpsRedirection();
+// En dev, pas de redirection HTTPS (évite le 307 qui bloque Angular)
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+
 app.UseCors("MaMaisonCors");
 app.UseAuthorization();
 app.MapControllers();
