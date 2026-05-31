@@ -17,9 +17,14 @@ builder.Services.AddCors(options =>
     {
         if (builder.Environment.IsDevelopment())
         {
-            // Dev : accepte tout localhost quel que soit le port
+            // Dev : accepte localhost (tout port) + tunnels VS Code devtunnels.ms
             policy.SetIsOriginAllowed(origin =>
-                    new Uri(origin).Host is "localhost" or "127.0.0.1")
+                {
+                    var host = new Uri(origin).Host;
+                    return host is "localhost" or "127.0.0.1"
+                        || host.EndsWith(".devtunnels.ms")
+                        || host.EndsWith(".githubpreview.dev");
+                })
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         }

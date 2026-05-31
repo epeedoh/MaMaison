@@ -1,5 +1,5 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:5121/api',
+  apiUrl: 'https://zpb93lvx-7018.euw.devtunnels.ms/api',
   viewer3dUrl: '/viewer-3d/index.html',
 };
