@@ -44,7 +44,7 @@ export class VillasListeComponent implements OnInit {
   ouvrirVisite3D(villa: VillaListe, event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    window.open(`${environment.viewer3dUrl}?villaId=${villa.id}`, '_blank');
+    window.location.href = `${environment.viewer3dUrl}?villaId=${villa.id}`;
   }
 
   formatPrix(prix: number) {
