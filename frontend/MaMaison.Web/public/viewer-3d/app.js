@@ -55,33 +55,35 @@ function chargerDemoLocal() {
     document.getElementById('villa-titre').textContent = 'Villa Démo — Cocody';
     document.getElementById('villa-prix').textContent = '45 000 000 FCFA';
 
+    // Room: W=8 (x -4..+4), D=6 (z -3..+3)
+    // Salon: centre    | Cuisine: cx=1.8, cz=-0.5 | Chambre: bx=-1.5, bz=0.2
     pointsVisite = [
         {
             id: '1', nomPiece: 'Salon — 35 m²', ordre: 0,
-            positionX: 0.2, positionY: 1.6, positionZ: 0.5,
-            rotationX: 0, rotationY: Math.PI, rotationZ: 0,
+            positionX: 0, positionY: 1.65, positionZ: 0,
+            rotationX: 0, rotationY: 0, rotationZ: 0,      // face au TV (−Z)
             hotspots: [
-                { id: 'h1', libelle: 'Surface & matériaux', contenu: '35 m² · Parquet chêne clair · Plafond 3,2m', positionX: 1.5, positionY: 1.2, positionZ: -3.5 },
-                { id: 'h2', libelle: 'Canapé & salon', contenu: 'Canapé 3 places + méridienne · Table basse noyer & laiton', positionX: 0.2, positionY: 1.0, positionZ: 2.2 },
-                { id: 'h3', libelle: 'Espace TV', contenu: 'Meuble TV suspendu blanc laqué · Écran 65"', positionX: 0, positionY: 1.3, positionZ: -4.5 }
+                { id: 'h1', libelle: 'Surface & matériaux', contenu: '35 m² · Parquet chêne · Plafond 2,7m · Baies vitrées', positionX: -1.5, positionY: 1.2, positionZ: -1.5 },
+                { id: 'h2', libelle: 'Canapé & salon', contenu: 'Canapé 3 places + fauteuil · Table basse noyer & laiton', positionX: 0.5, positionY: 0.8, positionZ: 2.0 },
+                { id: 'h3', libelle: 'Espace TV', contenu: 'Meuble TV blanc laqué · Écran 65" · Éclairage indirect', positionX: 0, positionY: 1.1, positionZ: -2.4 }
             ]
         },
         {
             id: '2', nomPiece: 'Cuisine — 18 m²', ordre: 1,
-            positionX: 7.5, positionY: 1.6, positionZ: -3.5,
-            rotationX: 0, rotationY: -Math.PI * 0.6, rotationZ: 0,
+            positionX: 0.5, positionY: 1.65, positionZ: -1.5,  // INTÉRIEUR room
+            rotationX: 0, rotationY: -Math.PI / 2, rotationZ: 0, // face à l'est (+X)
             hotspots: [
-                { id: 'h4', libelle: 'Équipements', contenu: 'Cuisine équipée inox · Îlot central avec bar · Hotte intégrée', positionX: 8.5, positionY: 1.1, positionZ: -5.8 },
-                { id: 'h5', libelle: 'Plan de travail', contenu: 'Inox brossé 4ml · Rangements plafond', positionX: 10, positionY: 1.5, positionZ: -4 }
+                { id: 'h4', libelle: 'Cuisine équipée', contenu: 'Plan de travail inox · Meubles blancs · Hotte design', positionX: 2.0, positionY: 1.1, positionZ: -2.2 },
+                { id: 'h5', libelle: 'Îlot central', contenu: 'Îlot 1.2m · Plan inox · Bar tabourets · Coin repas', positionX: 1.8, positionY: 0.95, positionZ: -0.3 }
             ]
         },
         {
             id: '3', nomPiece: 'Chambre principale — 22 m²', ordre: 2,
-            positionX: -6, positionY: 1.6, positionZ: 5,
-            rotationX: 0, rotationY: Math.PI * 0.25, rotationZ: 0,
+            positionX: -1.5, positionY: 1.65, positionZ: 1.8,  // INTÉRIEUR room
+            rotationX: 0, rotationY: Math.PI, rotationZ: 0,    // face au nord (−Z)
             hotspots: [
-                { id: 'h6', libelle: 'Lit & literie', contenu: 'Lit king-size 200×200 · Tête de lit bois massif · Oreillers premium', positionX: -7, positionY: 0.9, positionZ: 4 },
-                { id: 'h7', libelle: 'Armoire & rangements', contenu: 'Armoire 2m · Miroir coulissant · Dressing intégré 6 m²', positionX: -3.5, positionY: 1.4, positionZ: 5.5 }
+                { id: 'h6', libelle: 'Lit king-size', contenu: 'Lit 200×200 · Tête de lit bois massif · Linge de lit haut de gamme', positionX: -1.5, positionY: 0.7, positionZ: 0.2 },
+                { id: 'h7', libelle: 'Armoire & rangements', contenu: 'Armoire 1.8m · Miroir coulissant · Dressing intégré', positionX: 0.8, positionY: 1.4, positionZ: 0.4 }
             ]
         }
     ];
@@ -104,11 +106,30 @@ function initialiserViewer(modele3DUrl) {
     scene = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color4(0.75, 0.88, 0.98, 1);
 
-    // Caméra FPS confortable
-    camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 1.65, 0), scene);
-    camera.minZ = 0.05;
-    camera.fov  = 1.05;
-    camera.setTarget(new BABYLON.Vector3(0, 1.65, -4));
+    // ── Caméra FPS avec contrôles clavier + souris ──────────────
+    camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 1.65, 0.5), scene);
+    camera.minZ  = 0.05;
+    camera.fov   = 1.05;
+    camera.speed = 0.08;
+    camera.angularSensibility = 600;
+    camera.inertia = 0.5;
+
+    // Touches : WASD + flèches
+    camera.keysUp    = [87, 38]; // W / ↑
+    camera.keysDown  = [83, 40]; // S / ↓
+    camera.keysLeft  = [65, 37]; // A / ←
+    camera.keysRight = [68, 39]; // D / →
+
+    // Attache le canvas (active souris + clavier)
+    camera.attachControl(canvas, true);
+
+    // ── Collisions + gravité ────────────────────────────────────
+    scene.gravity          = new BABYLON.Vector3(0, -15, 0);
+    scene.collisionsEnabled = true;
+    camera.checkCollisions  = true;
+    camera.applyGravity     = true;
+    camera.ellipsoid        = new BABYLON.Vector3(0.35, 0.85, 0.35);
+    camera.ellipsoidOffset  = new BABYLON.Vector3(0, 0.85, 0);
 
     if (modele3DUrl) {
         chargerModeleGLB(modele3DUrl);
@@ -228,11 +249,11 @@ function creerSceneDemo() {
     // ÉCLAIRAGE RÉALISTE
     // ══════════════════════════════════════════════════════════
 
-    // Lumière ambiante douce (rebond de lumière)
+    // Lumière ambiante (assez forte pour voir clairement la scène)
     const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
-    hemi.intensity   = 0.35;
-    hemi.diffuse     = new BABYLON.Color3(0.95, 0.92, 0.88);
-    hemi.groundColor = new BABYLON.Color3(0.30, 0.22, 0.15);
+    hemi.intensity   = 0.70;
+    hemi.diffuse     = new BABYLON.Color3(1.0, 0.97, 0.92);
+    hemi.groundColor = new BABYLON.Color3(0.50, 0.38, 0.28);
 
     // Soleil directionnel (lumière principale)
     const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(-0.4, -1, 0.6), scene);
@@ -284,20 +305,21 @@ function creerSceneDemo() {
     // ══════════════════════════════════════════════════════════
     const W = 8, D = 6, H = 2.7;
 
-    // Sol (reçoit les ombres)
-    const sol = box('sol', W, 0.02, D, 0, -0.01, 0, mParquet, sg);
+    // Sol (reçoit ombres + collision)
+    const sol = box('sol', W, 0.14, D, 0, -0.07, 0, mParquet, sg);
     sol.receiveShadows = true;
+    sol.checkCollisions = true;
 
-    box('ceil', W, 0.06, D, 0, H+0.03, 0, mCeil, null);
+    box('ceil', W, 0.14, D, 0, H+0.07, 0, mCeil, null);
 
-    // Murs
+    // Murs avec collision
     const murs = [
-        box('mN', W, H, 0.14, 0,    H/2, -D/2, mWall, null),
-        box('mS', W, H, 0.14, 0,    H/2,  D/2, mWall, null),
-        box('mW', 0.14, H, D, -W/2, H/2,  0,   mWall, null),
-        box('mE', 0.14, H, D,  W/2, H/2,  0,   mWall, null),
+        box('mN', W, H, 0.18, 0,    H/2, -D/2, mWall, null),
+        box('mS', W, H, 0.18, 0,    H/2,  D/2, mWall, null),
+        box('mW', 0.18, H, D, -W/2, H/2,  0,   mWall, null),
+        box('mE', 0.18, H, D,  W/2, H/2,  0,   mWall, null),
     ];
-    murs.forEach(m => m.receiveShadows = true);
+    murs.forEach(m => { m.receiveShadows = true; m.checkCollisions = true; });
 
     // Plinthes
     box('plN',  W, 0.10, 0.025, 0,   0.05, -D/2+0.08, mPlinth, null);
@@ -518,14 +540,20 @@ function naviguerVers(index) {
     indexCourant = index;
     const point = pointsVisite[index];
 
-    const cible = new BABYLON.Vector3(point.positionX, point.positionY, point.positionZ);
+    // Téléportation fluide vers la position
+    const dest = new BABYLON.Vector3(point.positionX, point.positionY, point.positionZ);
     BABYLON.Animation.CreateAndStartAnimation(
         'deplacement', camera, 'position',
-        60, 30, camera.position, cible,
+        60, 25, camera.position.clone(), dest,
         BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
     );
 
-    camera.rotation = new BABYLON.Vector3(point.rotationX, point.rotationY, point.rotationZ);
+    // Orientation caméra (rotation Y uniquement pour rester naturel)
+    camera.rotation = new BABYLON.Vector3(
+        point.rotationX || 0,
+        point.rotationY || 0,
+        0
+    );
 
     document.getElementById('piece-courante').textContent = point.nomPiece;
     document.getElementById('btn-precedent').disabled = index === 0;
