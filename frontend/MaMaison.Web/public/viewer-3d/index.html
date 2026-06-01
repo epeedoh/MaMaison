@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MaMaison — Visite 3D</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/loaders/babylonjs.loaders.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="viewer-container">
+        <canvas id="renderCanvas"></canvas>
+
+        <div id="ui-overlay">
+            <div id="villa-info">
+                <h2 id="villa-titre">Villa Démo</h2>
+                <span id="villa-prix"></span>
+            </div>
+
+            <div id="navigation">
+                <button id="btn-precedent" onclick="naviguerPrecedent()">← Précédent</button>
+                <span id="piece-courante">Salon</span>
+                <button id="btn-suivant" onclick="naviguerSuivant()">Suivant →</button>
+            </div>
+
+            <button id="btn-retour" onclick="retourFiche()">← Retour à la fiche</button>
+        </div>
+
+        <div id="hotspot-panel" class="hidden">
+            <button id="hotspot-close" onclick="fermerHotspot()">✕</button>
+            <h3 id="hotspot-titre"></h3>
+            <p id="hotspot-contenu"></p>
+        </div>
+
+        <div id="loading">
+            <div class="spinner"></div>
+            <p>Chargement de la villa...</p>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
