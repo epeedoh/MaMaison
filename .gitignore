@@ -33,6 +33,9 @@ assets/models/*.glb
 assets/textures/*.png
 assets/textures/*.jpg
 
+# BabylonJS local (>8MB, regénérer avec npm run download-babylon)
+frontend/**/public/viewer-3d/libs/
+
 # IDE
 .idea/
 *.swp
