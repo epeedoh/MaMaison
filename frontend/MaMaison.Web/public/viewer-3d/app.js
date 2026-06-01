@@ -13,16 +13,27 @@ const params = new URLSearchParams(window.location.search);
 villaId = params.get('villaId');
 
 window.addEventListener('DOMContentLoaded', () => {
-    if (!villaId) {
+    // Timeout global 8s : si rien ne se passe, mode démo
+    const securite = setTimeout(() => {
+        console.warn('Timeout — passage en mode démo');
         chargerDemoLocal();
-    } else {
-        chargerVillaDepuisApi(villaId);
-    }
+    }, 8000);
+
+    const lancer = villaId
+        ? chargerVillaDepuisApi(villaId)
+        : Promise.resolve(chargerDemoLocal());
+
+    lancer.finally(() => clearTimeout(securite));
 });
 
 async function chargerVillaDepuisApi(id) {
     try {
-        const res = await fetch(`${API_BASE}/villas/${id}`);
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 5000);
+
+        const res = await fetch(`${API_BASE}/villas/${id}`, { signal: ctrl.signal });
+        clearTimeout(timer);
+
         if (!res.ok) throw new Error('Villa non trouvée');
         const villa = await res.json();
 
@@ -32,9 +43,10 @@ async function chargerVillaDepuisApi(id) {
                 .format(villa.prix);
 
         pointsVisite = villa.pointsVisite || [];
-        initialiserViewer(villa.modele3DUrl);
+        // Pas de GLB réel pour MVP → démo enrichie avec données API
+        initialiserViewer(null);
     } catch (e) {
-        console.error(e);
+        console.error('API indisponible, mode démo:', e.message);
         chargerDemoLocal();
     }
 }
@@ -75,6 +87,13 @@ function chargerDemoLocal() {
 }
 
 function initialiserViewer(modele3DUrl) {
+    if (typeof BABYLON === 'undefined') {
+        console.error('BabylonJS non chargé');
+        document.getElementById('loading').innerHTML =
+            '<p style="color:#f59e0b;font-size:1rem">⚠️ BabylonJS non disponible.<br>Vérifiez votre connexion internet.</p>';
+        return;
+    }
+
     const canvas = document.getElementById('renderCanvas');
     engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
     scene = new BABYLON.Scene(engine);
