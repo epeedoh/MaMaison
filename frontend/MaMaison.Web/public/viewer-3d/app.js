@@ -98,17 +98,17 @@ function initialiserViewer(modele3DUrl) {
     }
 
     const canvas = document.getElementById('renderCanvas');
-    engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    engine = new BABYLON.Engine(canvas, true, {
+        preserveDrawingBuffer: true, stencil: true, antialias: true
+    });
     scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.75, 0.88, 0.98, 1);
 
-    scene.clearColor = new BABYLON.Color4(0.05, 0.05, 0.08, 1);
-
-    camera = new BABYLON.FreeCamera('camera', BABYLON.Vector3.Zero(), scene);
-    camera.minZ = 0.1;
-    camera.fov = 1.0;
-
-    const lumiere = new BABYLON.HemisphericLight('lumiere', new BABYLON.Vector3(0, 1, 0), scene);
-    lumiere.intensity = 0.8;
+    // Caméra FPS confortable
+    camera = new BABYLON.FreeCamera('camera', new BABYLON.Vector3(0, 1.65, 0), scene);
+    camera.minZ = 0.05;
+    camera.fov  = 1.05;
+    camera.setTarget(new BABYLON.Vector3(0, 1.65, -4));
 
     if (modele3DUrl) {
         chargerModeleGLB(modele3DUrl);
@@ -139,220 +139,353 @@ function chargerModeleGLB(url) {
 }
 
 /* ================================================================
-   SCÈNE DÉMO RÉALISTE — Villa Palm Beach
+   HELPERS PBR
    ================================================================ */
-function creerSceneDemo() {
-    // ── Fond + lumières ──────────────────────────────────────────
-    scene.clearColor = new BABYLON.Color4(0.55, 0.72, 0.90, 1); // ciel bleu doux
-
-    // Lumière ambiante principale
-    const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
-    hemi.intensity = 0.85;
-    hemi.diffuse   = new BABYLON.Color3(1, 0.97, 0.92);
-    hemi.groundColor = new BABYLON.Color3(0.45, 0.35, 0.28);
-
-    // Lumière soleil (fenêtre gauche)
-    const soleil = new BABYLON.DirectionalLight('soleil', new BABYLON.Vector3(0.4, -0.8, 0.5), scene);
-    soleil.intensity = 0.5;
-    soleil.diffuse   = new BABYLON.Color3(1, 0.95, 0.82);
-    soleil.position  = new BABYLON.Vector3(-8, 5, -3);
-
-    // ── Matériaux ────────────────────────────────────────────────
-    const matParquet = creerMateriau('parquet', 0.72, 0.52, 0.30, 0.12); // chêne clair
-    const matMur     = creerMateriau('mur',     0.96, 0.95, 0.92, 0.03); // blanc cassé
-    const matPlafond = creerMateriau('plafond', 0.99, 0.99, 0.99, 0.02); // blanc pur
-    const matPlinthe = creerMateriau('plinthe', 0.88, 0.87, 0.85, 0.05);
-    const matCanape  = creerMateriau('canape',  0.38, 0.42, 0.52, 0.04); // gris-bleu
-    const matCoussin = creerMateriau('coussin', 0.96, 0.94, 0.88, 0.02); // crème
-    const matTable   = creerMateriau('table',   0.14, 0.09, 0.06, 0.15); // noyer foncé
-    const matTablePied = creerMateriau('tpied', 0.75, 0.65, 0.20, 0.35); // laiton
-    const matTV      = creerMateriau('tv',      0.04, 0.04, 0.04, 0.02); // noir
-    const matMeuble  = creerMateriau('meuble',  0.96, 0.96, 0.96, 0.05); // blanc laqué
-    const matBois    = creerMateriau('bois',    0.55, 0.38, 0.22, 0.08); // bois moyen
-    const matInox    = creerMateriau('inox',    0.70, 0.70, 0.72, 0.45); // inox
-    const matVitro   = creerMateriau('vitro',   0.25, 0.55, 0.80, 0.10); // verre bleu
-    const matLit     = creerMateriau('lit',     0.92, 0.88, 0.84, 0.03); // lin naturel
-    const matTete    = creerMateriau('tete',    0.22, 0.16, 0.12, 0.04); // bois tête lit
-    const matTapis   = creerMateriau('tapis',   0.45, 0.32, 0.24, 0.01); // terracotta
-    const matLampe   = creerMateriau('lampe',   1.0, 0.90, 0.60, 0.05, 0.6); // lueur
-
-    // ── ARCHITECTURE DE BASE ─────────────────────────────────────
-    const LX = 22, LZ = 16, H = 3.2;
-
-    // Sol parquet
-    creerBox('sol', LX, 0.12, LZ, 0, -0.06, 0, matParquet);
-    // Plafond
-    creerBox('plafond', LX, 0.12, LZ, 0, H + 0.06, 0, matPlafond);
-
-    // Murs
-    creerBox('mFond',    LX,  H, 0.18,  0,    H/2, -LZ/2, matMur);
-    creerBox('mArriere', LX,  H, 0.18,  0,    H/2,  LZ/2, matMur);
-    creerBox('mGauche',  0.18, H, LZ,   -LX/2, H/2, 0,    matMur);
-    creerBox('mDroite',  0.18, H, LZ,    LX/2, H/2, 0,    matMur);
-
-    // Plinthes
-    [[LX, -LZ/2], [LX, LZ/2]].forEach(([w, z], i) =>
-        creerBox(`pl${i}`, w, 0.12, 0.04, 0, 0.06, z, matPlinthe));
-    [[-LX/2, LZ], [LX/2, LZ]].forEach(([x, d], i) =>
-        creerBox(`plv${i}`, 0.04, 0.12, d, x, 0.06, 0, matPlinthe));
-
-    // Fenêtre lumineuse (mur gauche)
-    const fenMat = creerMateriau('fen', 0.82, 0.93, 1.0, 0.1, 0.5);
-    fenMat.alpha = 0.35;
-    creerBox('fenetre', 0.05, 1.8, 2.5, -LX/2 + 0.1, 1.8, -2, fenMat);
-    const lumiereInterieure = new BABYLON.PointLight('lumFen', new BABYLON.Vector3(-9, 2.5, -2), scene);
-    lumiereInterieure.intensity = 0.6;
-    lumiereInterieure.diffuse = new BABYLON.Color3(1, 0.97, 0.88);
-    lumiereInterieure.range = 12;
-
-    // ── SALON ────────────────────────────────────────────────────
-    // Tapis
-    creerBox('tapis', 5, 0.04, 3.5, 0, 0.02, 0, matTapis);
-
-    // Canapé 3 places
-    creerBox('canBase',  2.4, 0.45, 0.95,  0.2, 0.225, 1.8, matCanape);
-    creerBox('canDos',   2.4, 0.55, 0.20,  0.2, 0.725, 2.2, matCanape);
-    creerBox('canBrasG', 0.20, 0.55, 0.95, -1.0, 0.475, 1.8, matCanape);
-    creerBox('canBrasD', 0.20, 0.55, 0.95,  1.4, 0.475, 1.8, matCanape);
-    // Pieds canapé
-    [[-0.9,1.38],[1.3,1.38],[-0.9,2.22],[1.3,2.22]].forEach(([x,z], i) =>
-        creerBox(`cpied${i}`, 0.07, 0.1, 0.07, x, 0.05, z, matTablePied));
-    // Coussins
-    [-0.55, 0.2, 0.9].forEach((x, i) =>
-        creerBox(`cous${i}`, 0.55, 0.3, 0.12, x, 0.62, 1.92, matCoussin));
-
-    // Méridienne/fauteuil (angle)
-    creerBox('fauBase', 1.0, 0.45, 0.85, -2.8, 0.225, 1.8, matCanape);
-    creerBox('fauDos',  1.0, 0.55, 0.18, -2.8, 0.725, 2.18, matCanape);
-    creerBox('fauBras', 0.18, 0.5, 0.85, -3.24, 0.45, 1.8, matCanape);
-    creerBox('fauCous', 0.75, 0.28, 0.1, -2.8, 0.62, 1.9, matCoussin);
-
-    // Table basse
-    creerBox('tablePlateau', 1.2, 0.06, 0.7, 0, 0.45, 0.6, matTable);
-    [[-0.5, 0.28], [0.5, 0.28], [-0.5, 0.92], [0.5, 0.92]].forEach(([x, z], i) =>
-        creerBox(`tpied${i}`, 0.05, 0.42, 0.05, x, 0.21, z, matTablePied));
-    // Livre + vase déco
-    creerBox('livre', 0.25, 0.04, 0.18, -0.2, 0.49, 0.6, creerMateriau('lv', 0.8, 0.2, 0.2, 0.02));
-    const vase = BABYLON.MeshBuilder.CreateCylinder('vase', { height: 0.22, diameterTop: 0.08, diameterBottom: 0.06 }, scene);
-    vase.position.set(0.3, 0.59, 0.55);
-    vase.material = creerMateriau('vm', 0.85, 0.75, 0.55, 0.15);
-
-    // Meuble TV
-    creerBox('meuTV',  3.5, 0.5, 0.45,  0, 0.25, -5.5, matMeuble);
-    creerBox('meuTVP', 3.5, 0.04, 0.45, 0, 0.51, -5.5, creerMateriau('tpn', 0.78, 0.6, 0.35));
-    creerBox('tv',     1.8, 1.05, 0.06, 0, 1.3, -5.58, matTV);
-    creerBox('tvBord', 1.85, 1.1, 0.04, 0, 1.3, -5.55, creerMateriau('tvb', 0.1, 0.1, 0.1));
-    // Pied TV
-    creerBox('tvPied', 0.08, 0.35, 0.12, 0, 0.69, -5.56, matInox);
-    // Écran (légère lueur)
-    creerBox('ecran', 1.74, 0.99, 0.01, 0, 1.3, -5.54, creerMateriau('ec', 0.1, 0.2, 0.4, 0.02, 0.15));
-
-    // Lampadaire
-    creerBox('lampPied', 0.04, 1.7, 0.04, 3.8, 0.85, 1.5, matInox);
-    creerBox('lampPied2', 0.35, 0.03, 0.35, 3.8, 0.04, 1.5, matInox);
-    const abajour = BABYLON.MeshBuilder.CreateCylinder('abajour',
-        { height: 0.35, diameterTop: 0.45, diameterBottom: 0.1, tessellation: 24 }, scene);
-    abajour.position.set(3.8, 1.87, 1.5);
-    abajour.material = matLampe;
-    const ptLamp = new BABYLON.PointLight('ptlamp', new BABYLON.Vector3(3.8, 1.7, 1.5), scene);
-    ptLamp.intensity = 0.5;
-    ptLamp.diffuse = new BABYLON.Color3(1, 0.92, 0.72);
-    ptLamp.range = 6;
-
-    // ── CUISINE ──────────────────────────────────────────────────
-    const KX = 8, KZ = 8; // coin cuisine à droite (+x)
-    const cx = LX/2 - 2, cz = -LZ/2 + 4;
-
-    // Sol cuisine (carrelage)
-    const matCarrelage = creerMateriau('carrelage', 0.88, 0.86, 0.83, 0.2);
-    creerBox('solCuis', 7, 0.13, 7.5, cx, 0.065, cz, matCarrelage);
-
-    // Plan de travail L
-    creerBox('plan1', 4, 0.06, 0.65, cx-1, 0.9, cz-3, matInox);    // façade
-    creerBox('plan2', 0.65, 0.06, 4,  cx+1.7, 0.9, cz-0.8, matInox); // côté
-    // Meubles bas
-    creerBox('bas1', 4, 0.86, 0.62, cx-1, 0.43, cz-3, matMeuble);
-    creerBox('bas2', 0.62, 0.86, 4, cx+1.7, 0.43, cz-0.8, matMeuble);
-    // Meubles hauts
-    creerBox('haut1', 3.8, 0.7, 0.38, cx-1, 2.25, cz-3.05, matMeuble);
-    creerBox('haut2', 0.38, 0.7, 3, cx+1.78, 2.25, cz-0.3, matMeuble);
-    // Poignées
-    for (let i = 0; i < 4; i++) {
-        creerBox(`pg${i}`, 0.03, 0.03, 0.32, cx - 2.4 + i*1.2, 0.85, cz - 2.7, matInox);
-        creerBox(`pgh${i}`, 0.03, 0.03, 0.32, cx - 2.4 + i*1.15, 2.25, cz - 2.82, matInox);
-    }
-    // Îlot central
-    creerBox('ilot', 1.4, 0.92, 0.8, cx-1, 0.46, cz+0.8, matMeuble);
-    creerBox('ilotTop', 1.4, 0.05, 0.8, cx-1, 0.945, cz+0.8, matInox);
-    // Tabourets
-    [-0.5, 0.5].forEach((x, i) => {
-        creerBox(`tab${i}`, 0.32, 0.02, 0.32, cx - 1 + x, 0.74, cz + 1.6, matBois);
-        creerBox(`tabp${i}`, 0.04, 0.72, 0.04, cx - 1 + x, 0.36, cz + 1.6, matInox);
-    });
-    // Hotte
-    creerBox('hotte', 0.9, 0.5, 0.42, cx-1, 2.0, cz-3.1, creerMateriau('hm', 0.6, 0.6, 0.62, 0.4));
-    // Lumière cuisine (spot)
-    const spotCuis = new BABYLON.PointLight('spotCuis', new BABYLON.Vector3(cx-1, 2.8, cz-1), scene);
-    spotCuis.intensity = 0.7;
-    spotCuis.diffuse = new BABYLON.Color3(1, 0.97, 0.90);
-    spotCuis.range = 7;
-
-    // ── CHAMBRE PRINCIPALE ───────────────────────────────────────
-    const bx = -LX/2 + 4, bz = LZ/2 - 4;
-
-    // Sol chambre (parquet plus sombre)
-    const matParqCh = creerMateriau('parqCh', 0.55, 0.38, 0.22, 0.08);
-    creerBox('solCh', 8, 0.13, 8.5, bx, 0.065, bz, matParqCh);
-
-    // Lit king-size
-    const lw = 2.0, ll = 2.2;
-    creerBox('lit',       lw, 0.32, ll,    bx, 0.16, bz-0.5, matLit);
-    creerBox('litDrap',   lw, 0.04, ll,    bx, 0.34, bz-0.5, matCoussin);
-    creerBox('teteLit',   lw, 0.9,  0.14, bx, 0.65, bz-1.55, matTete);
-    creerBox('piedLit',   lw, 0.28, 0.12, bx, 0.14, bz+0.6,  matTete);
-    // Oreillers
-    [-0.45, 0.45].forEach((x, i) =>
-        creerBox(`oreiller${i}`, 0.55, 0.14, 0.36, bx + x, 0.4, bz-1.1, matCoussin));
-    // Tables de chevet
-    [-1.25, 1.25].forEach((x, i) => {
-        creerBox(`chevet${i}`, 0.5, 0.55, 0.42, bx+x, 0.275, bz-0.5, matTete);
-        // Lampe de chevet
-        const lc = BABYLON.MeshBuilder.CreateCylinder(`lamc${i}`,
-            { height: 0.28, diameterTop: 0.22, diameterBottom: 0.06, tessellation: 20 }, scene);
-        lc.position.set(bx+x, 0.69, bz-0.5);
-        lc.material = matLampe;
-        creerBox(`lamcPied${i}`, 0.03, 0.35, 0.03, bx+x, 0.445, bz-0.5, matInox);
-        const pl = new BABYLON.PointLight(`plch${i}`, new BABYLON.Vector3(bx+x, 0.9, bz-0.5), scene);
-        pl.intensity = 0.35;
-        pl.diffuse = new BABYLON.Color3(1, 0.88, 0.65);
-        pl.range = 3.5;
-    });
-    // Armoire
-    creerBox('armoire', 2.0, 2.4, 0.65, bx+2.8, 1.2, bz-1.55, matMeuble);
-    creerBox('armMiroir', 0.92, 2.35, 0.04, bx+2.3, 1.175, bz-1.25, matVitro);
-    [0, 0.96].forEach((dx, i) =>
-        creerBox(`armPoig${i}`, 0.03, 0.03, 0.5, bx+2.3+dx, 1.2, bz-1.22, matInox));
-    // Tapis chambre
-    creerBox('tapisCh', 2.6, 0.03, 1.8, bx, 0.015, bz+0.8, creerMateriau('tc', 0.32, 0.28, 0.55));
-
-    // Hotspots visuels
-    afficherHotspotsVisuels();
-}
-
-function creerMateriau(nom, r, g, b, spec = 0.05, emis = 0) {
+function pbr(nom, hex, rough = 0.7, metal = 0, emissive = null) {
     if (scene.getMaterialByName(nom)) return scene.getMaterialByName(nom);
-    const m = new BABYLON.StandardMaterial(nom, scene);
-    m.diffuseColor  = new BABYLON.Color3(r, g, b);
-    m.specularColor = new BABYLON.Color3(spec, spec, spec);
-    if (emis > 0) m.emissiveColor = new BABYLON.Color3(emis * r, emis * g, emis * b);
+    const m = new BABYLON.PBRMaterial(nom, scene);
+    m.albedoColor  = BABYLON.Color3.FromHexString(hex);
+    m.roughness    = rough;
+    m.metallic     = metal;
+    m.ambientColor = new BABYLON.Color3(1, 1, 1);
+    if (emissive) m.emissiveColor = BABYLON.Color3.FromHexString(emissive);
     return m;
 }
 
-function creerBox(nom, w, h, d, x, y, z, mat) {
+function box(nom, w, h, d, x, y, z, mat, shadows) {
     const b = BABYLON.MeshBuilder.CreateBox(nom, { width: w, height: h, depth: d }, scene);
     b.position.set(x, y, z);
-    if (mat) b.material = mat;
+    b.material = mat;
+    b.receiveShadows = true;
+    if (shadows) shadows.addShadowCaster(b);
     return b;
+}
+
+function cyl(nom, h, dTop, dBot, x, y, z, mat, shadows, tess = 20) {
+    const c = BABYLON.MeshBuilder.CreateCylinder(nom, { height: h, diameterTop: dTop, diameterBottom: dBot, tessellation: tess }, scene);
+    c.position.set(x, y, z);
+    c.material = mat;
+    c.receiveShadows = true;
+    if (shadows) shadows.addShadowCaster(c);
+    return c;
+}
+
+/* Texture parquet procédurale (canvas 2D — aucun CDN) */
+function texParquet() {
+    const dt = new BABYLON.DynamicTexture('texParquet', { width: 512, height: 512 }, scene);
+    const ctx = dt.getContext();
+    const planks = 8;
+    const ph = 512 / planks;
+    const palette = ['#8B6340','#7A5530','#9C7248','#6E4B28','#8A6038','#7B5432','#A07848','#6A472A'];
+    for (let i = 0; i < planks; i++) {
+        ctx.fillStyle = palette[i % palette.length];
+        ctx.fillRect(0, i * ph, 512, ph - 1.5);
+        // grain
+        ctx.globalAlpha = 0.07;
+        for (let x = 0; x < 512; x += 14 + Math.random() * 10) {
+            ctx.strokeStyle = '#5A3818';
+            ctx.lineWidth = 0.5 + Math.random();
+            ctx.beginPath();
+            ctx.moveTo(x + Math.random() * 6, i * ph);
+            ctx.lineTo(x + Math.random() * 6, (i + 1) * ph);
+            ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+        // joint
+        ctx.fillStyle = '#3A2510';
+        ctx.fillRect(0, (i + 1) * ph - 1.5, 512, 1.5);
+    }
+    dt.update();
+    dt.uScale = 4; dt.vScale = 3;
+    return dt;
+}
+
+/* Texture carrelage procédurale */
+function texCarrelage() {
+    const dt = new BABYLON.DynamicTexture('texCarrelage', { width: 512, height: 512 }, scene);
+    const ctx = dt.getContext();
+    const n = 8; const s = 512 / n;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+        const v = 220 + (i + j) % 2 * 12;
+        ctx.fillStyle = `rgb(${v},${v-4},${v-8})`;
+        ctx.fillRect(j * s + 1.5, i * s + 1.5, s - 3, s - 3);
+    }
+    ctx.strokeStyle = '#BEB8B2'; ctx.lineWidth = 3;
+    for (let i = 0; i <= n; i++) {
+        ctx.beginPath(); ctx.moveTo(0, i*s); ctx.lineTo(512, i*s); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(i*s, 0); ctx.lineTo(i*s, 512); ctx.stroke();
+    }
+    dt.update(); dt.uScale = 3; dt.vScale = 3;
+    return dt;
+}
+
+/* ================================================================
+   SCÈNE ARCHVIZ PBR — Villa Palm Beach
+   Ombres portées · Tone mapping ACES · Textures procédurales
+   ================================================================ */
+function creerSceneDemo() {
+    // ══════════════════════════════════════════════════════════
+    // ÉCLAIRAGE RÉALISTE
+    // ══════════════════════════════════════════════════════════
+
+    // Lumière ambiante douce (rebond de lumière)
+    const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0, 1, 0), scene);
+    hemi.intensity   = 0.35;
+    hemi.diffuse     = new BABYLON.Color3(0.95, 0.92, 0.88);
+    hemi.groundColor = new BABYLON.Color3(0.30, 0.22, 0.15);
+
+    // Soleil directionnel (lumière principale)
+    const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(-0.4, -1, 0.6), scene);
+    sun.position  = new BABYLON.Vector3(6, 8, -4);
+    sun.intensity = 1.1;
+    sun.diffuse   = new BABYLON.Color3(1, 0.97, 0.88);
+
+    // ShadowGenerator (ombres douces ESM)
+    const sg = new BABYLON.ShadowGenerator(2048, sun);
+    sg.useExponentialShadowMap = true;
+    sg.bias = 0.0008;
+
+    // ══════════════════════════════════════════════════════════
+    // MATÉRIAUX PBR
+    // ══════════════════════════════════════════════════════════
+    const mWall   = pbr('wall',   '#F5F2ED', 0.92, 0.0);
+    const mCeil   = pbr('ceil',   '#FAFAF8', 0.98, 0.0);
+    const mPlinth = pbr('plinth', '#E8E5E0', 0.85, 0.0);
+    const mSofa   = pbr('sofa',   '#5C6478', 0.85, 0.0);  // gris-bleu ardoise
+    const mCush   = pbr('cush',   '#F0EBE0', 0.90, 0.0);  // crème
+    const mNoyer  = pbr('noyer',  '#2C1A0E', 0.55, 0.0);  // noyer foncé
+    const mLaiton = pbr('laiton', '#C8A84B', 0.25, 0.85); // laiton métallique
+    const mInox   = pbr('inox',   '#C0C0C4', 0.15, 0.90); // acier inox
+    const mTV     = pbr('tv',     '#080808', 0.90, 0.0);
+    const mLaqué  = pbr('laque',  '#F8F8F6', 0.30, 0.0);  // blanc laqué brillant
+    const mTapis  = pbr('tapis',  '#8B6355', 0.98, 0.0);  // terracotta mat
+    const mLin    = pbr('lin',    '#E8DFD0', 0.95, 0.0);  // lin naturel
+    const mTete   = pbr('tete',   '#3D2B1A', 0.60, 0.0);  // bois tête de lit
+    const mGlass  = pbr('glass',  '#A8C8E8', 0.05, 0.0);  // verre
+    const mTerr   = pbr('terr',   '#C4956A', 0.70, 0.0);  // terracotta
+
+    // Matériau émissif lampe
+    const mLamp = new BABYLON.PBRMaterial('lamp', scene);
+    mLamp.albedoColor = new BABYLON.Color3(1, 0.95, 0.75);
+    mLamp.emissiveColor = new BABYLON.Color3(0.8, 0.6, 0.2);
+    mLamp.roughness = 0.8;
+
+    // Parquet — texture procédurale canvas
+    const mParquet = pbr('parquet', '#9B7045', 0.65, 0.0);
+    mParquet.albedoTexture = texParquet();
+
+    // Carrelage — texture procédurale
+    const mCarrel = pbr('carrel', '#D8D4CE', 0.30, 0.0);
+    mCarrel.albedoTexture = texCarrelage();
+    mCarrel.roughness = 0.25;
+
+    // ══════════════════════════════════════════════════════════
+    // ARCHITECTURE — Appartement 8×6m · H=2.7m
+    // ══════════════════════════════════════════════════════════
+    const W = 8, D = 6, H = 2.7;
+
+    // Sol (reçoit les ombres)
+    const sol = box('sol', W, 0.02, D, 0, -0.01, 0, mParquet, sg);
+    sol.receiveShadows = true;
+
+    box('ceil', W, 0.06, D, 0, H+0.03, 0, mCeil, null);
+
+    // Murs
+    const murs = [
+        box('mN', W, H, 0.14, 0,    H/2, -D/2, mWall, null),
+        box('mS', W, H, 0.14, 0,    H/2,  D/2, mWall, null),
+        box('mW', 0.14, H, D, -W/2, H/2,  0,   mWall, null),
+        box('mE', 0.14, H, D,  W/2, H/2,  0,   mWall, null),
+    ];
+    murs.forEach(m => m.receiveShadows = true);
+
+    // Plinthes
+    box('plN',  W, 0.10, 0.025, 0,   0.05, -D/2+0.08, mPlinth, null);
+    box('plS',  W, 0.10, 0.025, 0,   0.05,  D/2-0.08, mPlinth, null);
+    box('plW', 0.025, 0.10, D, -W/2+0.08, 0.05, 0,    mPlinth, null);
+    box('plE', 0.025, 0.10, D,  W/2-0.08, 0.05, 0,    mPlinth, null);
+
+    // Fenêtre (mur ouest) — lumière volumique
+    const fenMat = new BABYLON.PBRMaterial('fen', scene);
+    fenMat.albedoColor = new BABYLON.Color3(0.7, 0.88, 1.0);
+    fenMat.alpha = 0.18;
+    fenMat.roughness = 0.05;
+    fenMat.emissiveColor = new BABYLON.Color3(0.6, 0.75, 0.9);
+    const fen = box('fen', 0.06, 1.6, 2.2, -W/2+0.06, 1.5, -0.5, fenMat, null);
+    // Encadrement fenêtre
+    [[-0.25,1.68],[-0.25,0.32],[-0.25,2.1]].forEach(([z,y],i)=> {
+        const f = box(`fenC${i}`, 0.08, 0.06, 2.3, -W/2+0.06, y, -0.5, mLaqué, null);
+    });
+
+    // Éclairage fenêtre
+    const lumFen = new BABYLON.PointLight('lumFen', new BABYLON.Vector3(-W/2+1.5, 1.8, -0.5), scene);
+    lumFen.intensity = 0.8; lumFen.range = 10;
+    lumFen.diffuse = new BABYLON.Color3(0.95, 0.97, 1.0);
+
+    // ══════════════════════════════════════════════════════════
+    // SALON
+    // ══════════════════════════════════════════════════════════
+
+    // Tapis
+    const tapis = box('tapis', 3.2, 0.012, 2.2, 0.2, 0.006, 0.8, mTapis, sg);
+    tapis.receiveShadows = true;
+
+    // Canapé 3 places + dossier
+    sg.addShadowCaster(box('cBase', 2.2, 0.42, 0.88, 0.2, 0.21, 2.1, mSofa, sg));
+    sg.addShadowCaster(box('cDos',  2.2, 0.52, 0.16, 0.2, 0.68, 2.48, mSofa, sg));
+    sg.addShadowCaster(box('cBrG', 0.16, 0.50, 0.88, -0.9, 0.45, 2.1, mSofa, sg));
+    sg.addShadowCaster(box('cBrD', 0.16, 0.50, 0.88,  1.3, 0.45, 2.1, mSofa, sg));
+    [-0.5, 0.2, 0.85].forEach((x,i) =>
+        sg.addShadowCaster(box(`cos${i}`, 0.52, 0.26, 0.10, x, 0.60, 2.2, mCush, sg)));
+    [[-0.8,1.28],[1.2,1.28],[-0.8,2.12],[1.2,2.12]].forEach(([x,z],i) =>
+        box(`cpd${i}`, 0.06, 0.08, 0.06, x, 0.04, z, mLaiton, sg));
+
+    // Fauteuil
+    sg.addShadowCaster(box('fauB', 0.88, 0.40, 0.82, -2.4, 0.20, 2.0, mSofa, sg));
+    sg.addShadowCaster(box('fauD', 0.88, 0.48, 0.14, -2.4, 0.64, 2.38, mSofa, sg));
+    sg.addShadowCaster(box('fauBr', 0.14, 0.44, 0.82, -2.82, 0.42, 2.0, mSofa, sg));
+    sg.addShadowCaster(box('fauC', 0.68, 0.24, 0.10, -2.4, 0.58, 2.1, mCush, sg));
+
+    // Table basse
+    const tb = box('tbPl', 1.1, 0.048, 0.62, 0, 0.44, 0.9, mNoyer, sg);
+    sg.addShadowCaster(tb);
+    tb.receiveShadows = true;
+    [[-0.45, 0.3], [0.45, 0.3], [-0.45, 0.9], [0.45, 0.9]].forEach(([x,z],i) =>
+        sg.addShadowCaster(box(`tbPd${i}`, 0.04, 0.40, 0.04, x, 0.20, z, mLaiton, sg)));
+    // Vase déco
+    const vase = cyl('vase', 0.28, 0.09, 0.06, 0.3, 0.58, 0.85, mTerr, sg);
+    sg.addShadowCaster(vase);
+    // Livre
+    const livMat = pbr('liv', '#CC3333', 0.9, 0);
+    sg.addShadowCaster(box('livre', 0.22, 0.03, 0.16, -0.15, 0.47, 0.9, livMat, sg));
+
+    // Meuble TV
+    sg.addShadowCaster(box('tvMeu', 3.0, 0.44, 0.40, 0, 0.22, -2.7, mLaqué, sg));
+    box('tvMeuTop', 3.0, 0.03, 0.40, 0, 0.45, -2.7, mNoyer, sg);
+    sg.addShadowCaster(box('tvS', 1.65, 0.96, 0.055, 0, 1.18, -2.72, mTV, sg));
+    box('tvBrd', 1.68, 0.98, 0.04, 0, 1.18, -2.70, pbr('tvbrd','#1A1A1A',0.7,0), sg);
+    box('tvPd', 0.07, 0.28, 0.10, 0, 0.60, -2.71, mInox, sg);
+    // Écran allumé
+    const ecMat = new BABYLON.PBRMaterial('ec', scene);
+    ecMat.albedoColor = new BABYLON.Color3(0.05, 0.15, 0.35);
+    ecMat.emissiveColor = new BABYLON.Color3(0.04, 0.12, 0.28);
+    ecMat.roughness = 1; ecMat.metallic = 0;
+    box('ecran', 1.60, 0.92, 0.01, 0, 1.18, -2.69, ecMat, null);
+
+    // Lampadaire
+    sg.addShadowCaster(box('lampB', 0.30, 0.03, 0.30, 3.4, 0.015, 1.8, mInox, sg));
+    sg.addShadowCaster(box('lampP', 0.036, 1.65, 0.036, 3.4, 0.84, 1.8, mInox, sg));
+    sg.addShadowCaster(cyl('abj', 0.32, 0.42, 0.09, 3.4, 1.82, 1.8, mLamp, sg, 24));
+    const ptL = new BABYLON.PointLight('ptl', new BABYLON.Vector3(3.4, 1.62, 1.8), scene);
+    ptL.intensity = 0.65; ptL.range = 7;
+    ptL.diffuse = new BABYLON.Color3(1, 0.90, 0.68);
+
+    // Plante (pot + tige)
+    sg.addShadowCaster(cyl('pot', 0.35, 0.25, 0.18, -3.4, 0.175, -2.2, mTerr, sg));
+    const plantMat = pbr('plant', '#2D5A27', 0.9, 0);
+    for (let i = 0; i < 5; i++) {
+        const a = (i/5)*Math.PI*2, r = 0.12+Math.random()*0.08;
+        sg.addShadowCaster(box(`pl${i}`, 0.04, 0.35+Math.random()*0.2, 0.04,
+            -3.4 + Math.cos(a)*r, 0.5+i*0.04, -2.2 + Math.sin(a)*r, plantMat, sg));
+    }
+
+    // ══════════════════════════════════════════════════════════
+    // CUISINE — coin nord-est
+    // ══════════════════════════════════════════════════════════
+    const cx = W/2 - 2.2, cz = -D/2 + 2.5;
+
+    const solCuis = box('solCuis', 4.5, 0.02, 4.5, cx+0.8, -0.005, cz+0.2, mCarrel, null);
+    solCuis.receiveShadows = true;
+
+    sg.addShadowCaster(box('kbas1', 3.0, 0.86, 0.58, cx, 0.43, cz-1.5, mLaqué, sg));
+    sg.addShadowCaster(box('kbas2', 0.58, 0.86, 2.4, cx+1.7, 0.43, cz+0.3, mLaqué, sg));
+    box('kplan1', 3.0, 0.04, 0.60, cx, 0.88, cz-1.5, mInox, sg);
+    box('kplan2', 0.60, 0.04, 2.4, cx+1.7, 0.88, cz+0.3, mInox, sg);
+    sg.addShadowCaster(box('khaut1', 2.8, 0.64, 0.34, cx, 2.1, cz-1.52, mLaqué, sg));
+    sg.addShadowCaster(box('khaut2', 0.34, 0.64, 2.0, cx+1.72, 2.1, cz+0.1, mLaqué, sg));
+    // Poignées inox
+    for (let i=0;i<3;i++) {
+        box(`kpg${i}`, 0.025,0.025,0.26, cx-0.9+i, 0.82, cz-1.25, mInox, null);
+        box(`kpgh${i}`, 0.025,0.025,0.26, cx-0.9+i, 2.06, cz-1.26, mInox, null);
+    }
+    // Îlot
+    sg.addShadowCaster(box('ilot', 1.2, 0.90, 0.70, cx-0.4, 0.45, cz+1.2, mLaqué, sg));
+    box('ilotTop', 1.2, 0.04, 0.70, cx-0.4, 0.92, cz+1.2, mInox, sg);
+    [-0.4, 0.4].forEach((x,i) => {
+        sg.addShadowCaster(box(`tab${i}`, 0.28,0.02,0.28, cx-0.4+x, 0.72, cz+1.9, mNoyer, sg));
+        sg.addShadowCaster(box(`tabP${i}`, 0.035,0.70,0.035, cx-0.4+x, 0.36, cz+1.9, mInox, sg));
+    });
+    // Hotte
+    sg.addShadowCaster(box('hotte', 0.85,0.42,0.38, cx, 1.98, cz-1.55, mInox, sg));
+    // Spot cuisine
+    const spotK = new BABYLON.PointLight('spotK', new BABYLON.Vector3(cx, 2.6, cz), scene);
+    spotK.intensity = 0.75; spotK.range = 6;
+    spotK.diffuse = new BABYLON.Color3(1, 0.98, 0.90);
+
+    // ══════════════════════════════════════════════════════════
+    // CHAMBRE — coin sud-ouest
+    // ══════════════════════════════════════════════════════════
+    const bx = -W/2 + 2.5, bz = D/2 - 2.8;
+
+    // Sol parquet plus foncé
+    const mParqCh = pbr('parqCh', '#7A5330', 0.68, 0.0);
+    mParqCh.albedoTexture = texParquet();
+    const solCh = box('solCh', 5.0, 0.02, 5.0, bx+0.2, -0.005, bz-0.2, mParqCh, null);
+    solCh.receiveShadows = true;
+
+    // Lit king
+    sg.addShadowCaster(box('litC', 1.85, 0.30, 2.0, bx, 0.15, bz, mLin, sg));
+    sg.addShadowCaster(box('litD', 1.85, 0.04, 2.0, bx, 0.32, bz, mCush, sg));
+    sg.addShadowCaster(box('tete', 1.85, 0.85, 0.12, bx, 0.63, bz-1.0, mTete, sg));
+    sg.addShadowCaster(box('pied', 1.85, 0.24, 0.10, bx, 0.12, bz+0.95, mTete, sg));
+    [-0.42,0.42].forEach((x,i) =>
+        sg.addShadowCaster(box(`ore${i}`, 0.50,0.12,0.34, bx+x, 0.38, bz-0.7, mCush, sg)));
+    // Chevets
+    [-1.12, 1.12].forEach((x,i) => {
+        sg.addShadowCaster(box(`chv${i}`, 0.46,0.50,0.38, bx+x, 0.25, bz, mTete, sg));
+        sg.addShadowCaster(cyl(`lch${i}`, 0.24, 0.20,0.055, bx+x, 0.65, bz, mLamp, sg, 18));
+        sg.addShadowCaster(box(`lchP${i}`, 0.028,0.32,0.028, bx+x, 0.41, bz, mInox, sg));
+        const plCh = new BABYLON.PointLight(`plch${i}`, new BABYLON.Vector3(bx+x, 0.82, bz), scene);
+        plCh.intensity = 0.32; plCh.range = 3.2;
+        plCh.diffuse = new BABYLON.Color3(1, 0.86, 0.62);
+    });
+    // Armoire
+    sg.addShadowCaster(box('arm', 1.8, 2.3, 0.58, bx+2.4, 1.15, bz-0.95, mLaqué, sg));
+    const gMat = new BABYLON.PBRMaterial('miroir', scene);
+    gMat.reflectionColor = new BABYLON.Color3(0.85, 0.9, 0.95);
+    gMat.roughness = 0.02; gMat.metallic = 0.9;
+    gMat.albedoColor = new BABYLON.Color3(0.7, 0.78, 0.85);
+    box('mir', 0.84, 2.25, 0.03, bx+2.0, 1.125, bz-0.68, gMat, null);
+    // Tapis chambre
+    const tapisCh = box('tapCh', 2.2, 0.01, 1.5, bx, 0.005, bz+0.9, pbr('tch','#4A3870',0.98,0), sg);
+    tapisCh.receiveShadows = true;
+
+    // ══════════════════════════════════════════════════════════
+    // POST-PROCESSING ACES
+    // ══════════════════════════════════════════════════════════
+    try {
+        const pipeline = new BABYLON.DefaultRenderingPipeline('pp', true, scene, [camera]);
+        pipeline.fxaaEnabled = true;
+        pipeline.bloomEnabled = true;
+        pipeline.bloomThreshold = 0.82;
+        pipeline.bloomWeight    = 0.22;
+        pipeline.bloomScale     = 0.5;
+        pipeline.imageProcessingEnabled = true;
+        pipeline.imageProcessing.toneMappingEnabled = true;
+        pipeline.imageProcessing.toneMappingType =
+            BABYLON.ImageProcessingConfiguration.TONEMAPPING_ACES;
+        pipeline.imageProcessing.exposure  = 1.15;
+        pipeline.imageProcessing.contrast  = 1.10;
+        pipeline.imageProcessing.vignetteEnabled = true;
+        pipeline.imageProcessing.vignetteWeight  = 2.5;
+        pipeline.imageProcessing.vignetteCameraFov = 1.05;
+        pipeline.depthOfFieldEnabled = false; // activer si perf OK
+        pipeline.sharpenEnabled = true;
+        pipeline.sharpen.edgeAmount = 0.3;
+    } catch(e) { console.warn('Pipeline non disponible:', e); }
+
+    // Hotspots
+    afficherHotspotsVisuels();
 }
 
 function afficherHotspotsVisuels() {
