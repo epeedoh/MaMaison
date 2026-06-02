@@ -69,6 +69,12 @@ export const routes: Routes = [
       import('./features/auth/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'profil',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./features/profil/profil.component').then(m => m.ProfilComponent)
+  },
+  {
     path: 'devenir-apporteur',
     loadComponent: () =>
       import('./features/demarcheur/inscription-demarcheur.component')

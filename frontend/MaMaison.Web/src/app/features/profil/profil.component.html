@@ -1,0 +1,150 @@
+<section class="hero" style="min-height:240px;padding:56px 24px 80px">
+  <div class="orb orb-1" style="opacity:.5"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ Mon espace</div>
+    <h1 class="hero-title" style="font-size:2rem">{{ auth.user()?.nom }}</h1>
+    <p class="hero-sub" style="margin-bottom:0">{{ auth.user()?.telephone }} · Profil {{ auth.user()?.role !== undefined ? ['Visiteur','Acheteur','Locataire','Propriétaire','Promoteur','Démarcheur','Agent','Vérificateur','Admin','Super Admin','Support','Partenaire'][auth.user()!.role] : '' }}</p>
+  </div>
+</section>
+
+<div class="hero-filter-wrap" style="margin-bottom:0">
+  <div class="hero-filter" style="padding:10px 16px;gap:8px">
+    @for (tab of [{id:'resume',label:'📊 Résumé'},{id:'demandes',label:'📋 Mes demandes'},{id:'annonces',label:'🔑 Mes annonces'},{id:'favoris',label:'❤️ Favoris ('+favoris.count()+')'}]; track tab.id) {
+      <button class="btn btn-sm" [class.btn-navy]="onglet()===tab.id" [class.btn-ghost]="onglet()!==tab.id" (click)="allerOnglet(tab.id)">{{ tab.label }}</button>
+    }
+    <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:#E53E3E" (click)="auth.deconnecter()">Déconnexion</button>
+  </div>
+</div>
+
+<div class="page-container" style="padding-top:40px">
+
+  <!-- ── RÉSUMÉ ── -->
+  @if (onglet() === 'resume') {
+    @if (loading()) {
+      <div class="loading-wrap"><div class="spinner"></div></div>
+    } @else {
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px">
+        @for (s of [{icon:'📋',val:stats?.nbDemandes??0,lbl:'Demandes de visite'},{icon:'🔑',val:stats?.nbLocations??0,lbl:'Annonces publiées'},{icon:'🚨',val:stats?.nbSignalements??0,lbl:'Signalements'},{icon:'❤️',val:favoris.count(),lbl:'Biens favoris'}]; track s.lbl) {
+          <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-sm);text-align:center">
+            <div style="font-size:1.8rem;margin-bottom:6px">{{ s.icon }}</div>
+            <div style="font-size:2rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.025em">{{ s.val }}</div>
+            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-top:2px">{{ s.lbl }}</div>
+          </div>
+        }
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-navy" (click)="allerOnglet('demandes')">Mes demandes de visite →</button>
+        <a routerLink="/publier" class="btn btn-gold">+ Publier un bien</a>
+        <a routerLink="/villas" class="btn btn-ghost">Explorer les villas</a>
+      </div>
+    }
+  }
+
+  <!-- ── DEMANDES ── -->
+  @if (onglet() === 'demandes') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Mes demandes de visite</h2>
+      </div>
+      @if (demandes.length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📋</span>
+          <h3>Aucune demande</h3>
+          <p>Explorez nos villas et demandez une visite.</p>
+          <a routerLink="/villas" class="btn btn-navy" style="margin-top:16px;display:inline-flex">Explorer les villas</a>
+        </div>
+      } @else {
+        <div style="display:flex;flex-direction:column">
+          @for (d of demandes; track d.id) {
+            <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
+              <div>
+                <div style="font-size:.78rem;font-family:monospace;color:var(--text-soft)">Bien {{ d.bienId | slice:0:8 }}…</div>
+                @if (d.dateSouhaitee) {
+                  <div style="font-size:.85rem;font-weight:600;color:var(--text)">📅 {{ formatDate(d.dateSouhaitee) }}</div>
+                }
+                @if (d.commentaire) {
+                  <div style="font-size:.8rem;color:var(--text-mid);margin-top:3px">{{ d.commentaire }}</div>
+                }
+                <div style="font-size:.72rem;color:var(--text-soft);margin-top:4px">{{ formatDate(d.dateCreation) }}</div>
+              </div>
+              <span class="badge" [class.badge-amber]="d.statut===0" [class.badge-green]="d.statut===1" [class.badge-gray]="d.statut===2||d.statut===3">
+                {{ statutDemandeLabel[d.statut] ?? '?' }}
+              </span>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── ANNONCES ── -->
+  @if (onglet() === 'annonces') {
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;gap:10px">
+        <a routerLink="/publier" class="btn btn-gold">+ Nouvelle annonce</a>
+      </div>
+      @if (annonces.length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">🔑</span>
+          <h3>Aucune annonce</h3>
+          <p>Publiez votre premier bien gratuitement.</p>
+        </div>
+      } @else {
+        @for (a of annonces; track a.id) {
+          <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 22px;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:space-between;gap:12px">
+            <div>
+              <div style="font-weight:700;color:var(--text);margin-bottom:3px">{{ a.titre }}</div>
+              <div style="font-size:.82rem;color:var(--text-mid)">{{ a.quartier }}, {{ a.commune }} · {{ formatPrix(a.loyer) }}/mois</div>
+              <div style="font-size:.72rem;color:var(--text-soft);margin-top:3px">{{ formatDate(a.dateCreation) }}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="badge" [class.badge-green]="a.statut===2" [class.badge-amber]="a.statut===1" [class.badge-gray]="a.statut===0">
+                {{ statutLocationLabel[a.statut] ?? '?' }}
+              </span>
+              <a [routerLink]="['/locations', a.id]" class="btn btn-ghost btn-sm">Voir</a>
+            </div>
+          </div>
+        }
+      }
+    </div>
+  }
+
+  <!-- ── FAVORIS ── -->
+  @if (onglet() === 'favoris') {
+    @if (favoris.count() === 0) {
+      <div class="empty-state">
+        <span class="empty-icon">❤️</span>
+        <h3>Aucun favori</h3>
+        <p>Cliquez sur ❤️ sur une fiche pour sauvegarder un bien.</p>
+        <a routerLink="/villas" class="btn btn-navy" style="margin-top:16px;display:inline-flex">Explorer</a>
+      </div>
+    } @else {
+      <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
+        <p class="results-count"><strong>{{ favoris.count() }}</strong> bien(s) sauvegardé(s)</p>
+        <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="favoris.viderFavoris()">Tout supprimer</button>
+      </div>
+      <div class="card-grid">
+        @for (f of favoris.favoris(); track f.id) {
+          <div class="prop-card">
+            <div class="card-visual" [style.background]="f.type==='villa' ? 'linear-gradient(140deg,#0F1F3D,#162944)' : f.type==='location' ? 'linear-gradient(140deg,#071428,#0A1F3A)' : 'linear-gradient(140deg,#071A07,#0D2810)'">
+              <span class="card-visual-icon">{{ f.type==='villa'?'🏠':f.type==='location'?'🔑':'📍' }}</span>
+              <div class="card-price">{{ formatPrix(f.prix) }}{{ f.type==='location'?' /mois':'' }}</div>
+            </div>
+            <div class="card-body">
+              <div class="card-title">{{ f.titre }}</div>
+              <div class="card-loc"><span>📍</span><span>{{ f.quartier }}</span></div>
+              <div class="card-footer">
+                <span class="badge badge-navy">{{ f.type }}</span>
+                <div style="display:flex;gap:6px">
+                  <a [routerLink]="'/'+f.type+'s/'+f.id" class="btn btn-ghost btn-sm">Voir</a>
+                  <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="favoris.retirerFavori(f.id)">✕</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  }
+
+</div>

@@ -14,32 +14,25 @@
     </a>
 
     <div class="navbar-nav">
-      <a routerLink="/villas" routerLinkActive="nav-active" class="nav-link">
-        Villas &amp; Logements
-      </a>
-      <a routerLink="/locations" routerLinkActive="nav-active" class="nav-link">
-        Locations
-      </a>
-      <a routerLink="/terrains" routerLinkActive="nav-active" class="nav-link">
-        Terrains
-      </a>
+      <a routerLink="/villas" routerLinkActive="nav-active" class="nav-link">Villas</a>
+      <a routerLink="/locations" routerLinkActive="nav-active" class="nav-link">Locations</a>
+      <a routerLink="/terrains" routerLinkActive="nav-active" class="nav-link">Terrains</a>
     </div>
 
-    <div class="navbar-end" style="display:flex;align-items:center;gap:10px">
+    <!-- Barre de recherche globale -->
+    <app-search-bar style="flex:1;max-width:380px"></app-search-bar>
+
+    <div class="navbar-end" style="display:flex;align-items:center;gap:8px">
       @if (auth.estConnecte()) {
         @if (auth.estAdmin()) {
-          <a routerLink="/admin" routerLinkActive="nav-active" class="nav-link" style="font-size:.78rem">Admin</a>
+          <a routerLink="/admin" routerLinkActive="nav-active" class="nav-link" style="font-size:.75rem">Admin</a>
         }
-        <span class="nav-link" style="font-size:.78rem;opacity:.6;cursor:default">
+        <a routerLink="/profil" routerLinkActive="nav-active" class="nav-link" style="font-size:.78rem">
           👤 {{ auth.user()?.nom }}
-        </span>
-        <button (click)="auth.deconnecter()" class="nav-link"
-                style="background:none;border:none;font-size:.78rem;opacity:.6;cursor:pointer;color:inherit;font-family:inherit">
-          Déconnexion
-        </button>
+        </a>
       } @else {
-        <a routerLink="/login" class="nav-link" style="font-size:.82rem">Connexion</a>
-        <a routerLink="/publier" class="btn-cta">Publier un bien</a>
+        <a routerLink="/login" class="nav-link" style="font-size:.8rem">Connexion</a>
+        <a routerLink="/publier" class="btn-cta">Publier</a>
       }
     </div>
   </div>
