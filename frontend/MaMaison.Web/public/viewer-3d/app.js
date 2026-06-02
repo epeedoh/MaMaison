@@ -46,7 +46,7 @@ function creerVilla() {
     const canvas = document.getElementById('renderCanvas');
     engine = new BABYLON.Engine(canvas, true, { antialias: true, stencil: true });
     scene  = new BABYLON.Scene(engine);
-    scene.gravity          = new BABYLON.Vector3(0, -18, 0);
+    scene.gravity          = new BABYLON.Vector3(0, -9.81, 0);
     scene.collisionsEnabled = true;
     scene.fogMode   = BABYLON.Scene.FOGMODE_EXP2;
     scene.fogDensity = 0.012;
@@ -64,8 +64,11 @@ function creerVilla() {
     camera.fov               = 1.05;
     camera.checkCollisions   = true;
     camera.applyGravity      = true;
+    // ellipsoid.y = demi-hauteur joueur (0.9m → corps de 1.8m)
+    // ellipsoidOffset.y = -(hauteur yeux - ellipsoid.y) = -(1.65 - 0.9) = -0.75
+    // → le bas de l'ellipsoïde = camera.y - 0.75 - 0.9 = camera.y - 1.65 = 0 (sol)
     camera.ellipsoid         = new BABYLON.Vector3(0.35, 0.9, 0.35);
-    camera.ellipsoidOffset   = new BABYLON.Vector3(0, 0.9, 0);
+    camera.ellipsoidOffset   = new BABYLON.Vector3(0, -0.75, 0);
     camera.keysUp    = [87, 38];
     camera.keysDown  = [83, 40];
     camera.keysLeft  = [65, 37];
@@ -80,6 +83,7 @@ function creerVilla() {
     document.addEventListener('pointerlockchange', () => {
         const locked = document.pointerLockElement === canvas;
         document.getElementById('click-hint').style.display = locked ? 'none' : 'flex';
+        document.getElementById('esc-hint').style.display   = locked ? 'flex' : 'none';
     });
 
     // ── Éclairage ───────────────────────────────────────────────
@@ -473,9 +477,10 @@ function placerHotspot(nom, titre, contenu, x, y, z) {
 /* ================================================================
    TÉLÉPORTATION vers les pièces
    ================================================================ */
+// Y = 1.65 = hauteur des yeux. L'ellipsoïde s'ajuste automatiquement.
 const POSITIONS = {
-    salon:   { x: 0,    y: 1.65, z:  2,    rotY: 0 },
-    cuisine: { x: -7.5, y: 1.65, z: -4.5,  rotY: -Math.PI/2 },
+    salon:   { x:  0,   y: 1.65, z:  2,    rotY: 0 },
+    cuisine: { x: -7.5, y: 1.65, z: -4.5,  rotY: -Math.PI / 2 },
     chambre: { x: -7.5, y: 1.65, z:  4.5,  rotY: Math.PI },
 };
 
