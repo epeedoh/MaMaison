@@ -13,6 +13,19 @@ public static class DataSeeder
 
         logger.LogInformation("Seeding demo data...");
 
+        // ── Compte administrateur ────────────────────────────────
+        // Login: téléphone +2250000000000 / mot de passe: admin2025
+        var adminHash = Convert.ToHexString(
+            System.Security.Cryptography.SHA256.HashData(
+                System.Text.Encoding.UTF8.GetBytes("admin2025")));
+        var admin = Utilisateur.Creer(
+            "Admin MaMaison", "+2250000000000", adminHash,
+            RoleUtilisateur.Admin, "admin@mamaison.ci");
+        admin.VerifierTelephone();
+        await context.Utilisateurs.AddAsync(admin);
+        await context.SaveChangesAsync();
+        logger.LogInformation("Admin créé: tel=+2250000000000, mdp=admin2025");
+
         // Promoteur pilote
         var promoteur = Promoteur.Creer(
             nom: "SICOGI Prestige",

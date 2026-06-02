@@ -1,104 +1,262 @@
-<!-- HEADER ADMIN -->
-<section class="hero" style="min-height:260px;padding:60px 24px 80px">
+<!-- HEADER -->
+<section class="hero" style="min-height:220px;padding:56px 24px 80px">
   <div class="orb orb-1" style="opacity:.5"></div>
-  <div class="orb orb-3" style="opacity:.4"></div>
-  <div class="hero-content" style="max-width:900px">
-    <div class="hero-eyebrow">✦ Back-office MaMaison</div>
-    <h1 class="hero-title" style="font-size:2.2rem">Tableau de bord admin</h1>
-    <p class="hero-sub" style="margin-bottom:0">Gérez les demandes, validez les annonces, supervisez la plateforme.</p>
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ MaMaison Verified — Back-office</div>
+    <h1 class="hero-title" style="font-size:2rem">Administration</h1>
+    <p class="hero-sub" style="margin-bottom:0">Gérez les biens, validez les annonces, traitez les demandes.</p>
   </div>
 </section>
 
+<!-- ONGLETS NAV -->
 <div class="hero-filter-wrap" style="margin-bottom:0">
-  <div class="hero-filter" style="justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
-    <div style="font-size:.82rem;color:var(--text-mid);font-weight:600">Navigation rapide</div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <a routerLink="/villas" class="btn btn-outline btn-sm">🏠 Villas</a>
-      <a routerLink="/locations" class="btn btn-outline btn-sm">🔑 Locations</a>
-      <a routerLink="/terrains" class="btn btn-outline btn-sm">📍 Terrains</a>
-      <a routerLink="/publier" class="btn btn-gold btn-sm">+ Publier un bien</a>
-    </div>
+  <div class="hero-filter" style="padding:10px 16px;gap:8px;flex-wrap:wrap">
+    @for (tab of [
+      {id:'dashboard',label:'📊 Tableau de bord'},
+      {id:'villas',label:'🏠 Villas'},
+      {id:'locations',label:'🔑 Locations'},
+      {id:'demandes',label:'📋 Demandes'},
+      {id:'signalements',label:'🚨 Signalements'}
+    ]; track tab.id) {
+      <button class="btn btn-sm"
+              [class.btn-navy]="onglet() === tab.id"
+              [class.btn-ghost]="onglet() !== tab.id"
+              (click)="allerOnglet(tab.id)">
+        {{ tab.label }}
+      </button>
+    }
+    <a routerLink="/" class="btn btn-ghost btn-sm" style="margin-left:auto">← Site</a>
   </div>
 </div>
 
-<div class="page-container" style="padding-top:48px">
+<div class="page-container" style="padding-top:40px">
 
-  <!-- Stats -->
-  @if (!loading) {
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:40px">
-      @for (s of stats; track s.label) {
-        <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:20px 22px;box-shadow:var(--shadow-sm)">
-          <div style="font-size:1.8rem;margin-bottom:8px">{{ s.icon }}</div>
-          <div style="font-size:2rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.03em;font-family:var(--font-disp)">{{ s.valeur }}</div>
-          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);margin-top:2px">{{ s.label }}</div>
+  <!-- Message flash -->
+  @if (message()) {
+    <div style="background:var(--navy-soft);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-sm);padding:11px 16px;font-size:.88rem;color:white;margin-bottom:20px">
+      {{ message() }}
+    </div>
+  }
+
+  <!-- ── DASHBOARD ── -->
+  @if (onglet() === 'dashboard') {
+    @if (loading()) {
+      <div class="loading-wrap"><div class="spinner"></div></div>
+    } @else if (dashboard) {
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:32px">
+        @for (stat of [
+          {label:'Villas publiées',  val:dashboard.villas?.publiees,     sub:'/ '+dashboard.villas?.total+' total',         icon:'🏠'},
+          {label:'En validation',    val:dashboard.villas?.enValidation, sub:'villas à traiter',                            icon:'⏳'},
+          {label:'Locations',        val:dashboard.locations?.publiees,  sub:'/ '+dashboard.locations?.total+' total',      icon:'🔑'},
+          {label:'En vérification',  val:dashboard.locations?.enVerification, sub:'locations à valider',                   icon:'🔍'},
+          {label:'Demandes visite',  val:dashboard.demandesVisite?.enAttente, sub:'/ '+dashboard.demandesVisite?.total+' total', icon:'📋'},
+          {label:'Signalements',     val:dashboard.signalements?.enAttente,   sub:'en attente',                            icon:'🚨'},
+          {label:'Utilisateurs',     val:dashboard.utilisateurs,         sub:'inscrits',                                   icon:'👤'},
+          {label:'Terrains',         val:dashboard.terrains?.publies,    sub:'/ '+dashboard.terrains?.total+' total',      icon:'📍'},
+        ]; track stat.label) {
+          <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-sm)">
+            <div style="font-size:1.5rem;margin-bottom:6px">{{ stat.icon }}</div>
+            <div style="font-size:1.8rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.025em">{{ stat.val ?? 0 }}</div>
+            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">{{ stat.label }}</div>
+            <div style="font-size:.72rem;color:var(--text-soft);margin-top:2px">{{ stat.sub }}</div>
+          </div>
+        }
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn btn-navy" (click)="allerOnglet('villas')">Gérer les villas →</button>
+        <button class="btn btn-gold" (click)="allerOnglet('locations')">Valider les locations →</button>
+        <button class="btn btn-ghost" (click)="allerOnglet('demandes')">Voir les demandes →</button>
+      </div>
+    }
+  }
+
+  <!-- ── VILLAS ── -->
+  @if (onglet() === 'villas') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Villas</h2>
+        <button class="btn btn-ghost btn-sm" (click)="chargerVillas()">↺ Actualiser</button>
+      </div>
+      @if (villas.length === 0) {
+        <div class="empty-state"><span class="empty-icon">🏠</span><h3>Aucune villa</h3></div>
+      } @else {
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.84rem">
+            <thead><tr style="background:var(--cream)">
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Titre</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Zone</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Prix</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Score</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Statut</th>
+              <th style="padding:11px 18px"></th>
+            </tr></thead>
+            <tbody>
+              @for (v of villas; track v.id) {
+                <tr style="border-top:1px solid var(--border)">
+                  <td style="padding:12px 18px;font-weight:600">{{ v.titre }}</td>
+                  <td style="padding:12px 18px;color:var(--text-mid)">{{ v.quartier }}</td>
+                  <td style="padding:12px 18px;font-weight:600;color:var(--navy-mid)">{{ formatPrix(v.prix) }}</td>
+                  <td style="padding:12px 18px">
+                    <span style="font-weight:700;color:var(--gold)">{{ v.scoreMaMaison }}/100</span>
+                  </td>
+                  <td style="padding:12px 18px">
+                    <span class="badge"
+                          [class.badge-green]="v.statut===2"
+                          [class.badge-amber]="v.statut===1"
+                          [class.badge-gray]="v.statut===0||v.statut===5">
+                      {{ statutVillaLabel(v.statut) }}
+                    </span>
+                  </td>
+                  <td style="padding:12px 18px;display:flex;gap:6px">
+                    @if (v.statut === 1) {
+                      <button class="btn btn-navy btn-sm" (click)="publierVilla(v.id)">✓ Publier</button>
+                    }
+                    @if (v.statut === 2) {
+                      <button class="btn btn-ghost btn-sm" (click)="publierVilla(v.id)">↺ Recalc. score</button>
+                    }
+                    <a [routerLink]="['/villas', v.id]" class="btn btn-ghost btn-sm">Voir</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     </div>
   }
 
-  <!-- Demandes de visite -->
-  <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
-    <div style="padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-      <h2 style="font-family:var(--font-disp);font-size:1.2rem;font-weight:700;color:var(--navy-mid)">Demandes de visite</h2>
-      <span class="badge badge-navy">{{ demandes.length }} total</span>
-    </div>
-
-    @if (loading) {
-      <div class="loading-wrap"><div class="spinner"></div><span>Chargement…</span></div>
-    }
-
-    @if (!loading && demandes.length === 0) {
-      <div class="empty-state">
-        <span class="empty-icon">📋</span>
-        <h3>Aucune demande</h3>
-        <p>Les demandes de visite apparaîtront ici.</p>
+  <!-- ── LOCATIONS ── -->
+  @if (onglet() === 'locations') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Locations</h2>
+        <button class="btn btn-ghost btn-sm" (click)="chargerLocations()">↺ Actualiser</button>
       </div>
-    }
-
-    @if (!loading && demandes.length > 0) {
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse;font-size:.85rem">
-          <thead>
-            <tr style="background:var(--cream)">
-              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">ID Bien</th>
-              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">Statut</th>
-              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">Date</th>
-              <th style="text-align:left;padding:12px 20px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft);font-weight:700">Commentaire</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (d of demandes; track d.id) {
-              <tr style="border-top:1px solid var(--border);transition:background .15s" onmouseover="this.style.background='#F8F5F0'" onmouseout="this.style.background=''">
-                <td style="padding:14px 20px;font-family:monospace;font-size:.78rem;color:var(--text-mid)">{{ d.bienId | slice:0:8 }}…</td>
-                <td style="padding:14px 20px">
-                  <span style="padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;background:rgba(0,0,0,.05)"
-                        [style.color]="statutColors[d.statut]">
-                    {{ statutLabels[d.statut] }}
-                  </span>
-                </td>
-                <td style="padding:14px 20px;color:var(--text-soft)">{{ formatDate(d.dateCreation) }}</td>
-                <td style="padding:14px 20px;color:var(--text-mid);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-                  {{ d.commentaire || '—' }}
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
-      </div>
-    }
-  </div>
-
-  <!-- Prochains modules -->
-  <div style="margin-top:32px;background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:24px 28px;box-shadow:var(--shadow-sm)">
-    <h3 style="font-family:var(--font-disp);font-size:1rem;font-weight:700;color:var(--navy-mid);margin-bottom:16px">Modules à venir — Back-office MVP2</h3>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px">
-      @for (item of ['Valider les annonces locations','Publier des terrains','Gérer les promoteurs','Vérifier les démarcheurs','Voir les signalements','Statistiques plateforme']; track item) {
-        <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--cream);border-radius:var(--r-sm);font-size:.82rem;color:var(--text-mid)">
-          <span style="width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0"></span>
-          {{ item }}
+      @if (locations.length === 0) {
+        <div class="empty-state"><span class="empty-icon">🔑</span><h3>Aucune location</h3></div>
+      } @else {
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.84rem">
+            <thead><tr style="background:var(--cream)">
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Titre</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Zone</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Loyer</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Statut</th>
+              <th style="padding:11px 18px"></th>
+            </tr></thead>
+            <tbody>
+              @for (l of locations; track l.id) {
+                <tr style="border-top:1px solid var(--border)">
+                  <td style="padding:12px 18px;font-weight:600">{{ l.titre }}</td>
+                  <td style="padding:12px 18px;color:var(--text-mid)">{{ l.quartier }}, {{ l.commune }}</td>
+                  <td style="padding:12px 18px;font-weight:600;color:var(--navy-mid)">{{ formatPrix(l.loyer) }}/mois</td>
+                  <td style="padding:12px 18px">
+                    <span class="badge"
+                          [class.badge-green]="l.statut===2"
+                          [class.badge-amber]="l.statut===1"
+                          [class.badge-gray]="l.statut===0"
+                          [class.badge-red]="l.statut===6">
+                      {{ statutLocationLabel(l.statut) }}
+                    </span>
+                  </td>
+                  <td style="padding:12px 18px;display:flex;gap:6px">
+                    @if (l.statut === 1 || l.statut === 0) {
+                      <button class="btn btn-navy btn-sm" (click)="validerLocation(l.id)">✓ Valider</button>
+                      <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="rejeterLocation(l.id)">✗ Rejeter</button>
+                    }
+                    <a [routerLink]="['/locations', l.id]" class="btn btn-ghost btn-sm">Voir</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
         </div>
       }
     </div>
-  </div>
+  }
+
+  <!-- ── DEMANDES ── -->
+  @if (onglet() === 'demandes') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Demandes de visite</h2>
+        <button class="btn btn-ghost btn-sm" (click)="chargerDemandes()">↺ Actualiser</button>
+      </div>
+      @if (demandes.length === 0) {
+        <div class="empty-state"><span class="empty-icon">📋</span><h3>Aucune demande</h3></div>
+      } @else {
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.84rem">
+            <thead><tr style="background:var(--cream)">
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">ID Bien</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Date souhaitée</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Commentaire</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Statut</th>
+              <th style="padding:11px 18px"></th>
+            </tr></thead>
+            <tbody>
+              @for (d of demandes; track d.id) {
+                <tr style="border-top:1px solid var(--border)">
+                  <td style="padding:12px 18px;font-family:monospace;font-size:.78rem;color:var(--text-mid)">{{ d.bienId | slice:0:8 }}…</td>
+                  <td style="padding:12px 18px;color:var(--text-mid)">{{ d.dateSouhaitee ? formatDate(d.dateSouhaitee) : '—' }}</td>
+                  <td style="padding:12px 18px;color:var(--text-mid);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.commentaire || '—' }}</td>
+                  <td style="padding:12px 18px">
+                    <span class="badge"
+                          [class.badge-amber]="d.statut===0"
+                          [class.badge-green]="d.statut===1"
+                          [class.badge-gray]="d.statut===2||d.statut===3">
+                      {{ statutDemandeLabel(d.statut) }}
+                    </span>
+                  </td>
+                  <td style="padding:12px 18px">
+                    @if (d.statut === 0) {
+                      <button class="btn btn-navy btn-sm" (click)="confirmerDemande(d.id)">✓ Confirmer</button>
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── SIGNALEMENTS ── -->
+  @if (onglet() === 'signalements') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Signalements en attente</h2>
+      </div>
+      @if (signalements.length === 0) {
+        <div class="empty-state"><span class="empty-icon">✅</span><h3>Aucun signalement en attente</h3></div>
+      } @else {
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.84rem">
+            <thead><tr style="background:var(--cream)">
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">ID Bien</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Motif</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Description</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Date</th>
+              <th style="padding:11px 18px"></th>
+            </tr></thead>
+            <tbody>
+              @for (s of signalements; track s.id) {
+                <tr style="border-top:1px solid var(--border)">
+                  <td style="padding:12px 18px;font-family:monospace;font-size:.78rem;color:var(--text-mid)">{{ s.bienId | slice:0:8 }}…</td>
+                  <td style="padding:12px 18px;font-weight:600;color:#E53E3E">{{ s.motif }}</td>
+                  <td style="padding:12px 18px;color:var(--text-mid)">{{ s.description || '—' }}</td>
+                  <td style="padding:12px 18px;color:var(--text-soft)">{{ formatDate(s.dateCreation) }}</td>
+                  <td style="padding:12px 18px">
+                    <button class="btn btn-navy btn-sm" (click)="resoudreSignalement(s.id)">✓ Résoudre</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
 
 </div>
