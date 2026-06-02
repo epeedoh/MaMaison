@@ -95,6 +95,29 @@ body {
     color: #9ca3af; cursor: pointer; font-size: 1rem;
 }
 
+#click-hint {
+    position: absolute;
+    bottom: 110px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(5, 13, 26, .82);
+    backdrop-filter: blur(14px);
+    border: 1px solid rgba(200, 151, 42, .45);
+    color: rgba(255,255,255,.88);
+    font-size: .78rem;
+    padding: 10px 22px;
+    border-radius: 30px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 50;
+    letter-spacing: .02em;
+    animation: fadeHint .5s ease;
+}
+@keyframes fadeHint {
+    from { opacity:0; transform: translateX(-50%) translateY(6px); }
+    to   { opacity:1; transform: translateX(-50%) translateY(0); }
+}
+
 #loading {
     position: absolute;
     inset: 0;
