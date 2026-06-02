@@ -1,0 +1,62 @@
+<div class="modal-backdrop" (click)="fermerModal()"></div>
+
+<div class="modal-panel">
+  <div class="modal-header" style="background:linear-gradient(135deg,#7F1D1D 0%,#991B1B 100%)">
+    <div>
+      <p class="modal-eyebrow">Signalement d'annonce</p>
+      <h2 class="modal-titre">🚨 Signaler une anomalie</h2>
+      <p class="modal-sous-titre">Votre signalement est anonyme et traité sous 24h</p>
+    </div>
+    <button class="modal-close" (click)="fermerModal()">✕</button>
+  </div>
+
+  @if (etat() === 'succes') {
+    <div class="modal-succes">
+      <div class="succes-icon" style="background:linear-gradient(135deg,#991B1B,#DC2626)">✓</div>
+      <h3>Signalement enregistré</h3>
+      <p>Merci de votre vigilance. Notre équipe traitera votre signalement sous 24h.</p>
+      <button class="btn btn-full" style="margin-top:24px;background:#991B1B;color:white;border:none;height:48px;border-radius:8px;font-weight:700;cursor:pointer" (click)="fermerModal()">Fermer</button>
+    </div>
+  }
+
+  @if (etat() !== 'succes') {
+    <div class="modal-body">
+
+      @if (etat() === 'erreur') {
+        <div class="modal-erreur">⚠️ Une erreur est survenue. Réessayez.</div>
+      }
+
+      <div class="form-field">
+        <label>Motif du signalement <span class="required">*</span></label>
+        <select [(ngModel)]="motif" [disabled]="etat() === 'chargement'">
+          <option value="">Sélectionnez un motif</option>
+          @for (m of motifs; track m) {
+            <option [value]="m">{{ m }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-field">
+        <label>Détails <span class="optional">(optionnel)</span></label>
+        <textarea [(ngModel)]="description" rows="3"
+                  placeholder="Décrivez le problème en détail…"
+                  [disabled]="etat() === 'chargement'">
+        </textarea>
+      </div>
+
+      <div class="modal-notice">
+        🔒 Votre signalement est totalement anonyme. MaMaison protège votre identité.
+      </div>
+
+      <button style="width:100%;height:48px;background:#991B1B;color:white;border:none;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;margin-top:4px;transition:background .2s"
+              (click)="soumettre()"
+              [disabled]="!motif || etat() === 'chargement'">
+        @if (etat() === 'chargement') {
+          <span class="btn-spinner"></span> Envoi…
+        } @else {
+          🚨 Envoyer le signalement
+        }
+      </button>
+    </div>
+  }
+</div>

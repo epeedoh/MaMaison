@@ -87,6 +87,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
+app.UseStaticFiles(); // sert wwwroot/uploads/
 app.UseCors("MaMaisonCors");
 app.UseAuthentication();
 app.UseAuthorization();
