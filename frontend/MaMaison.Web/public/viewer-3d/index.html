@@ -3,88 +3,70 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MaMaison — Visite 3D</title>
+    <title>MaMaison — Visite Virtuelle</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="libs/babylon.js"></script>
     <script src="libs/babylonjs.loaders.min.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="viewer-container">
-        <canvas id="renderCanvas"></canvas>
+<div id="viewer-container">
+    <canvas id="renderCanvas"></canvas>
 
-        <div id="ui-overlay">
-            <div id="villa-info">
-                <h2 id="villa-titre">Villa Démo</h2>
-                <span id="villa-prix"></span>
-            </div>
-
-            <div id="navigation">
-                <button id="btn-precedent" onclick="naviguerPrecedent()">← Précédent</button>
-                <span id="piece-courante">Salon</span>
-                <button id="btn-suivant" onclick="naviguerSuivant()">Suivant →</button>
-            </div>
-
-            <button id="btn-retour" onclick="retourFiche()">← Retour à la fiche</button>
+    <!-- ── Header ── -->
+    <div id="header">
+        <div id="villa-info">
+            <h2 id="villa-titre">Villa Palm Beach</h2>
+            <span id="villa-prix"></span>
         </div>
-
-        <div id="hotspot-panel" class="hidden">
-            <button id="hotspot-close" onclick="fermerInfo()">✕</button>
-            <h3 id="hotspot-titre"></h3>
-            <p id="hotspot-contenu"></p>
+        <div id="piece-label">
+            <span id="piece-courante">Salon</span>
         </div>
-
-        <!-- Clic pour activer -->
-        <div id="click-hint" style="display:none">
-            🖱️ Cliquez sur la scène pour naviguer
-        </div>
-
-        <!-- Panneau de contrôles (pointer lock actif) -->
-        <div id="controls-panel" style="display:none">
-            <div class="ctrl-header">
-                <span class="ctrl-icon">🕹️</span>
-                <span>Contrôles</span>
-                <span id="esc-badge"><span class="key">Échap</span> quitter</span>
-            </div>
-            <div class="ctrl-grid">
-                <div class="ctrl-row">
-                    <div class="ctrl-keys">
-                        <span class="key">W</span><span class="key">↑</span>
-                    </div>
-                    <span class="ctrl-label">Avancer</span>
-                </div>
-                <div class="ctrl-row">
-                    <div class="ctrl-keys">
-                        <span class="key">S</span><span class="key">↓</span>
-                    </div>
-                    <span class="ctrl-label">Reculer</span>
-                </div>
-                <div class="ctrl-row">
-                    <div class="ctrl-keys">
-                        <span class="key">A</span><span class="key">Q</span>
-                    </div>
-                    <span class="ctrl-label">Gauche</span>
-                </div>
-                <div class="ctrl-row">
-                    <div class="ctrl-keys">
-                        <span class="key">D</span><span class="key">E</span>
-                    </div>
-                    <span class="ctrl-label">Droite</span>
-                </div>
-                <div class="ctrl-row">
-                    <div class="ctrl-keys">
-                        <span class="key mouse-key">🖱️</span>
-                    </div>
-                    <span class="ctrl-label">Regarder</span>
-                </div>
-            </div>
-        </div>
-
-        <div id="loading">
-            <div class="spinner"></div>
-            <p>Chargement de la villa...</p>
-        </div>
+        <button id="btn-retour" onclick="retourFiche()">← Retour à la fiche</button>
     </div>
 
-    <script src="app.js"></script>
+    <!-- ── Toolbar gauche (style Teia) ── -->
+    <div id="toolbar">
+        <button class="tool-btn" title="Vue d'ensemble" onclick="resetCamera()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                <polyline points="9,22 9,12 15,12 15,22"/>
+            </svg>
+        </button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" title="Pivoter librement" id="btnOrbit" onclick="" style="opacity:.45;cursor:default">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2a10 10 0 100 20A10 10 0 0012 2z"/>
+                <path d="M2 12h20M12 2a15.3 15.3 0 010 20M12 2a15.3 15.3 0 000 20"/>
+            </svg>
+        </button>
+        <div class="tool-sep"></div>
+        <button class="tool-btn" title="Retour à la fiche" onclick="retourFiche()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </button>
+    </div>
+
+    <!-- ── Room selector bas (style Teia) ── -->
+    <div id="room-selector"></div>
+
+    <!-- ── Info hotspot ── -->
+    <div id="hotspot-panel" class="hidden">
+        <button class="hs-close" onclick="fermerInfo()">✕</button>
+        <div class="hs-icon">ℹ</div>
+        <h3 id="hotspot-titre"></h3>
+        <p id="hotspot-contenu"></p>
+    </div>
+
+    <!-- ── Loading ── -->
+    <div id="loading">
+        <div class="loader-ring"></div>
+        <p>Chargement de la villa…</p>
+    </div>
+</div>
+
+<script src="app.js"></script>
 </body>
 </html>
