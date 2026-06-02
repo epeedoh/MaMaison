@@ -7,10 +7,12 @@ import { VillaDetail as VillaDetailModel, TypeVillaLabels } from '../../../../co
 import { AnalysePrixBien } from '../../../../core/models/statistiques.model';
 import { environment } from '../../../../../environments/environment';
 import { DemandeVisiteModalComponent, ModalMode } from '../../../../shared/components/demande-visite-modal/demande-visite-modal.component';
+import { SignalementModalComponent } from '../../../../shared/components/signalement-modal/signalement-modal.component';
+import { FavorisService } from '../../../../core/services/favoris.service';
 
 @Component({
   selector: 'app-villa-detail',
-  imports: [RouterLink, DemandeVisiteModalComponent],
+  imports: [RouterLink, DemandeVisiteModalComponent, SignalementModalComponent],
   templateUrl: './villa-detail.html',
   styleUrl: './villa-detail.scss'
 })
@@ -19,6 +21,7 @@ export class VillaDetailComponent implements OnInit {
   private readonly villaService = inject(VillaService);
   private readonly statsService = inject(StatistiquesService);
   private readonly seo = inject(SeoService);
+  readonly favoris = inject(FavorisService);
 
   villa: VillaDetailModel | null = null;
   analyse: AnalysePrixBien | null = null;
@@ -26,8 +29,12 @@ export class VillaDetailComponent implements OnInit {
   error = false;
   readonly TypeVillaLabels = TypeVillaLabels;
 
-  modalOuvert = signal(false);
-  modalMode = signal<ModalMode>('visite');
+  modalOuvert       = signal(false);
+  modalMode         = signal<ModalMode>('visite');
+  signalementOuvert = signal(false);
+
+  ouvrirSignalement() { this.signalementOuvert.set(true); }
+  fermerSignalement() { this.signalementOuvert.set(false); }
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;

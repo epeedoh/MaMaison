@@ -17,19 +17,24 @@ public class VillasController(IVillaRepository villaRepository, MaMaisonDbContex
         [FromQuery] TypeVilla? type,
         [FromQuery] string? quartier,
         [FromQuery] decimal? prixMax,
+        [FromQuery] decimal? prixMin,
+        [FromQuery] decimal? surfaceMin,
+        [FromQuery] int? piecesMin,
         [FromQuery] Guid? promoteurId,
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 12,
         CancellationToken ct = default)
     {
-        // Requête paginée directement sur DbContext pour éviter le chargement total
         var query = context.Villas
             .Where(v => v.Statut == StatutVilla.Publie);
 
-        if (type.HasValue)          query = query.Where(v => v.TypeVilla == type.Value);
-        if (!string.IsNullOrEmpty(quartier)) query = query.Where(v => v.Quartier.Contains(quartier));
-        if (prixMax.HasValue)       query = query.Where(v => v.Prix <= prixMax.Value);
-        if (promoteurId.HasValue)   query = query.Where(v => v.PromoteurId == promoteurId.Value);
+        if (type.HasValue)                    query = query.Where(v => v.TypeVilla == type.Value);
+        if (!string.IsNullOrEmpty(quartier))  query = query.Where(v => v.Quartier.Contains(quartier));
+        if (prixMax.HasValue)                 query = query.Where(v => v.Prix <= prixMax.Value);
+        if (prixMin.HasValue)                 query = query.Where(v => v.Prix >= prixMin.Value);
+        if (surfaceMin.HasValue)              query = query.Where(v => v.SurfaceHabitable >= surfaceMin.Value);
+        if (piecesMin.HasValue)               query = query.Where(v => v.NombrePieces >= piecesMin.Value);
+        if (promoteurId.HasValue)             query = query.Where(v => v.PromoteurId == promoteurId.Value);
 
         var total      = await query.CountAsync(ct);
         var totalPages = (int)Math.Ceiling(total / (double)pageSize);

@@ -28,8 +28,10 @@ export class VillasListeComponent implements OnInit {
   error      = false;
 
   filtreType: TypeVilla | '' = '';
-  filtreQuartier   = '';
-  filtrePrixMax: number | null = null;
+  filtreQuartier     = '';
+  filtrePrixMax:    number | null = null;
+  filtreSurfaceMin: number | null = null;
+  filtrePiecesMin:  number | null = null;
 
   readonly TypeVilla = TypeVilla;
   readonly TypeVillaLabels = TypeVillaLabels;
@@ -43,9 +45,11 @@ export class VillasListeComponent implements OnInit {
     this.page    = p;
 
     let params = new HttpParams().set('page', p).set('pageSize', this.pageSize);
-    if (this.filtreType !== '')  params = params.set('type', this.filtreType as number);
-    if (this.filtreQuartier)     params = params.set('quartier', this.filtreQuartier);
-    if (this.filtrePrixMax)      params = params.set('prixMax', this.filtrePrixMax);
+    if (this.filtreType !== '')   params = params.set('type', this.filtreType as number);
+    if (this.filtreQuartier)      params = params.set('quartier', this.filtreQuartier);
+    if (this.filtrePrixMax)       params = params.set('prixMax', this.filtrePrixMax);
+    if (this.filtreSurfaceMin)    params = params.set('surfaceMin', this.filtreSurfaceMin);
+    if (this.filtrePiecesMin)     params = params.set('piecesMin', this.filtrePiecesMin);
 
     this.http.get<VillaPage>(`${environment.apiUrl}/villas`, { params }).subscribe({
       next: r => { this.villas = r.items; this.total = r.total; this.totalPages = r.totalPages; this.loading = false; },
@@ -66,9 +70,11 @@ export class VillasListeComponent implements OnInit {
   }
 
   resetFiltres() {
-    this.filtreType = '';
+    this.filtreType     = '';
     this.filtreQuartier = '';
-    this.filtrePrixMax = null;
+    this.filtrePrixMax  = null;
+    this.filtreSurfaceMin = null;
+    this.filtrePiecesMin  = null;
     this.charger();
   }
 }

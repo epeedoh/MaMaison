@@ -46,11 +46,19 @@
     </div>
     <div class="filter-field">
       <label>Quartier / Zone</label>
-      <input type="text" [(ngModel)]="filtreQuartier" placeholder="Cocody, Bassam, Bingerville…">
+      <input type="text" [(ngModel)]="filtreQuartier" placeholder="Cocody, Bassam…">
     </div>
     <div class="filter-field">
       <label>Budget max (FCFA)</label>
       <input type="number" [(ngModel)]="filtrePrixMax" placeholder="50 000 000">
+    </div>
+    <div class="filter-field" style="min-width:110px">
+      <label>Surface min (m²)</label>
+      <input type="number" [(ngModel)]="filtreSurfaceMin" placeholder="100">
+    </div>
+    <div class="filter-field" style="min-width:90px">
+      <label>Pièces min</label>
+      <input type="number" [(ngModel)]="filtrePiecesMin" placeholder="3" min="1" max="20">
     </div>
     <button class="btn btn-navy" (click)="charger()" style="flex-shrink:0">Rechercher</button>
     <button class="btn btn-outline" (click)="resetFiltres()" style="flex-shrink:0">✕</button>

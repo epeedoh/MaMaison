@@ -221,6 +221,13 @@
                 ▶ Visite 3D immersive
               </button>
             }
+            <hr style="border:none;border-top:1px solid var(--border);margin:8px 0">
+            <button class="btn btn-outline btn-full" style="color:#E53E3E;border-color:#FECACA;font-size:.82rem"
+                    (click)="ouvrirSignalement()">🚨 Signaler une anomalie</button>
+            <button class="btn btn-outline btn-full" style="font-size:.82rem"
+                    (click)="villa && favoris.toggleFavori({id:villa.id,titre:villa.titre,prix:villa.prix,type:'villa',quartier:villa.quartier+', '+villa.ville,addedAt:''})">
+              {{ villa && favoris.estFavori(villa.id) ? '❤️ Retiré des favoris' : '🤍 Ajouter aux favoris' }}
+            </button>
             <p style="font-size:.72rem;color:var(--text-soft);text-align:center;line-height:1.55;margin-top:4px">
               Mise en relation gratuite · Aucun frais caché<br>
               Ne jamais payer sans avoir visité
@@ -241,4 +248,11 @@
     [mode]="modalMode()"
     (fermer)="fermerModal()">
   </app-demande-visite-modal>
+}
+
+@if (signalementOuvert() && villa) {
+  <app-signalement-modal
+    [bienId]="villa.id"
+    (fermer)="fermerSignalement()">
+  </app-signalement-modal>
 }
