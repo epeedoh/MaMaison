@@ -1,25 +1,32 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { VillaService } from '../../../../core/services/villa.service';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { VillaListe, TypeVilla, TypeVillaLabels } from '../../../../core/models/villa.model';
+import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
 import { environment } from '../../../../../environments/environment';
+
+interface VillaPage { items: VillaListe[]; total: number; page: number; pageSize: number; totalPages: number; }
 
 @Component({
   selector: 'app-villas-liste',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, PaginationComponent],
   templateUrl: './villas-liste.html',
   styleUrl: './villas-liste.scss'
 })
 export class VillasListeComponent implements OnInit {
-  private readonly villaService = inject(VillaService);
+  private readonly http = inject(HttpClient);
 
-  villas: VillaListe[] = [];
-  loading = true;
-  error = false;
+  villas:     VillaListe[] = [];
+  total      = 0;
+  page       = 1;
+  pageSize   = 12;
+  totalPages = 0;
+  loading    = true;
+  error      = false;
 
   filtreType: TypeVilla | '' = '';
-  filtreQuartier = '';
+  filtreQuartier   = '';
   filtrePrixMax: number | null = null;
 
   readonly TypeVilla = TypeVilla;
@@ -28,18 +35,23 @@ export class VillasListeComponent implements OnInit {
 
   ngOnInit() { this.charger(); }
 
-  charger() {
+  charger(p = this.page) {
     this.loading = true;
-    this.error = false;
-    this.villaService.rechercher({
-      type: this.filtreType !== '' ? this.filtreType : undefined,
-      quartier: this.filtreQuartier || undefined,
-      prixMax: this.filtrePrixMax ?? undefined,
-    }).subscribe({
-      next: (v: VillaListe[]) => { this.villas = v; this.loading = false; },
+    this.error   = false;
+    this.page    = p;
+
+    let params = new HttpParams().set('page', p).set('pageSize', this.pageSize);
+    if (this.filtreType !== '')  params = params.set('type', this.filtreType as number);
+    if (this.filtreQuartier)     params = params.set('quartier', this.filtreQuartier);
+    if (this.filtrePrixMax)      params = params.set('prixMax', this.filtrePrixMax);
+
+    this.http.get<VillaPage>(`${environment.apiUrl}/villas`, { params }).subscribe({
+      next: r => { this.villas = r.items; this.total = r.total; this.totalPages = r.totalPages; this.loading = false; },
       error: () => { this.error = true; this.loading = false; }
     });
   }
+
+  allerPage(p: number) { this.charger(p); window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
   ouvrirVisite3D(villa: VillaListe, event: Event) {
     event.preventDefault();

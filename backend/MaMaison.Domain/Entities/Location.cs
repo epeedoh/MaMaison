@@ -61,4 +61,6 @@ public class Location : BaseEntity
         EstDisponible = true;
         MarquerModifie();
     }
+
+    public void MettreAJourScore(int score) { ScoreMaMaison = Math.Clamp(score, 0, 100); MarquerModifie(); }
 }

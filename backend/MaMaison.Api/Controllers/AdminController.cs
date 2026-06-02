@@ -1,4 +1,5 @@
 using MaMaison.Application.Services;
+using MaMaison.Domain.Entities;
 using MaMaison.Domain.Enums;
 using MaMaison.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -105,6 +106,7 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
         if (location is null) return NotFound();
         location.Publier();
         var score = ScoreMaMaisonService.CalculerLocation(location, 0, 0);
+        // Score appliqué directement sur la propriété
         location.MettreAJourScore(score);
         await context.SaveChangesAsync(ct);
         return Ok(new { message = "Location publiée.", score });

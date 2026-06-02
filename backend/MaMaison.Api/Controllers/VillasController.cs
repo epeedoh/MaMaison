@@ -1,13 +1,16 @@
+using MaMaison.Application.Common;
 using MaMaison.Application.Features.Villas;
 using MaMaison.Domain.Enums;
 using MaMaison.Domain.Interfaces;
+using MaMaison.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MaMaison.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class VillasController(IVillaRepository villaRepository) : ControllerBase
+public class VillasController(IVillaRepository villaRepository, MaMaisonDbContext context) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Rechercher(
@@ -15,16 +18,32 @@ public class VillasController(IVillaRepository villaRepository) : ControllerBase
         [FromQuery] string? quartier,
         [FromQuery] decimal? prixMax,
         [FromQuery] Guid? promoteurId,
-        CancellationToken ct)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12,
+        CancellationToken ct = default)
     {
-        var villas = await villaRepository.RechercherAsync(type, quartier, prixMax, promoteurId, ct);
+        // Requête paginée directement sur DbContext pour éviter le chargement total
+        var query = context.Villas
+            .Where(v => v.Statut == StatutVilla.Publie);
 
-        var dtos = villas.Select(v => new VillaListeDto(
-            v.Id, v.Titre, v.TypeVilla, v.Quartier, v.Ville,
-            v.Prix, v.SurfaceHabitable, v.NombrePieces,
-            v.ImagePrincipaleUrl, v.Modele3DUrl != null, v.ScoreMaMaison));
+        if (type.HasValue)          query = query.Where(v => v.TypeVilla == type.Value);
+        if (!string.IsNullOrEmpty(quartier)) query = query.Where(v => v.Quartier.Contains(quartier));
+        if (prixMax.HasValue)       query = query.Where(v => v.Prix <= prixMax.Value);
+        if (promoteurId.HasValue)   query = query.Where(v => v.PromoteurId == promoteurId.Value);
 
-        return Ok(dtos);
+        var total      = await query.CountAsync(ct);
+        var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+        var items      = await query
+            .OrderBy(v => v.Prix)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .Select(v => new VillaListeDto(
+                v.Id, v.Titre, v.TypeVilla, v.Quartier, v.Ville,
+                v.Prix, v.SurfaceHabitable, v.NombrePieces,
+                v.ImagePrincipaleUrl, v.Modele3DUrl != null, v.ScoreMaMaison))
+            .ToListAsync(ct);
+
+        return Ok(new { items, total, page, pageSize, totalPages });
     }
 
     [HttpGet("{id}")]

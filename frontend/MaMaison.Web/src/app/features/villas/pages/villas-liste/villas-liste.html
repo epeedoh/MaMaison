@@ -85,7 +85,7 @@
 
     @if (!loading && !error && villas.length > 0) {
       <div class="results-bar">
-        <p class="results-count"><strong>{{ villas.length }}</strong> villa(s) disponible(s)</p>
+        <p class="results-count"><strong>{{ total }}</strong> villa(s) disponible(s)</p>
       </div>
 
       <div class="card-grid">
@@ -137,6 +137,14 @@
           </a>
         }
       </div>
+
+      <app-pagination
+        [page]="page"
+        [pageSize]="pageSize"
+        [total]="total"
+        [totalPages]="totalPages"
+        (pageChange)="allerPage($event)">
+      </app-pagination>
     }
 
   </div>
