@@ -86,8 +86,23 @@ function creerVilla() {
     });
     document.addEventListener('pointerlockchange', () => {
         const locked = document.pointerLockElement === canvas;
-        document.getElementById('click-hint').style.display = locked ? 'none' : 'flex';
-        document.getElementById('esc-hint').style.display   = locked ? 'flex' : 'none';
+        document.getElementById('click-hint').style.display    = locked ? 'none'  : 'flex';
+        document.getElementById('controls-panel').style.display = locked ? 'block' : 'none';
+    });
+
+    // Highlight des touches en temps réel
+    const keyMap = { 87:'W', 38:'↑', 83:'S', 40:'↓', 65:'A', 37:'←', 81:'Q', 68:'D', 39:'→', 69:'E' };
+    document.addEventListener('keydown', e => {
+        const label = keyMap[e.keyCode];
+        if (label) document.querySelectorAll('.key').forEach(k => {
+            if (k.textContent === label) k.classList.add('active');
+        });
+    });
+    document.addEventListener('keyup', e => {
+        const label = keyMap[e.keyCode];
+        if (label) document.querySelectorAll('.key').forEach(k => {
+            if (k.textContent === label) k.classList.remove('active');
+        });
     });
 
     // ── Éclairage ───────────────────────────────────────────────

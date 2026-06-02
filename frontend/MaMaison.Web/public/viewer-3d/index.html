@@ -33,8 +33,50 @@
             <p id="hotspot-contenu"></p>
         </div>
 
+        <!-- Clic pour activer -->
         <div id="click-hint" style="display:none">
-            <span>🖱️ Clic pour activer · WASD/↑↓←→ pour marcher · Souris pour regarder · Esc pour libérer</span>
+            🖱️ Cliquez sur la scène pour naviguer
+        </div>
+
+        <!-- Panneau de contrôles (pointer lock actif) -->
+        <div id="controls-panel" style="display:none">
+            <div class="ctrl-header">
+                <span class="ctrl-icon">🕹️</span>
+                <span>Contrôles</span>
+                <span id="esc-badge"><span class="key">Échap</span> quitter</span>
+            </div>
+            <div class="ctrl-grid">
+                <div class="ctrl-row">
+                    <div class="ctrl-keys">
+                        <span class="key">W</span><span class="key">↑</span>
+                    </div>
+                    <span class="ctrl-label">Avancer</span>
+                </div>
+                <div class="ctrl-row">
+                    <div class="ctrl-keys">
+                        <span class="key">S</span><span class="key">↓</span>
+                    </div>
+                    <span class="ctrl-label">Reculer</span>
+                </div>
+                <div class="ctrl-row">
+                    <div class="ctrl-keys">
+                        <span class="key">A</span><span class="key">Q</span>
+                    </div>
+                    <span class="ctrl-label">Gauche</span>
+                </div>
+                <div class="ctrl-row">
+                    <div class="ctrl-keys">
+                        <span class="key">D</span><span class="key">E</span>
+                    </div>
+                    <span class="ctrl-label">Droite</span>
+                </div>
+                <div class="ctrl-row">
+                    <div class="ctrl-keys">
+                        <span class="key mouse-key">🖱️</span>
+                    </div>
+                    <span class="ctrl-label">Regarder</span>
+                </div>
+            </div>
         </div>
 
         <div id="loading">
