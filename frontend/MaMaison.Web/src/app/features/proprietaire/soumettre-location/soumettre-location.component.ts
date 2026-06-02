@@ -3,11 +3,12 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-soumettre-location',
-  imports: [FormsModule, RouterLink, DecimalPipe],
+  imports: [FormsModule, RouterLink, DecimalPipe, ImageUploadComponent],
   templateUrl: './soumettre-location.component.html',
 })
 export class SoumettreLocationComponent {
