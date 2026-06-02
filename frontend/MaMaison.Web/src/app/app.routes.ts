@@ -85,5 +85,15 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/diaspora/diaspora.component').then(m => m.DiasporaComponent)
   },
-  { path: '**', redirectTo: '' }
+  {
+    path: 'contact',
+    loadComponent: () =>
+      import('./features/contact/contact.component').then(m => m.ContactComponent)
+  },
+  {
+    path: '404',
+    loadComponent: () =>
+      import('./features/not-found/not-found.component').then(m => m.NotFoundComponent)
+  },
+  { path: '**', loadComponent: () => import('./features/not-found/not-found.component').then(m => m.NotFoundComponent) }
 ];

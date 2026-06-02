@@ -1,0 +1,88 @@
+<section class="hero" style="min-height:50vh;justify-content:center;padding:80px 24px 100px">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="hero-content" style="max-width:540px;width:100%">
+    <div class="hero-eyebrow">✦ MaMaison Verified</div>
+    <h1 class="hero-title" style="font-size:2.5rem;margin-bottom:10px">Contactez-nous</h1>
+    <p class="hero-sub" style="margin-bottom:0">Achat, investissement, diaspora, partenariat — notre équipe répond sous 24h.</p>
+  </div>
+</section>
+
+<div class="page-container" style="padding-top:40px;max-width:680px">
+
+  @if (etat() === 'succes') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-xl);padding:60px 40px;text-align:center;box-shadow:var(--shadow)">
+      <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--success),#34D399);color:white;font-size:2rem;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;box-shadow:0 8px 28px rgba(5,150,105,.3)">✓</div>
+      <h2 style="font-family:var(--font-disp);font-size:1.6rem;font-weight:700;color:var(--navy-mid);margin-bottom:10px">Message envoyé !</h2>
+      <p style="color:var(--text-mid);line-height:1.65;max-width:380px;margin:0 auto 28px">Notre équipe vous contactera dans les 24h au numéro indiqué.</p>
+      <a routerLink="/" class="btn btn-navy">← Retour à l'accueil</a>
+    </div>
+  }
+
+  @if (etat() !== 'succes') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow)">
+      <div style="padding:28px 32px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,var(--navy-mid),var(--navy-soft))">
+        <h2 style="font-family:var(--font-disp);font-size:1.2rem;font-weight:700;color:white">Envoyer un message</h2>
+        <p style="font-size:.82rem;color:rgba(255,255,255,.5);margin-top:4px">Tous les champs marqués * sont obligatoires</p>
+      </div>
+
+      <div style="padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+
+        @if (etat() === 'erreur') {
+          <div style="grid-column:1/-1;background:#FEE2E2;border:1px solid #FECACA;border-radius:var(--r-sm);padding:12px 14px;font-size:.85rem;color:#991B1B">
+            ⚠️ Une erreur est survenue. Réessayez ou appelez directement.
+          </div>
+        }
+
+        <div class="filter-field"><label>Nom complet *</label><input type="text" [(ngModel)]="nom" placeholder="Jean Koné"></div>
+        <div class="filter-field"><label>Téléphone *</label><input type="tel" [(ngModel)]="telephone" placeholder="+225 07 00 00 00 00"></div>
+        <div class="filter-field" style="grid-column:1/-1"><label>Email</label><input type="email" [(ngModel)]="email" placeholder="jean@exemple.com"></div>
+
+        <div class="filter-field" style="grid-column:1/-1">
+          <label>Sujet *</label>
+          <select [(ngModel)]="sujet">
+            @for (s of sujets; track s) { <option [value]="s">{{ s }}</option> }
+          </select>
+        </div>
+
+        <div class="filter-field" style="grid-column:1/-1">
+          <label>Message *</label>
+          <textarea [(ngModel)]="message" rows="5" placeholder="Décrivez votre projet, vos besoins, vos questions…" style="padding:12px 14px;border:1.5px solid var(--border);border-radius:var(--r-sm);font-size:.9rem;font-family:inherit;resize:vertical;outline:none;background:var(--cream);transition:border-color .2s"></textarea>
+        </div>
+
+        <div style="grid-column:1/-1;background:var(--cream);border-radius:var(--r-sm);padding:14px 16px;border:1px solid var(--border);font-size:.8rem;color:var(--text-mid);display:flex;gap:12px;align-items:flex-start">
+          <span style="font-size:1.1rem;flex-shrink:0;margin-top:1px">🔒</span>
+          <span>Vos informations sont confidentielles et ne seront jamais transmises à des tiers.</span>
+        </div>
+
+        <button class="btn btn-gold" style="grid-column:1/-1;height:52px;font-size:1rem"
+                (click)="soumettre()"
+                [disabled]="!nom || !telephone || !message || etat() === 'chargement'">
+          @if (etat() === 'chargement') {
+            <span style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;flex-shrink:0"></span>
+            Envoi en cours…
+          } @else {
+            Envoyer le message →
+          }
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Info directes -->
+    <div style="margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-sm);text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:8px">📞</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy-mid)">Téléphone</div>
+        <div style="font-size:.8rem;color:var(--text-mid);margin-top:4px">+225 27 00 00 00</div>
+        <div style="font-size:.72rem;color:var(--text-soft)">Lun–Ven 8h–18h</div>
+      </div>
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;box-shadow:var(--shadow-sm);text-align:center">
+        <div style="font-size:1.5rem;margin-bottom:8px">💬</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy-mid)">WhatsApp</div>
+        <a href="https://wa.me/2250700000000" target="_blank" style="font-size:.8rem;color:#25D366;font-weight:600;margin-top:4px;display:block">Écrire sur WhatsApp</a>
+        <div style="font-size:.72rem;color:var(--text-soft)">Réponse sous 2h</div>
+      </div>
+    </div>
+  }
+</div>

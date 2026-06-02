@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { VillaListe, TypeVilla, TypeVillaLabels } from '../../../../core/models/villa.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
+import { FavorisService } from '../../../../core/services/favoris.service';
 import { environment } from '../../../../../environments/environment';
 
 interface VillaPage { items: VillaListe[]; total: number; page: number; pageSize: number; totalPages: number; }
@@ -16,6 +17,7 @@ interface VillaPage { items: VillaListe[]; total: number; page: number; pageSize
 })
 export class VillasListeComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  readonly favoris = inject(FavorisService);
 
   villas:     VillaListe[] = [];
   total      = 0;

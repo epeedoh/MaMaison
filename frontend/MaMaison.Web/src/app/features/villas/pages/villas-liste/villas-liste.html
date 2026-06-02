@@ -99,14 +99,19 @@
               </div>
               <div class="card-badges">
                 @if (villa.a3DVisite) {
-                  <button class="badge-3d" (click)="ouvrirVisite3D(villa, $event)">
-                    Visite 3D
-                  </button>
+                  <button class="badge-3d" (click)="ouvrirVisite3D(villa, $event)">Visite 3D</button>
                 }
                 <span class="badge badge-navy" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.8);border:1px solid rgba(255,255,255,.15)">
                   {{ TypeVillaLabels[villa.typeVilla] }}
                 </span>
               </div>
+              <!-- Bouton favori -->
+              <button class="fav-btn"
+                      [class.fav-active]="favoris.estFavori(villa.id)"
+                      (click)="favoris.toggleFavori({id:villa.id,titre:villa.titre,prix:villa.prix,type:'villa',quartier:villa.quartier+', '+villa.ville,addedAt:''}); $event.preventDefault(); $event.stopPropagation()"
+                      [title]="favoris.estFavori(villa.id) ? 'Retirer des favoris' : 'Ajouter aux favoris'">
+                {{ favoris.estFavori(villa.id) ? '❤️' : '🤍' }}
+              </button>
             </div>
             <div class="card-body">
               <div class="card-title">{{ villa.titre }}</div>

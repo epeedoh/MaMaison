@@ -40,16 +40,64 @@
 
 <router-outlet />
 
-<footer class="site-footer">
-  <div class="footer-inner">
-    <div class="footer-brand">
-      <svg width="22" height="22" viewBox="0 0 28 28" fill="none">
-        <rect width="28" height="28" rx="7" fill="#C8972A"/>
-        <path d="M14 6L4 13h3v9h6v-5h2v5h6V13h3L14 6z" fill="white"/>
-      </svg>
-      <span>MaMaison Verified</span>
+<footer class="site-footer-full">
+  <div class="footer-grid">
+    <!-- Brand -->
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <rect width="28" height="28" rx="7" fill="#C8972A"/>
+          <path d="M14 6L4 13h3v9h6v-5h2v5h6V13h3L14 6z" fill="white"/>
+        </svg>
+        <div>
+          <div style="font-family:var(--font-disp);font-weight:700;color:white;font-size:1rem">MaMaison</div>
+          <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)">VERIFIED</div>
+        </div>
+      </div>
+      <p style="font-size:.82rem;color:rgba(255,255,255,.4);line-height:1.6;max-width:220px">
+        Plateforme immobilière de confiance en Côte d'Ivoire. Biens vérifiés, promoteurs certifiés.
+      </p>
     </div>
-    <p class="footer-tagline">Louer, acheter, visiter et investir en confiance — Côte d'Ivoire</p>
-    <p class="footer-legal">© 2026 MaMaison Verified.</p>
+
+    <!-- Biens -->
+    <div>
+      <div class="footer-section-title">Découvrir</div>
+      <div class="footer-links">
+        <a routerLink="/villas">Villas &amp; logements</a>
+        <a routerLink="/locations">Locations vérifiées</a>
+        <a routerLink="/terrains">Terrains sélectionnés</a>
+        <a routerLink="/diaspora">Mode Diaspora 🌍</a>
+      </div>
+    </div>
+
+    <!-- Espace -->
+    <div>
+      <div class="footer-section-title">Mon espace</div>
+      <div class="footer-links">
+        <a routerLink="/profil">Mon profil &amp; favoris</a>
+        <a routerLink="/publier">Publier un bien</a>
+        <a routerLink="/devenir-apporteur">Devenir apporteur</a>
+        <a routerLink="/register">Créer un compte</a>
+      </div>
+    </div>
+
+    <!-- Contact -->
+    <div>
+      <div class="footer-section-title">Contact</div>
+      <div class="footer-links">
+        <a routerLink="/contact">Nous contacter</a>
+        <a href="https://wa.me/2250700000000" target="_blank">WhatsApp 💬</a>
+        <a routerLink="/admin">Back-office admin</a>
+      </div>
+      <div style="margin-top:16px;font-size:.75rem;color:rgba(255,255,255,.3)">
+        Abidjan, Côte d'Ivoire<br>
+        contact&#64;mamaison.ci
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <span>© 2026 MaMaison Verified — Tous droits réservés</span>
+    <span>Louer · Acheter · Visiter · Investir en confiance</span>
   </div>
 </footer>
