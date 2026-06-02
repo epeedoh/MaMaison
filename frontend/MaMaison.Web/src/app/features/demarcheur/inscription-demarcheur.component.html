@@ -1,0 +1,74 @@
+<section class="hero" style="min-height:100vh;justify-content:center;padding:40px 24px;background:linear-gradient(140deg,#050D1A 0%,#0F1F3D 50%,#1C3461 100%)">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="hero-content" style="max-width:480px;width:100%">
+
+    <div class="hero-eyebrow">✦ Espace Apporteurs</div>
+    <h1 class="hero-title" style="font-size:2.2rem;margin-bottom:10px">
+      Devenir apporteur<br><span class="gold-text">MaMaison Verified</span>
+    </h1>
+    <p class="hero-sub" style="margin-bottom:28px">
+      Soumettez des opportunités immobilières et bénéficiez de notre réseau de clients qualifiés.
+    </p>
+
+    @if (etat() === 'succes') {
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:var(--r-lg);padding:36px;text-align:center;backdrop-filter:blur(16px)">
+        <div style="font-size:3rem;margin-bottom:16px">🎉</div>
+        <h3 style="font-family:var(--font-disp);font-size:1.4rem;color:white;margin-bottom:8px">Inscription reçue !</h3>
+        <p style="color:rgba(255,255,255,.6);line-height:1.6;margin-bottom:24px">Notre équipe va vérifier votre identité et vous contacter dans les 48h.</p>
+        <a routerLink="/" class="btn btn-gold">← Retour à l'accueil</a>
+      </div>
+    }
+
+    @if (etat() !== 'succes') {
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:var(--r-lg);padding:32px;backdrop-filter:blur(16px)">
+
+        @if (etat() === 'erreur') {
+          <div style="background:rgba(229,62,62,.15);border:1px solid rgba(229,62,62,.3);border-radius:var(--r-sm);padding:11px 14px;font-size:.85rem;color:#FCA5A5;margin-bottom:16px">
+            ⚠️ {{ erreurMsg }}
+          </div>
+        }
+
+        <!-- Engagements -->
+        <div style="margin-bottom:22px;padding:14px 16px;background:rgba(200,151,42,.08);border:1px solid rgba(200,151,42,.2);border-radius:var(--r-sm)">
+          <p style="font-size:.8rem;color:#F5D98A;font-weight:600;margin-bottom:6px">Ce que vous vous engagez à faire :</p>
+          @for (item of ['Fournir des informations exactes sur chaque bien','Obtenir une autorisation du propriétaire réel','Ne pas contacter les clients sans accord MaMaison','Respecter les prix sans modification non autorisée']; track item) {
+            <div style="font-size:.78rem;color:rgba(255,255,255,.55);padding:3px 0">✓ {{ item }}</div>
+          }
+        </div>
+
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div class="filter-field">
+            <label style="color:rgba(255,255,255,.55)">Nom complet *</label>
+            <input type="text" [(ngModel)]="nom" placeholder="Kouassi Jean-Baptiste"
+                   style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white">
+          </div>
+          <div class="filter-field">
+            <label style="color:rgba(255,255,255,.55)">Téléphone *</label>
+            <input type="tel" [(ngModel)]="telephone" placeholder="+225 07 00 00 00 00"
+                   style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white">
+          </div>
+          <div class="filter-field">
+            <label style="color:rgba(255,255,255,.55)">Zone d'activité *</label>
+            <input type="text" [(ngModel)]="zoneActivite" placeholder="Cocody, Marcory, Plateau…"
+                   style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white">
+          </div>
+        </div>
+
+        <button class="btn btn-gold btn-full" style="height:48px;font-size:.95rem;margin-top:20px"
+                (click)="soumettre()"
+                [disabled]="!nom || !telephone || !zoneActivite || etat() === 'chargement'">
+          @if (etat() === 'chargement') {
+            <span style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></span>
+          } @else {
+            Soumettre ma candidature →
+          }
+        </button>
+
+        <p style="text-align:center;margin-top:14px;font-size:.75rem;color:rgba(255,255,255,.35)">
+          <a routerLink="/" style="color:rgba(255,255,255,.35)">← Retour à l'accueil</a>
+        </p>
+      </div>
+    }
+  </div>
+</section>

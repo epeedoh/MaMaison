@@ -68,5 +68,11 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/register.component').then(m => m.RegisterComponent)
   },
+  {
+    path: 'devenir-apporteur',
+    loadComponent: () =>
+      import('./features/demarcheur/inscription-demarcheur.component')
+        .then(m => m.InscriptionDemarcheurComponent)
+  },
   { path: '**', redirectTo: '' }
 ];

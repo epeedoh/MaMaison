@@ -12,9 +12,11 @@
 <div class="hero-filter-wrap" style="margin-bottom:0">
   <div class="hero-filter" style="padding:10px 16px;gap:8px;flex-wrap:wrap">
     @for (tab of [
-      {id:'dashboard',label:'📊 Tableau de bord'},
+      {id:'dashboard',label:'📊 Dashboard'},
       {id:'villas',label:'🏠 Villas'},
       {id:'locations',label:'🔑 Locations'},
+      {id:'terrains',label:'📍 Terrains'},
+      {id:'demarcheurs',label:'🤝 Démarcheurs'},
       {id:'demandes',label:'📋 Demandes'},
       {id:'signalements',label:'🚨 Signalements'}
     ]; track tab.id) {
@@ -165,6 +167,129 @@
                       <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="rejeterLocation(l.id)">✗ Rejeter</button>
                     }
                     <a [routerLink]="['/locations', l.id]" class="btn btn-ghost btn-sm">Voir</a>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- ── TERRAINS ── -->
+  @if (onglet() === 'terrains') {
+    <div style="display:grid;gap:24px">
+      <!-- Formulaire nouveau terrain -->
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow-sm)">
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid);margin-bottom:18px">➕ Nouveau terrain</h2>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div class="filter-field" style="grid-column:1/-1"><label>Titre *</label><input type="text" [(ngModel)]="newTerrain.titre" placeholder="Terrain résidentiel — Bingerville"></div>
+          <div class="filter-field"><label>Commune *</label><input type="text" [(ngModel)]="newTerrain.commune" placeholder="Bingerville"></div>
+          <div class="filter-field"><label>Quartier</label><input type="text" [(ngModel)]="newTerrain.quartier" placeholder="Agban"></div>
+          <div class="filter-field" style="grid-column:1/-1"><label>Localisation *</label><input type="text" [(ngModel)]="newTerrain.localisation" placeholder="Derrière l'église, 500m du marché"></div>
+          <div class="filter-field"><label>Surface (m²) *</label><input type="number" [(ngModel)]="newTerrain.surface" placeholder="600"></div>
+          <div class="filter-field"><label>Prix (FCFA) *</label><input type="number" [(ngModel)]="newTerrain.prix" placeholder="18000000"></div>
+          <div class="filter-field"><label>Latitude</label><input type="number" [(ngModel)]="newTerrain.latitude" placeholder="5.3826" step="0.0001"></div>
+          <div class="filter-field"><label>Longitude</label><input type="number" [(ngModel)]="newTerrain.longitude" placeholder="-4.0523" step="0.0001"></div>
+          <div class="filter-field"><label>Type de document</label><input type="text" [(ngModel)]="newTerrain.typeDocument" placeholder="ACD en cours, Lettre d'attribution..."></div>
+          <div class="filter-field"><label>Usage</label>
+            <select [(ngModel)]="newTerrain.usage">
+              <option value="0">Résidentiel</option><option value="1">Commercial</option><option value="2">Mixte</option><option value="3">Agricole</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-navy" style="margin-top:16px" (click)="creerTerrain()" [disabled]="!newTerrain.titre || !newTerrain.commune || !newTerrain.surface || !newTerrain.prix">
+          Créer le terrain
+        </button>
+      </div>
+
+      <!-- Liste terrains -->
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+        <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+          <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Terrains</h2>
+          <button class="btn btn-ghost btn-sm" (click)="chargerTerrains()">↺ Actualiser</button>
+        </div>
+        @if (terrains.length === 0) {
+          <div class="empty-state"><span class="empty-icon">📍</span><h3>Aucun terrain</h3></div>
+        } @else {
+          <div style="overflow-x:auto">
+            <table style="width:100%;border-collapse:collapse;font-size:.84rem">
+              <thead><tr style="background:var(--cream)">
+                <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Titre</th>
+                <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Commune</th>
+                <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Prix</th>
+                <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Niveau</th>
+                <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Statut</th>
+                <th style="padding:11px 18px"></th>
+              </tr></thead>
+              <tbody>
+                @for (t of terrains; track t.id) {
+                  <tr style="border-top:1px solid var(--border)">
+                    <td style="padding:12px 18px;font-weight:600">{{ t.titre }}</td>
+                    <td style="padding:12px 18px;color:var(--text-mid)">{{ t.commune }}</td>
+                    <td style="padding:12px 18px;font-weight:600;color:var(--navy-mid)">{{ formatPrix(t.prix) }}</td>
+                    <td style="padding:12px 18px"><span class="badge badge-green">Niv. {{ t.niveauVerification }}</span></td>
+                    <td style="padding:12px 18px">
+                      <span class="badge" [class.badge-green]="t.statut===3" [class.badge-amber]="t.statut===1||t.statut===2" [class.badge-gray]="t.statut===0">
+                        {{ ['Brouillon','En vérif.','Validé','Publié','Suspendu','Vendu','Rejeté'][t.statut] ?? '?' }}
+                      </span>
+                    </td>
+                    <td style="padding:12px 18px;display:flex;gap:6px">
+                      @if (t.statut !== 3) {
+                        <button class="btn btn-navy btn-sm" (click)="publierTerrain(t.id)">✓ Publier</button>
+                      }
+                      <a [routerLink]="['/terrains', t.id]" class="btn btn-ghost btn-sm">Voir</a>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- ── DÉMARCHEURS ── -->
+  @if (onglet() === 'demarcheurs') {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+      <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Démarcheurs</h2>
+        <button class="btn btn-ghost btn-sm" (click)="chargerDemarcheurs()">↺ Actualiser</button>
+      </div>
+      @if (demarcheurs.length === 0) {
+        <div class="empty-state"><span class="empty-icon">🤝</span><h3>Aucun démarcheur inscrit</h3></div>
+      } @else {
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:.84rem">
+            <thead><tr style="background:var(--cream)">
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Nom</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Zone</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Soumissions</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Score</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Statut</th>
+              <th style="padding:11px 18px"></th>
+            </tr></thead>
+            <tbody>
+              @for (d of demarcheurs; track d.id) {
+                <tr style="border-top:1px solid var(--border)">
+                  <td style="padding:12px 18px;font-weight:600">{{ d.nom }}</td>
+                  <td style="padding:12px 18px;color:var(--text-mid)">{{ d.zoneActivite }}</td>
+                  <td style="padding:12px 18px;text-align:center;font-weight:600">{{ d.nombreSoumissions }}</td>
+                  <td style="padding:12px 18px"><span style="font-weight:700;color:var(--gold)">{{ d.scoreFiabilite }}/100</span></td>
+                  <td style="padding:12px 18px">
+                    <span class="badge" [class.badge-amber]="d.statut===0" [class.badge-blue]="d.statut===1" [class.badge-green]="d.statut===2" [class.badge-gray]="d.statut===3">
+                      {{ ['Candidat','Vérifié','Certifié','Suspendu'][d.statut] ?? '?' }}
+                    </span>
+                  </td>
+                  <td style="padding:12px 18px;display:flex;gap:6px">
+                    @if (d.statut === 0) {
+                      <button class="btn btn-navy btn-sm" (click)="verifierDemarcheur(d.id)">✓ Vérifier</button>
+                    }
+                    @if (d.statut !== 3) {
+                      <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="suspendreD(d.id)">🚫 Suspendre</button>
+                    }
                   </td>
                 </tr>
               }

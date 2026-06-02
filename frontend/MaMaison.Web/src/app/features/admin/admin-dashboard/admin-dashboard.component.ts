@@ -1,14 +1,15 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { SlicePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
-type Onglet = 'dashboard' | 'villas' | 'locations' | 'demandes' | 'signalements';
+type Onglet = 'dashboard' | 'villas' | 'locations' | 'terrains' | 'demarcheurs' | 'demandes' | 'signalements';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, SlicePipe],
+  imports: [RouterLink, SlicePipe, FormsModule],
   templateUrl: './admin-dashboard.component.html',
 })
 export class AdminDashboardComponent implements OnInit {
@@ -16,11 +17,16 @@ export class AdminDashboardComponent implements OnInit {
   private readonly base = `${environment.apiUrl}/admin`;
 
   onglet = signal<Onglet>('dashboard');
-  dashboard: any = null;
-  villas:      any[] = [];
-  locations:   any[] = [];
-  demandes:    any[] = [];
+  dashboard:    any = null;
+  villas:       any[] = [];
+  locations:    any[] = [];
+  terrains:     any[] = [];
+  demarcheurs:  any[] = [];
+  demandes:     any[] = [];
   signalements: any[] = [];
+
+  // Formulaire nouveau terrain
+  newTerrain = { titre:'', localisation:'', commune:'', quartier:'', surface:0, prix:0, usage:0, latitude:null as number|null, longitude:null as number|null, typeDocument:'', description:'' };
   loading = signal(true);
   message = signal('');
 
@@ -54,8 +60,46 @@ export class AdminDashboardComponent implements OnInit {
     if (t === 'dashboard')    this.chargerDashboard();
     if (t === 'villas')       this.chargerVillas();
     if (t === 'locations')    this.chargerLocations();
+    if (t === 'terrains')     this.chargerTerrains();
+    if (t === 'demarcheurs')  this.chargerDemarcheurs();
     if (t === 'demandes')     this.chargerDemandes();
     if (t === 'signalements') this.chargerSignalements();
+  }
+
+  chargerTerrains() {
+    this.http.get<any[]>(`${this.base}/terrains`).subscribe(t => this.terrains = t);
+  }
+  chargerDemarcheurs() {
+    this.http.get<any[]>(`${environment.apiUrl}/demarcheurs`).subscribe(d => this.demarcheurs = d);
+  }
+
+  publierTerrain(id: string) {
+    this.http.put(`${this.base}/terrains/${id}/publier`, {}).subscribe({
+      next: (r: any) => { this.message.set(`✅ Terrain publié · Niveau: ${r.niveau}`); this.chargerTerrains(); },
+      error: () => this.message.set('❌ Erreur.')
+    });
+  }
+
+  creerTerrain() {
+    this.http.post(`${this.base}/terrains`, this.newTerrain).subscribe({
+      next: () => { this.message.set('✅ Terrain créé.'); this.chargerTerrains(); this.newTerrain = { titre:'', localisation:'', commune:'', quartier:'', surface:0, prix:0, usage:0, latitude:null, longitude:null, typeDocument:'', description:'' }; },
+      error: () => this.message.set('❌ Erreur création terrain.')
+    });
+  }
+
+  verifierDemarcheur(id: string) {
+    this.http.put(`${environment.apiUrl}/demarcheurs/${id}/verifier`, '"https://example.com/cni.jpg"',
+      { headers: {'Content-Type':'application/json'} }).subscribe({
+      next: () => { this.message.set('✅ Démarcheur vérifié.'); this.chargerDemarcheurs(); },
+      error: () => this.message.set('❌ Erreur.')
+    });
+  }
+
+  suspendreD(id: string) {
+    this.http.put(`${environment.apiUrl}/demarcheurs/${id}/suspendre`, {}).subscribe({
+      next: () => { this.message.set('🚫 Démarcheur suspendu.'); this.chargerDemarcheurs(); },
+      error: () => this.message.set('❌ Erreur.')
+    });
   }
 
   publierVilla(id: string) {
