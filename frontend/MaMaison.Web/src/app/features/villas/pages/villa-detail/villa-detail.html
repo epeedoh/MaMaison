@@ -89,6 +89,85 @@
           }
         </div>
 
+        <!-- ── Comparateur prix marché ── -->
+        <div class="detail-section" style="padding:20px 26px">
+          <h3>Prix au m² — Analyse marché</h3>
+
+          <!-- Ligne prix/m² du bien -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div>
+              <div style="font-size:1.6rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.02em">
+                {{ prixM2 }}
+              </div>
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">
+                Ce bien — {{ villa.quartier }}
+              </div>
+            </div>
+
+            @if (analyse) {
+              <!-- Badge positionnement -->
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+                <span style="font-size:1.4rem">{{ analyse.badgeEmoji }}</span>
+                <span style="font-size:.78rem;font-weight:700;"
+                      [style.color]="analyse.badge === 'bonne_affaire' ? 'var(--success)'
+                                   : analyse.badge === 'au_dessus'     ? '#E53E3E'
+                                   : 'var(--gold)'">
+                  {{ analyse.badgeLabel }}
+                </span>
+              </div>
+            }
+          </div>
+
+          @if (analyse) {
+            <!-- Barre comparaison -->
+            <div style="background:var(--cream);border-radius:10px;padding:14px 16px;border:1px solid var(--border)">
+              <div style="display:flex;justify-content:space-between;margin-bottom:10px">
+                <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">
+                  Marché — {{ villa.quartier }}
+                </span>
+                <span style="font-size:.82rem;font-weight:700;color:var(--navy-mid)">
+                  {{ formatPrix(analyse.prixM2Marche) }}/m²
+                </span>
+              </div>
+
+              <!-- Barre visuelle -->
+              <div style="position:relative;height:8px;background:var(--border);border-radius:4px;overflow:visible;margin-bottom:10px">
+                <!-- Barre marché -->
+                <div style="position:absolute;left:0;top:0;height:100%;width:60%;background:linear-gradient(90deg,var(--gold),#E8B84B);border-radius:4px;opacity:.4"></div>
+                <!-- Indicateur ce bien -->
+                <div style="position:absolute;top:-4px;height:16px;width:4px;background:var(--navy-mid);border-radius:2px;box-shadow:0 2px 6px rgba(15,31,61,.3);"
+                     [style.left]="analyse.ecartPourcentage > 0
+                       ? 'min(90%, calc(60% + ' + analyse.ecartPourcentage + '%))'
+                       : 'max(5%, calc(60% + ' + analyse.ecartPourcentage + '%))'">
+                </div>
+              </div>
+
+              <!-- Écart -->
+              <div style="display:flex;align-items:center;justify-content:space-between">
+                <span style="font-size:.78rem;color:var(--text-mid)">
+                  Ce bien vs le marché
+                </span>
+                <span style="font-size:.88rem;font-weight:800;"
+                      [style.color]="analyse.ecartPourcentage > 12 ? '#E53E3E'
+                                   : analyse.ecartPourcentage < -8 ? 'var(--success)'
+                                   : 'var(--gold)'">
+                  {{ analyse.ecartPourcentage > 0 ? '+' : '' }}{{ analyse.ecartPourcentage }}%
+                </span>
+              </div>
+            </div>
+
+            <p style="font-size:.7rem;color:var(--text-soft);margin-top:8px;font-style:italic">
+              Comparaison anonyme basée sur les biens disponibles dans la zone. Aucun promoteur n'est nommé.
+            </p>
+          }
+
+          @if (!analyse) {
+            <div style="background:var(--cream);border-radius:10px;padding:12px 16px;border:1px solid var(--border);font-size:.82rem;color:var(--text-soft)">
+              📊 Données marché en cours de collecte pour cette zone.
+            </div>
+          }
+        </div>
+
         <!-- Points visite -->
         @if (villa.pointsVisite.length > 0) {
           <div class="detail-section">

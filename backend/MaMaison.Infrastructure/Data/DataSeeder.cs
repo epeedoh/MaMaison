@@ -118,6 +118,38 @@ public static class DataSeeder
         await context.Terrains.AddAsync(terrain);
         await context.SaveChangesAsync();
 
-        logger.LogInformation("Demo data seeded: 1 promoteur, 1 villa (3 points + 7 hotspots), 2 locations, 1 terrain.");
+        // ── Villas supplémentaires pour le comparateur de prix ──────────
+        // Ces villas permettent de calculer la moyenne du marché à Cocody Riviera
+        // et dans d'autres zones (données anonymes, jamais de noms de concurrents)
+        var villas = new[]
+        {
+            // Cocody Riviera — même zone que la villa démo → nourrit la comparaison
+            Villa.Creer(promoteur.Id, "Villa Jardin — Cocody Riviera",
+                TypeVilla.VillaBasse, "Cocody Riviera", "Abidjan",
+                38_500_000m, 165m, 4),
+            Villa.Creer(promoteur.Id, "Résidence Les Palmiers — Cocody Riviera",
+                TypeVilla.Duplex, "Cocody Riviera", "Abidjan",
+                62_000_000m, 220m, 6),
+            Villa.Creer(promoteur.Id, "Villa Moderne — Cocody Riviera",
+                TypeVilla.VillaBasse, "Cocody Riviera", "Abidjan",
+                41_000_000m, 175m, 5),
+
+            // Autres zones — données marché pour enrichir la base
+            Villa.Creer(promoteur.Id, "Villa Bassam Bord de Mer",
+                TypeVilla.VillaBasse, "Bassam centre", "Bassam",
+                52_000_000m, 250m, 5),
+            Villa.Creer(promoteur.Id, "Duplex Bingerville Est",
+                TypeVilla.Duplex, "Bingerville Est", "Bingerville",
+                28_000_000m, 140m, 4),
+            Villa.Creer(promoteur.Id, "Villa Prestige Angré",
+                TypeVilla.Triplex, "Angré", "Cocody",
+                85_000_000m, 320m, 7),
+        };
+
+        foreach (var v in villas) { v.MettreEnValidation(); v.Publier(); v.MettreAJourScore(75); }
+        await context.Villas.AddRangeAsync(villas);
+        await context.SaveChangesAsync();
+
+        logger.LogInformation("Demo data seeded: 1 promoteur, 7 villas dont marché, 2 locations, 1 terrain.");
     }
 }
