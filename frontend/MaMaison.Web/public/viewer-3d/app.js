@@ -46,7 +46,6 @@ function creerVilla() {
     const canvas = document.getElementById('renderCanvas');
     engine = new BABYLON.Engine(canvas, true, { antialias: true, stencil: true });
     scene  = new BABYLON.Scene(engine);
-    scene.gravity          = new BABYLON.Vector3(0, -9.81, 0);
     scene.collisionsEnabled = true;
     scene.fogMode   = BABYLON.Scene.FOGMODE_EXP2;
     scene.fogDensity = 0.012;
@@ -57,23 +56,28 @@ function creerVilla() {
     camera = new BABYLON.UniversalCamera('fps',
         new BABYLON.Vector3(0, 1.65, 2), scene);
     camera.setTarget(new BABYLON.Vector3(0, 1.65, -2));
-    camera.speed             = 0.18;
-    camera.angularSensibility = 650;
-    camera.inertia           = 0.4;
-    camera.minZ              = 0.08;
-    camera.fov               = 1.05;
-    camera.checkCollisions   = true;
-    camera.applyGravity      = true;
-    // ellipsoid.y = demi-hauteur joueur (0.9m → corps de 1.8m)
-    // ellipsoidOffset.y = -(hauteur yeux - ellipsoid.y) = -(1.65 - 0.9) = -0.75
-    // → le bas de l'ellipsoïde = camera.y - 0.75 - 0.9 = camera.y - 1.65 = 0 (sol)
-    camera.ellipsoid         = new BABYLON.Vector3(0.35, 0.9, 0.35);
-    camera.ellipsoidOffset   = new BABYLON.Vector3(0, -0.75, 0);
-    camera.keysUp    = [87, 38];
-    camera.keysDown  = [83, 40];
-    camera.keysLeft  = [65, 37];
-    camera.keysRight = [68, 39];
+    camera.speed              = 0.14;
+    camera.angularSensibility = 900;    // plus doux (valeur haute = moins sensible)
+    camera.inertia            = 0.55;   // léger glissement pour fluidité
+    camera.minZ               = 0.08;
+    camera.fov                = 1.0;
+    camera.checkCollisions    = true;
+    camera.applyGravity       = false;  // pas de gravité — on verrouille Y manuellement
+    camera.ellipsoid          = new BABYLON.Vector3(0.32, 0.1, 0.32); // fine capsule
+    camera.ellipsoidOffset    = new BABYLON.Vector3(0, 0, 0);
+
+    // WASD + flèches + strafe Q/E
+    camera.keysUp    = [87, 38];        // W ↑
+    camera.keysDown  = [83, 40];        // S ↓
+    camera.keysLeft  = [65, 37, 81];    // A ← Q (strafe gauche)
+    camera.keysRight = [68, 39, 69];    // D → E (strafe droite)
     camera.attachControl(canvas, true);
+
+    // Verrouille la hauteur des yeux à 1.65m — empêche vol et enfoncement
+    const EYE_HEIGHT = 1.65;
+    scene.registerBeforeRender(() => {
+        camera.position.y = EYE_HEIGHT;
+    });
 
     // Pointer lock au clic
     canvas.addEventListener('click', () => {
