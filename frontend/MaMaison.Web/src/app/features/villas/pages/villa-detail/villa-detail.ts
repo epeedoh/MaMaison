@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { VillaService } from '../../../../core/services/villa.service';
+import { SeoService } from '../../../../core/services/seo.service';
 import { StatistiquesService } from '../../../../core/services/statistiques.service';
 import { VillaDetail as VillaDetailModel, TypeVillaLabels } from '../../../../core/models/villa.model';
 import { AnalysePrixBien } from '../../../../core/models/statistiques.model';
@@ -17,6 +18,7 @@ export class VillaDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly villaService = inject(VillaService);
   private readonly statsService = inject(StatistiquesService);
+  private readonly seo = inject(SeoService);
 
   villa: VillaDetailModel | null = null;
   analyse: AnalysePrixBien | null = null;
@@ -33,7 +35,7 @@ export class VillaDetailComponent implements OnInit {
       next: v => {
         this.villa = v;
         this.loading = false;
-        // Charge l'analyse prix après le bien
+        this.seo.setVilla(v.titre, v.quartier, v.prix, v.imagePrincipaleUrl ?? undefined);
         this.statsService.analyserBien(id).subscribe(a => this.analyse = a);
       },
       error: () => { this.error = true; this.loading = false; }

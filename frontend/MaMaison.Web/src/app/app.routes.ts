@@ -80,5 +80,10 @@ export const routes: Routes = [
       import('./features/demarcheur/inscription-demarcheur.component')
         .then(m => m.InscriptionDemarcheurComponent)
   },
+  {
+    path: 'diaspora',
+    loadComponent: () =>
+      import('./features/diaspora/diaspora.component').then(m => m.DiasporaComponent)
+  },
   { path: '**', redirectTo: '' }
 ];

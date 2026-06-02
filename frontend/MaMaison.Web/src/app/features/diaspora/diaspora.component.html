@@ -1,0 +1,98 @@
+<!-- HERO diaspora -->
+<section class="hero" style="min-height:70vh;justify-content:center;padding:80px 24px 100px;background:linear-gradient(140deg,#030A17 0%,#0A1830 50%,#0F2A50 100%)">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2" style="background:radial-gradient(circle,rgba(34,197,94,.12) 0%,transparent 65%)"></div>
+  <div class="orb orb-3"></div>
+
+  <div class="hero-content" style="max-width:800px">
+    <div class="hero-eyebrow">🌍 Mode Diaspora — Côte d'Ivoire</div>
+    <h1 class="hero-title" style="font-size:clamp(2.5rem,5vw,4rem)">
+      Investissez en Côte d'Ivoire<br>
+      <span class="gold-text">depuis n'importe où dans le monde</span>
+    </h1>
+    <p class="hero-sub" style="font-size:1.1rem;max-width:580px;margin:0 auto 40px">
+      Vous êtes en Europe, en Amérique ou ailleurs ? MaMaison vous permet d'acheter, investir et louer en Côte d'Ivoire en toute sécurité — sans vous déplacer.
+    </p>
+    <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2">
+      <a routerLink="/villas" class="btn btn-gold" style="height:52px;padding:0 32px;font-size:1rem">
+        🏠 Voir les villas disponibles
+      </a>
+      <a routerLink="/register" class="btn" style="height:52px;padding:0 28px;font-size:1rem;background:rgba(255,255,255,.1);color:white;border:1.5px solid rgba(255,255,255,.2)">
+        Créer un compte diaspora
+      </a>
+    </div>
+    <div style="display:flex;gap:32px;justify-content:center;margin-top:40px;flex-wrap:wrap;position:relative;z-index:2">
+      @for (s of [{v:'3D',l:'Visite immersive'},{v:'100%',l:'Biens vérifiés'},{v:'0',l:'Frais cachés'},{v:'CI',l:'Basé Abidjan'}]; track s.l) {
+        <div style="text-align:center">
+          <div style="font-family:var(--font-disp);font-size:1.8rem;font-weight:700;color:white">{{ s.v }}</div>
+          <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.4)">{{ s.l }}</div>
+        </div>
+      }
+    </div>
+  </div>
+</section>
+
+<!-- ÉTAPES -->
+<div class="page-container" style="padding-top:80px;padding-bottom:60px">
+  <div style="text-align:center;margin-bottom:56px">
+    <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:12px">Le processus</p>
+    <h2 style="font-family:var(--font-disp);font-size:clamp(1.8rem,3vw,2.6rem);font-weight:700;color:var(--navy-mid);letter-spacing:-.02em">
+      Comment ça marche ?
+    </h2>
+    <p style="color:var(--text-mid);max-width:480px;margin:12px auto 0;font-size:.95rem">6 étapes pour investir en toute sécurité depuis votre pays</p>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px;margin-bottom:80px">
+    @for (e of etapes; track e.num) {
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-xl);padding:28px 26px;box-shadow:var(--shadow-sm);transition:transform .3s,box-shadow .3s"
+           onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 40px rgba(5,13,26,.1)'"
+           onmouseout="this.style.transform='';this.style.boxShadow=''">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          <span style="font-size:2rem">{{ e.icon }}</span>
+          <span style="font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.12em;color:var(--gold)">Étape {{ e.num }}</span>
+        </div>
+        <h3 style="font-family:var(--font-disp);font-size:1.15rem;font-weight:700;color:var(--navy-mid);margin-bottom:8px">{{ e.titre }}</h3>
+        <p style="font-size:.86rem;color:var(--text-mid);line-height:1.65">{{ e.desc }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Bande rapport terrain -->
+  <div style="background:linear-gradient(135deg,var(--navy-mid) 0%,var(--navy-soft) 100%);border-radius:var(--r-xl);padding:44px 48px;display:grid;grid-template-columns:1fr auto;gap:32px;align-items:center;margin-bottom:80px">
+    <div>
+      <p style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.5);margin-bottom:12px">Service exclusif diaspora</p>
+      <h3 style="font-family:var(--font-disp);font-size:1.6rem;font-weight:700;color:white;margin-bottom:10px">Rapport terrain à distance</h3>
+      <p style="color:rgba(255,255,255,.65);font-size:.9rem;line-height:1.6;max-width:480px">
+        Notre équipe visite physiquement le bien pour vous. Vous recevez un rapport complet : photos haute définition, vidéo, état des documents, évaluation du quartier et recommandations.
+      </p>
+    </div>
+    <a routerLink="/contact" style="display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--gold),#E8B84B);color:white;font-weight:700;padding:14px 28px;border-radius:var(--r);text-decoration:none;white-space:nowrap;box-shadow:0 8px 28px rgba(200,151,42,.35);transition:all .2s"
+       onmouseover="this.style.transform='translateY(-2px)'"
+       onmouseout="this.style.transform=''">
+      📋 Demander un rapport
+    </a>
+  </div>
+
+  <!-- FAQ -->
+  <h2 style="font-family:var(--font-disp);font-size:2rem;font-weight:700;color:var(--navy-mid);text-align:center;margin-bottom:32px">Questions fréquentes</h2>
+  <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:12px;margin-bottom:60px">
+    @for (f of faq; track f.q) {
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
+        <div style="padding:18px 22px">
+          <p style="font-weight:700;color:var(--navy-mid);margin-bottom:8px;font-size:.92rem">{{ f.q }}</p>
+          <p style="color:var(--text-mid);font-size:.85rem;line-height:1.6">{{ f.r }}</p>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- CTA final -->
+  <div style="text-align:center;padding:60px 24px;background:var(--cream);border-radius:var(--r-xl);border:1px solid var(--border)">
+    <h2 style="font-family:var(--font-disp);font-size:2rem;font-weight:700;color:var(--navy-mid);margin-bottom:12px">Prêt à investir en Côte d'Ivoire ?</h2>
+    <p style="color:var(--text-mid);margin-bottom:28px">Créez un compte gratuit et commencez à explorer nos biens dès maintenant.</p>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+      <a routerLink="/villas" class="btn btn-navy" style="height:50px;padding:0 28px;font-size:.95rem">🏠 Explorer les villas</a>
+      <a routerLink="/terrains" class="btn btn-gold" style="height:50px;padding:0 28px;font-size:.95rem">📍 Voir les terrains</a>
+    </div>
+  </div>
+</div>

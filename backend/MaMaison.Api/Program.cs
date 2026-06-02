@@ -1,3 +1,4 @@
+using AspNetCoreRateLimit;
 using MaMaison.Application.Configuration;
 using MaMaison.Infrastructure;
 using MaMaison.Infrastructure.Data;
@@ -11,6 +12,31 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// ── Rate Limiting ───────────────────────────────────────────────
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.EnableEndpointRateLimiting = true;
+    options.StackBlockedRequests       = false;
+    options.HttpStatusCode             = 429;
+    options.GeneralRules = [
+        // Règle globale: 200 req/min par IP
+        new() { Endpoint = "*", Period = "1m", Limit = 200 },
+        // Auth: limiter les tentatives de login (sécurité)
+        new() { Endpoint = "POST:/api/auth/login",    Period = "5m",  Limit = 10 },
+        new() { Endpoint = "POST:/api/auth/register", Period = "10m", Limit = 5  },
+        // Upload: 20 uploads/heure
+        new() { Endpoint = "POST:/api/upload/image",  Period = "1h",  Limit = 20 },
+        // Recherche: 100 req/min
+        new() { Endpoint = "GET:/api/recherche",      Period = "1m",  Limit = 100 },
+    ];
+});
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddInMemoryRateLimiting();
 
 // ── JWT Authentication ──────────────────────────────────────────
 builder.Services.AddScoped<TokenService>();
@@ -87,7 +113,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHttpsRedirection();
 }
 
-app.UseStaticFiles(); // sert wwwroot/uploads/
+app.UseIpRateLimiting();
+app.UseStaticFiles();
 app.UseCors("MaMaisonCors");
 app.UseAuthentication();
 app.UseAuthorization();
