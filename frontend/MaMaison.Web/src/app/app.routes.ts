@@ -55,5 +55,15 @@ export const routes: Routes = [
       import('./features/proprietaire/soumettre-location/soumettre-location.component')
         .then(m => m.SoumettreLocationComponent)
   },
+  {
+    path: 'login',
+    loadComponent: () =>
+      import('./features/auth/login.component').then(m => m.LoginComponent)
+  },
+  {
+    path: 'register',
+    loadComponent: () =>
+      import('./features/auth/register.component').then(m => m.RegisterComponent)
+  },
   { path: '**', redirectTo: '' }
 ];

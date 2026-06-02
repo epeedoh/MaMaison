@@ -1,0 +1,72 @@
+<section class="hero" style="min-height:100vh;justify-content:center;padding:40px 24px">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="hero-content" style="max-width:440px;width:100%">
+
+    <div class="hero-eyebrow">✦ MaMaison Verified</div>
+    <h1 class="hero-title" style="font-size:2rem;margin-bottom:28px">Créer un compte</h1>
+
+    <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-lg);padding:32px;backdrop-filter:blur(16px)">
+
+      @if (etat() === 'erreur') {
+        <div style="background:rgba(229,62,62,.15);border:1px solid rgba(229,62,62,.3);border-radius:var(--r-sm);padding:11px 14px;font-size:.85rem;color:#FCA5A5;margin-bottom:16px">
+          ⚠️ {{ erreurMsg }}
+        </div>
+      }
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+        <div class="filter-field" style="grid-column:1/-1">
+          <label style="color:rgba(255,255,255,.55)">Nom complet *</label>
+          <input type="text" [(ngModel)]="nom" placeholder="Jean Koné"
+                 style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white"
+                 [disabled]="etat() === 'chargement'">
+        </div>
+        <div class="filter-field">
+          <label style="color:rgba(255,255,255,.55)">Téléphone *</label>
+          <input type="tel" [(ngModel)]="telephone" placeholder="+225 07…"
+                 style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white"
+                 [disabled]="etat() === 'chargement'">
+        </div>
+        <div class="filter-field">
+          <label style="color:rgba(255,255,255,.55)">Email</label>
+          <input type="email" [(ngModel)]="email" placeholder="jean@mail.com"
+                 style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white"
+                 [disabled]="etat() === 'chargement'">
+        </div>
+        <div class="filter-field" style="grid-column:1/-1">
+          <label style="color:rgba(255,255,255,.55)">Profil</label>
+          <select [(ngModel)]="role"
+                  style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white"
+                  [disabled]="etat() === 'chargement'">
+            @for (p of profils; track p.value) {
+              <option [value]="p.value" style="background:#0F1F3D;color:white">{{ p.label }}</option>
+            }
+          </select>
+        </div>
+        <div class="filter-field" style="grid-column:1/-1;margin-bottom:8px">
+          <label style="color:rgba(255,255,255,.55)">Mot de passe *</label>
+          <input type="password" [(ngModel)]="motDePasse" placeholder="Min. 6 caractères"
+                 style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white"
+                 [disabled]="etat() === 'chargement'"
+                 (keyup.enter)="soumettre()">
+        </div>
+      </div>
+
+      <button class="btn btn-gold btn-full"
+              style="height:48px;font-size:.95rem"
+              (click)="soumettre()"
+              [disabled]="!nom || !telephone || !motDePasse || etat() === 'chargement'">
+        @if (etat() === 'chargement') {
+          <span style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></span>
+        } @else {
+          Créer mon compte
+        }
+      </button>
+
+      <p style="text-align:center;margin-top:16px;font-size:.82rem;color:rgba(255,255,255,.45)">
+        Déjà un compte ?
+        <a routerLink="/login" style="color:#F5D98A;font-weight:600">Se connecter</a>
+      </p>
+    </div>
+  </div>
+</section>

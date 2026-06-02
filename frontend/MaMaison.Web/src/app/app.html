@@ -26,10 +26,21 @@
     </div>
 
     <div class="navbar-end" style="display:flex;align-items:center;gap:10px">
-      <a routerLink="/admin" routerLinkActive="nav-active" class="nav-link" style="font-size:.78rem;opacity:.6">Admin</a>
-      <a routerLink="/publier" class="btn-cta">
-        Publier un bien
-      </a>
+      @if (auth.estConnecte()) {
+        @if (auth.estAdmin()) {
+          <a routerLink="/admin" routerLinkActive="nav-active" class="nav-link" style="font-size:.78rem">Admin</a>
+        }
+        <span class="nav-link" style="font-size:.78rem;opacity:.6;cursor:default">
+          👤 {{ auth.user()?.nom }}
+        </span>
+        <button (click)="auth.deconnecter()" class="nav-link"
+                style="background:none;border:none;font-size:.78rem;opacity:.6;cursor:pointer;color:inherit;font-family:inherit">
+          Déconnexion
+        </button>
+      } @else {
+        <a routerLink="/login" class="nav-link" style="font-size:.82rem">Connexion</a>
+        <a routerLink="/publier" class="btn-cta">Publier un bien</a>
+      }
     </div>
   </div>
 </nav>

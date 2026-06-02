@@ -1,12 +1,39 @@
 using MaMaison.Application.Configuration;
 using MaMaison.Infrastructure;
 using MaMaison.Infrastructure.Data;
+using MaMaison.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
+
+// ── JWT Authentication ──────────────────────────────────────────
+builder.Services.AddScoped<TokenService>();
+
+var jwtSecret = builder.Configuration["Jwt:Secret"]
+    ?? "MaMaison-Secret-Key-2025-At-Least-32-Characters!";
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opts =>
+    {
+        opts.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer           = true,
+            ValidateAudience         = true,
+            ValidateLifetime         = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer              = builder.Configuration["Jwt:Issuer"] ?? "mamaison-api",
+            ValidAudience            = builder.Configuration["Jwt:Audience"] ?? "mamaison-app",
+            IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 builder.Services.Configure<FeatureFlags>(
     builder.Configuration.GetSection("FeatureFlags"));
@@ -61,6 +88,7 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseCors("MaMaisonCors");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
