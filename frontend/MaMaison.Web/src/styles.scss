@@ -922,3 +922,24 @@ button { font-family: inherit; }
 }
 .fav-btn:hover { background: rgba(5,13,26,.85); transform: scale(1.1); }
 .fav-btn.fav-active { background: rgba(220,38,38,.15); border-color: rgba(220,38,38,.4); }
+
+/* ============================================================
+   PRINT — Fiche villa/location imprimable
+   ============================================================ */
+@media print {
+  .navbar, .site-footer-full, .hero, .hero-filter-wrap,
+  .btn-3d-hero, .btn-visite-3d, .modal-backdrop, .modal-panel,
+  .aside-sticky, app-toast, app-search-bar,
+  .fav-btn, #btn-retour { display: none !important; }
+
+  body { background: white !important; }
+  .page-container { padding: 0 !important; }
+  .detail-layout { grid-template-columns: 1fr !important; }
+  .detail-gallery { height: 200px !important; }
+  .detail-section { box-shadow: none !important; border: 1px solid #ddd !important; }
+
+  .print-only { display: block !important; }
+  @page { margin: 20mm; }
+}
+
+.print-only { display: none; }

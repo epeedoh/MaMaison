@@ -12,11 +12,22 @@
     @for (tab of [{id:'resume',label:'📊 Résumé'},{id:'demandes',label:'📋 Mes demandes'},{id:'annonces',label:'🔑 Mes annonces'},{id:'favoris',label:'❤️ Favoris ('+favoris.count()+')'}]; track tab.id) {
       <button class="btn btn-sm" [class.btn-navy]="onglet()===tab.id" [class.btn-ghost]="onglet()!==tab.id" (click)="allerOnglet(tab.id)">{{ tab.label }}</button>
     }
+    <button class="btn btn-ghost btn-sm" (click)="activerEdit()">✏️ Modifier</button>
     <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:#E53E3E" (click)="auth.deconnecter()">Déconnexion</button>
   </div>
 </div>
 
 <div class="page-container" style="padding-top:40px">
+
+  <!-- ── ÉDITION PROFIL ── -->
+  @if (editMode) {
+    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow);margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end">
+      <div class="filter-field"><label>Nom complet</label><input type="text" [(ngModel)]="editNom" placeholder="Votre nom"></div>
+      <div class="filter-field"><label>Email</label><input type="email" [(ngModel)]="editEmail" placeholder="votre@email.com"></div>
+      <button class="btn btn-navy" (click)="sauvegarderProfil()" [disabled]="!editNom.trim()">Sauvegarder</button>
+      <button class="btn btn-ghost" (click)="editMode = false">Annuler</button>
+    </div>
+  }
 
   <!-- ── RÉSUMÉ ── -->
   @if (onglet() === 'resume') {

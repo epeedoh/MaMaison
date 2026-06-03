@@ -36,6 +36,11 @@ export class VillaDetailComponent implements OnInit {
   ouvrirSignalement() { this.signalementOuvert.set(true); }
   fermerSignalement() { this.signalementOuvert.set(false); }
 
+  ouvrirWhatsApp() {
+    const msg = encodeURIComponent(`Bonjour, je suis intéressé par la villa "${this.villa?.titre}" sur MaMaison Verified.`);
+    window.open(`https://wa.me/2250700000000?text=${msg}`, '_blank');
+  }
+
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id')!;
     this.villaService.obtenirDetail(id).subscribe({

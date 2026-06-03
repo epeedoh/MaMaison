@@ -26,16 +26,36 @@ public class ProfilController(MaMaisonDbContext context) : ControllerBase
         return Ok(user);
     }
 
+    [HttpPatch]
+    public async Task<IActionResult> MettreAJour(
+        [FromBody] MettreAJourProfilCommand cmd,
+        CancellationToken ct)
+    {
+        var user = await context.Utilisateurs.FindAsync([UtilisateurId], ct);
+        if (user is null) return NotFound();
+
+        // Mise à jour via reflection minimale (les setters sont privés dans Domain)
+        // On passe par EF tracking pour modifier les colonnes directement
+        if (!string.IsNullOrWhiteSpace(cmd.Nom))
+        {
+            context.Entry(user).Property("Nom").CurrentValue = cmd.Nom.Trim();
+        }
+        if (!string.IsNullOrWhiteSpace(cmd.Email))
+        {
+            context.Entry(user).Property("Email").CurrentValue = cmd.Email.Trim();
+        }
+
+        await context.SaveChangesAsync(ct);
+        return Ok(new { message = "Profil mis à jour.", nom = cmd.Nom, email = cmd.Email });
+    }
+
     [HttpGet("demandes")]
     public async Task<IActionResult> MesDemandes(CancellationToken ct)
     {
         var demandes = await context.DemandesVisite
             .Where(d => d.UtilisateurId == UtilisateurId)
             .OrderByDescending(d => d.DateCreation)
-            .Select(d => new {
-                d.Id, d.BienId, d.Statut,
-                d.DateSouhaitee, d.Commentaire, d.DateCreation
-            })
+            .Select(d => new { d.Id, d.BienId, d.Statut, d.DateSouhaitee, d.Commentaire, d.DateCreation })
             .ToListAsync(ct);
         return Ok(demandes);
     }
@@ -46,10 +66,7 @@ public class ProfilController(MaMaisonDbContext context) : ControllerBase
         var locations = await context.Locations
             .Where(l => l.ProprietaireId == UtilisateurId)
             .OrderByDescending(l => l.DateCreation)
-            .Select(l => new {
-                l.Id, l.Titre, l.Quartier, l.Commune,
-                l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation
-            })
+            .Select(l => new { l.Id, l.Titre, l.Quartier, l.Commune, l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation })
             .ToListAsync(ct);
         return Ok(locations);
     }
@@ -70,9 +87,11 @@ public class ProfilController(MaMaisonDbContext context) : ControllerBase
     {
         var userId = UtilisateurId;
         return Ok(new {
-            NbDemandes   = await context.DemandesVisite.CountAsync(d => d.UtilisateurId == userId, ct),
-            NbLocations  = await context.Locations.CountAsync(l => l.ProprietaireId == userId, ct),
+            NbDemandes     = await context.DemandesVisite.CountAsync(d => d.UtilisateurId == userId, ct),
+            NbLocations    = await context.Locations.CountAsync(l => l.ProprietaireId == userId, ct),
             NbSignalements = await context.Signalements.CountAsync(s => s.UtilisateurId == userId, ct),
         });
     }
 }
+
+public record MettreAJourProfilCommand(string? Nom, string? Email);
