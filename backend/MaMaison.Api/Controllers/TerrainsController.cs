@@ -2,7 +2,9 @@ using MaMaison.Application.Features.Terrains;
 using MaMaison.Application.Configuration;
 using MaMaison.Domain.Enums;
 using MaMaison.Domain.Interfaces;
+using MaMaison.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 
 namespace MaMaison.Api.Controllers;
@@ -11,7 +13,8 @@ namespace MaMaison.Api.Controllers;
 [Route("api/[controller]")]
 public class TerrainsController(
     ITerrainRepository terrainRepository,
-    IOptions<FeatureFlags> featureFlags) : ControllerBase
+    IOptions<FeatureFlags> featureFlags,
+    MaMaisonDbContext context) : ControllerBase
 {
     private const string AvertissementJuridique =
         "MaMaison effectue une vérification préliminaire des informations transmises. " +
@@ -23,17 +26,30 @@ public class TerrainsController(
         [FromQuery] string? commune,
         [FromQuery] UsageTerrain? usage,
         [FromQuery] decimal? surfaceMin,
+        [FromQuery] decimal? surfaceMax,
         [FromQuery] decimal? prixMax,
-        CancellationToken ct)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12,
+        CancellationToken ct = default)
     {
-        var terrains = await terrainRepository.RechercherAsync(commune, usage, surfaceMin, prixMax, ct);
+        var query = context.Terrains.Where(t => t.Statut == StatutTerrain.Publie);
+        if (!string.IsNullOrWhiteSpace(commune)) query = query.Where(t => t.Commune.Contains(commune));
+        if (usage.HasValue)      query = query.Where(t => t.Usage == usage.Value);
+        if (surfaceMin.HasValue) query = query.Where(t => t.Surface >= surfaceMin.Value);
+        if (surfaceMax.HasValue) query = query.Where(t => t.Surface <= surfaceMax.Value);
+        if (prixMax.HasValue)    query = query.Where(t => t.Prix <= prixMax.Value);
 
-        var dtos = terrains.Select(t => new TerrainListeDto(
+        var total      = await query.CountAsync(ct);
+        var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+        var items      = await query.OrderBy(t => t.Prix)
+            .Skip((page - 1) * pageSize).Take(pageSize).ToListAsync(ct);
+
+        var dtos = items.Select(t => new TerrainListeDto(
             t.Id, t.Titre, t.Commune, t.Quartier,
             t.Surface, t.Prix, t.Usage, t.NiveauVerification,
             t.ScoreMaMaison, null));
 
-        return Ok(dtos);
+        return Ok(new { items = dtos, total, page, pageSize, totalPages });
     }
 
     [HttpGet("{id}")]

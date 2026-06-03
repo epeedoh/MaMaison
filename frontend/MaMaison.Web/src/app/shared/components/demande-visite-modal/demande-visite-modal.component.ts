@@ -3,6 +3,7 @@ import {
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DemandeVisiteService } from '../../../core/services/demande-visite.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 export type ModalMode = 'rappel' | 'visite' | '3d';
 
@@ -16,6 +17,7 @@ export class DemandeVisiteModalComponent implements OnInit {
   @Input() bienId = '';
   @Input() titreBien = '';
   @Input() mode: ModalMode = 'visite';
+  private readonly toast = inject(ToastService);
   @Output() fermer = new EventEmitter<void>();
 
   private readonly service = inject(DemandeVisiteService);
@@ -70,10 +72,15 @@ export class DemandeVisiteModalComponent implements OnInit {
       dateSouhaitee: this.dateSouhaitee || undefined,
       commentaire: this.commentaire.trim() || undefined,
     }).subscribe({
-      next: () => this.etat.set('succes'),
+      next: () => {
+        this.etat.set('succes');
+        this.toast.succes('Demande envoyée ! Nous vous contacterons sous 24h.');
+        setTimeout(() => this.fermerModal(), 2000);
+      },
       error: () => {
         this.messageErreur = 'Une erreur est survenue. Veuillez réessayer.';
         this.etat.set('erreur');
+        this.toast.erreur('Erreur lors de l\'envoi. Vérifiez votre connexion.');
       }
     });
   }

@@ -43,7 +43,15 @@
     </div>
     <div class="filter-field">
       <label>Loyer max (FCFA)</label>
-      <input type="number" [(ngModel)]="filtreLoyerMax" placeholder="300 000">
+      <input type="number" [(ngModel)]="filtreLoyerMax" placeholder="400 000">
+    </div>
+    <div class="filter-field" style="min-width:105px">
+      <label>Loyer min (FCFA)</label>
+      <input type="number" [(ngModel)]="filtreLoyerMin" placeholder="100 000">
+    </div>
+    <div class="filter-field" style="min-width:85px">
+      <label>Pièces min</label>
+      <input type="number" [(ngModel)]="filtrePiecesMin" min="1" max="10" placeholder="2">
     </div>
     <button class="btn btn-navy" (click)="charger()" style="flex-shrink:0">Rechercher</button>
     <button class="btn btn-outline" (click)="resetFiltres()" style="flex-shrink:0">✕</button>
@@ -73,7 +81,7 @@
 
     @if (!loading && !error && locations.length > 0) {
       <div class="results-bar">
-        <p class="results-count"><strong>{{ locations.length }}</strong> bien(s) disponible(s)</p>
+        <p class="results-count"><strong>{{ total }}</strong> bien(s) disponible(s)</p>
       </div>
       <div class="card-grid">
         @for (loc of locations; track loc.id) {
@@ -116,9 +124,21 @@
                 <span class="badge badge-gold">● Vérifié</span>
               </div>
             </div>
+            <!-- Favori -->
+            <button class="fav-btn"
+                    [class.fav-active]="favoris.estFavori(loc.id)"
+                    (click)="favoris.toggleFavori({id:loc.id,titre:loc.titre,prix:loc.loyer,type:'location',quartier:loc.quartier+', '+loc.commune,addedAt:''}); $event.preventDefault(); $event.stopPropagation()"
+                    [title]="favoris.estFavori(loc.id) ? 'Retirer' : 'Ajouter aux favoris'">
+              {{ favoris.estFavori(loc.id) ? '❤️' : '🤍' }}
+            </button>
           </a>
         }
       </div>
+
+      <app-pagination
+        [page]="page" [pageSize]="pageSize" [total]="total" [totalPages]="totalPages"
+        (pageChange)="allerPage($event)">
+      </app-pagination>
     }
   </div>
 </div>

@@ -2,13 +2,15 @@ using MaMaison.Application.Features.Locations;
 using MaMaison.Domain.Entities;
 using MaMaison.Domain.Enums;
 using MaMaison.Domain.Interfaces;
+using MaMaison.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace MaMaison.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class LocationsController(ILocationRepository locationRepository) : ControllerBase
+public class LocationsController(ILocationRepository locationRepository, MaMaisonDbContext context) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> Rechercher(
@@ -16,18 +18,34 @@ public class LocationsController(ILocationRepository locationRepository) : Contr
         [FromQuery] string? commune,
         [FromQuery] TypeLocationBien? type,
         [FromQuery] decimal? loyerMax,
+        [FromQuery] decimal? loyerMin,
         [FromQuery] int? nombrePiecesMin,
-        CancellationToken ct)
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 12,
+        CancellationToken ct = default)
     {
-        var locations = await locationRepository.RechercherAsync(
-            quartier, commune, type, loyerMax, nombrePiecesMin, ct);
+        var query = context.Locations
+            .Where(l => l.Statut == StatutLocation.Publie && l.EstDisponible);
 
-        var dtos = locations.Select(l => new LocationListeDto(
-            l.Id, l.Titre, l.TypeBien, l.Quartier, l.Commune,
-            l.NombrePieces, l.Loyer, l.TotalAPrevoir, l.EstDisponible,
-            l.ScoreMaMaison, null));
+        if (!string.IsNullOrWhiteSpace(quartier)) query = query.Where(l => l.Quartier.Contains(quartier));
+        if (!string.IsNullOrWhiteSpace(commune))  query = query.Where(l => l.Commune.Contains(commune));
+        if (type.HasValue)         query = query.Where(l => l.TypeBien == type.Value);
+        if (loyerMax.HasValue)     query = query.Where(l => l.Loyer <= loyerMax.Value);
+        if (loyerMin.HasValue)     query = query.Where(l => l.Loyer >= loyerMin.Value);
+        if (nombrePiecesMin.HasValue) query = query.Where(l => l.NombrePieces >= nombrePiecesMin.Value);
 
-        return Ok(dtos);
+        var total      = await query.CountAsync(ct);
+        var totalPages = (int)Math.Ceiling(total / (double)pageSize);
+        var items      = await query
+            .OrderByDescending(l => l.ScoreMaMaison)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(l => new LocationListeDto(
+                l.Id, l.Titre, l.TypeBien, l.Quartier, l.Commune,
+                l.NombrePieces, l.Loyer, l.TotalAPrevoir, l.EstDisponible,
+                l.ScoreMaMaison, null))
+            .ToListAsync(ct);
+
+        return Ok(new { items, total, page, pageSize, totalPages });
     }
 
     [HttpGet("{id}")]

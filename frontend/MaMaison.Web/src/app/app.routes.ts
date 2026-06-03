@@ -86,6 +86,11 @@ export const routes: Routes = [
       import('./features/diaspora/diaspora.component').then(m => m.DiasporaComponent)
   },
   {
+    path: 'partenaires',
+    loadComponent: () =>
+      import('./features/partenaires/partenaires.component').then(m => m.PartenairesComponent)
+  },
+  {
     path: 'contact',
     loadComponent: () =>
       import('./features/contact/contact.component').then(m => m.ContactComponent)

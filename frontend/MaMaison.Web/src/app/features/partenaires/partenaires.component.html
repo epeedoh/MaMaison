@@ -1,0 +1,75 @@
+<!-- HERO -->
+<section class="hero" style="min-height:50vh;justify-content:center;padding:80px 24px 100px">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">✦ Réseau de confiance</div>
+    <h1 class="hero-title" style="font-size:2.5rem">
+      Nos partenaires<br>
+      <span class="gold-text">pour sécuriser votre achat</span>
+    </h1>
+    <p class="hero-sub" style="margin-bottom:0">
+      Notaires, géomètres, banques, assureurs — un réseau vérifié pour vous accompagner de A à Z.
+    </p>
+  </div>
+</section>
+
+<div class="page-container" style="padding-top:60px;padding-bottom:80px">
+
+  <!-- Catégories de partenaires -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:24px;margin-bottom:72px">
+    @for (cat of categories; track cat.titre) {
+      <div style="background:white;border:1px solid var(--border);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column">
+        <div [style.background]="cat.couleur" style="padding:24px 26px 22px">
+          <div style="font-size:2.2rem;margin-bottom:10px">{{ cat.icon }}</div>
+          <h3 style="font-family:var(--font-disp);font-size:1.3rem;font-weight:700;color:white;margin-bottom:6px">{{ cat.titre }}</h3>
+          <p style="font-size:.82rem;color:rgba(255,255,255,.65);line-height:1.55">{{ cat.desc }}</p>
+        </div>
+        <div style="padding:20px 24px;flex:1;display:flex;flex-direction:column">
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px;flex:1">
+            @for (s of cat.services; track s) {
+              <div style="display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-mid)">
+                <span style="color:var(--success);font-size:.85rem;flex-shrink:0">✓</span>
+                {{ s }}
+              </div>
+            }
+          </div>
+          <a routerLink="/contact" class="btn btn-navy btn-full" style="font-size:.83rem">
+            {{ cat.cta }} →
+          </a>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Avantages partenariat -->
+  <div style="background:linear-gradient(135deg,var(--navy-mid) 0%,var(--navy-soft) 100%);border-radius:var(--r-xl);padding:48px 40px;margin-bottom:60px">
+    <h2 style="font-family:var(--font-disp);font-size:1.8rem;font-weight:700;color:white;text-align:center;margin-bottom:10px">
+      Pourquoi passer par MaMaison ?
+    </h2>
+    <p style="color:rgba(255,255,255,.55);text-align:center;margin-bottom:36px;font-size:.9rem">Nos partenaires sont sélectionnés pour leur expertise et leur sérieux</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px">
+      @for (a of avantages; track a.titre) {
+        <div style="background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);border-radius:var(--r-lg);padding:20px">
+          <div style="font-size:1.4rem;margin-bottom:10px">{{ a.icon }}</div>
+          <div style="font-weight:700;color:white;margin-bottom:6px;font-size:.92rem">{{ a.titre }}</div>
+          <p style="font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.55">{{ a.desc }}</p>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- CTA devenir partenaire -->
+  <div style="text-align:center;background:var(--cream);border:1px solid var(--border);border-radius:var(--r-xl);padding:48px 32px">
+    <h2 style="font-family:var(--font-disp);font-size:1.6rem;font-weight:700;color:var(--navy-mid);margin-bottom:10px">
+      Vous êtes professionnel ?
+    </h2>
+    <p style="color:var(--text-mid);margin-bottom:28px;max-width:460px;margin-left:auto;margin-right:auto">
+      Rejoignez le réseau MaMaison Verified et accédez à des clients qualifiés en recherche active de biens en Côte d'Ivoire.
+    </p>
+    <a routerLink="/contact" class="btn btn-gold" style="height:50px;padding:0 32px;font-size:.95rem">
+      Devenir partenaire MaMaison →
+    </a>
+  </div>
+
+</div>

@@ -37,12 +37,20 @@
       <span class="avertissement-icon">⚠️</span>
       <span>Vérification préliminaire uniquement. <strong>Toute acquisition nécessite un notaire et un géomètre.</strong></span>
     </div>
-    <div class="filter-field" style="min-width:160px">
+    <div class="filter-field" style="min-width:140px">
       <label>Commune</label>
-      <input type="text" [(ngModel)]="filtreCommune" placeholder="Bingerville, Songon…">
+      <input type="text" [(ngModel)]="filtreCommune" placeholder="Bingerville…">
+    </div>
+    <div class="filter-field" style="min-width:110px">
+      <label>Surface min (m²)</label>
+      <input type="number" [(ngModel)]="filtreSurfaceMin" placeholder="300">
+    </div>
+    <div class="filter-field" style="min-width:110px">
+      <label>Prix max (FCFA)</label>
+      <input type="number" [(ngModel)]="filtrePrixMax" placeholder="30 000 000">
     </div>
     <button class="btn btn-navy" (click)="charger()" style="flex-shrink:0">Rechercher</button>
-    <button class="btn btn-outline" (click)="filtreCommune=''; charger()" style="flex-shrink:0">✕</button>
+    <button class="btn btn-outline" (click)="resetFiltres()" style="flex-shrink:0">✕</button>
   </div>
 </div>
 
@@ -67,7 +75,7 @@
 
     @if (!loading && !error && terrains.length > 0) {
       <div class="results-bar">
-        <p class="results-count"><strong>{{ terrains.length }}</strong> terrain(s) sélectionné(s) par MaMaison</p>
+        <p class="results-count"><strong>{{ total }}</strong> terrain(s) sélectionné(s) par MaMaison</p>
       </div>
       <div class="card-grid">
         @for (terrain of terrains; track terrain.id) {
@@ -105,9 +113,21 @@
                 <button class="btn btn-outline btn-sm">Dossier →</button>
               </div>
             </div>
+            <!-- Favori -->
+            <button class="fav-btn"
+                    [class.fav-active]="favoris.estFavori(terrain.id)"
+                    (click)="favoris.toggleFavori({id:terrain.id,titre:terrain.titre,prix:terrain.prix,type:'terrain',quartier:terrain.commune,addedAt:''}); $event.preventDefault(); $event.stopPropagation()"
+                    [title]="favoris.estFavori(terrain.id) ? 'Retirer' : 'Ajouter aux favoris'">
+              {{ favoris.estFavori(terrain.id) ? '❤️' : '🤍' }}
+            </button>
           </a>
         }
       </div>
+
+      <app-pagination
+        [page]="page" [pageSize]="pageSize" [total]="total" [totalPages]="totalPages"
+        (pageChange)="allerPage($event)">
+      </app-pagination>
     }
   </div>
 </div>

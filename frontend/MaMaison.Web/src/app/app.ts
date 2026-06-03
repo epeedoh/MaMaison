@@ -2,10 +2,11 @@ import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
 import { SearchBarComponent } from './shared/components/search-bar/search-bar.component';
+import { ToastComponent } from './shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, SearchBarComponent],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, SearchBarComponent, ToastComponent],
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
