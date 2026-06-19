@@ -1,0 +1,17 @@
+.git
+.vs
+.github
+.claude
+**/bin
+**/obj
+**/node_modules
+**/*.user
+.env
+*.zip
+*.md
+mobile
+tests
+docs
+assets
+viewer-3d
+frontend

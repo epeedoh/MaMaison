@@ -4,6 +4,7 @@ using MaMaison.Infrastructure;
 using MaMaison.Infrastructure.Data;
 using MaMaison.Infrastructure.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -94,16 +95,15 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// Swagger disponible dans tous les environnements (test + prod)
+app.MapOpenApi();
 
-// Seed demo data on startup
+// Migration + seed au démarrage
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MaMaisonDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<MaMaisonDbContext>>();
+    await db.Database.MigrateAsync();
     await DataSeeder.SeedAsync(db, logger);
 }
 

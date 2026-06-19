@@ -1,0 +1,71 @@
+version: "3.9"
+
+# ═══════════════════════════════════════════════════════════════
+#  MaMaison — API Immobilière + Admin Web
+#  Hetzner CX22 · .NET 10 · Angular · SQL Server partagé (momo_db)
+#
+#  Accès direct (sans toucher MoMo Manager ou ALO) :
+#    API  → http://<IP>:5001/swagger
+#    Web  → http://<IP>:8081
+#
+#  Prérequis :
+#    - db-net créé (fait lors du déploiement ALO)
+#    - momo_db connecté à db-net (idem)
+# ═══════════════════════════════════════════════════════════════
+
+services:
+
+  # ── API .NET 10 ───────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mamaison_api
+    ports:
+      - "5001:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: "http://+:8080"
+      ConnectionStrings__MaMaison: "Server=momo_db,1433;Database=MaMaisonDb;User Id=sa;Password=${DB_PASSWORD};TrustServerCertificate=True;Encrypt=True;"
+      Jwt__Secret: "${JWT_SECRET}"
+      Jwt__Issuer: "mamaison-api"
+      Jwt__Audience: "mamaison-app"
+      Jwt__ExpirationDays: "7"
+      Cors__AllowedOrigins__0: "http://157.180.42.119:8081"
+      Cors__AllowedOrigins__1: "http://157.180.42.119:5001"
+    deploy:
+      resources:
+        limits:
+          memory: 350m
+          cpus: "0.50"
+        reservations:
+          memory: 128m
+    restart: unless-stopped
+    networks:
+      - mamaison_net
+      - db-net
+
+  # ── Frontend Angular ─────────────────────────────────────────
+  web:
+    build:
+      context: ./frontend/MaMaison.Web
+      dockerfile: Dockerfile
+    container_name: mamaison_web
+    ports:
+      - "8081:80"
+    deploy:
+      resources:
+        limits:
+          memory: 64m
+          cpus: "0.10"
+    restart: unless-stopped
+    networks:
+      - mamaison_net
+
+# ── Réseaux ──────────────────────────────────────────────────
+networks:
+  mamaison_net:
+    driver: bridge
+  db-net:
+    external: true
+    name: db-net

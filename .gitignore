@@ -40,3 +40,4 @@ frontend/**/public/viewer-3d/libs/
 .idea/
 *.swp
 *.swo
+.env
