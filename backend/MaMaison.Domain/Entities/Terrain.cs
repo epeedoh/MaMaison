@@ -52,6 +52,7 @@ public class Terrain : BaseEntity
 
     public void DefinirCoordonnees(double latitude, double longitude)
     {
+        Coordonnees.Valider(latitude, longitude);
         Latitude = latitude;
         Longitude = longitude;
         if (NiveauVerification < NiveauVerificationTerrain.Niveau2)

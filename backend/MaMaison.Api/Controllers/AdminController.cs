@@ -13,6 +13,20 @@ namespace MaMaison.Api.Controllers;
 [Authorize(Roles = "Admin,SuperAdmin")]
 public class AdminController(MaMaisonDbContext context) : ControllerBase
 {
+    [HttpPut("biens/{id}/coordonnees")]
+    public async Task<IActionResult> CoordonneesBien(Guid id, CoordonneesCommand cmd, CancellationToken ct)
+    {
+        if (!cmd.Latitude.HasValue || !cmd.Longitude.HasValue) return BadRequest(new { message = "Renseignez les deux coordonnées." });
+        try { Coordonnees.Valider(cmd.Latitude.Value, cmd.Longitude.Value); }
+        catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        if (await context.Villas.FindAsync([id], ct) is { } villa) villa.DefinirCoordonnees(cmd.Latitude.Value, cmd.Longitude.Value);
+        else if (await context.Locations.FindAsync([id], ct) is { } location) location.DefinirCoordonnees(cmd.Latitude.Value, cmd.Longitude.Value);
+        else if (await context.Terrains.FindAsync([id], ct) is { } terrain) terrain.DefinirCoordonnees(cmd.Latitude.Value, cmd.Longitude.Value);
+        else return NotFound();
+        await context.SaveChangesAsync(ct);
+        return Ok();
+    }
+
     // ── Tableau de bord ──────────────────────────────────────────
     [HttpGet("dashboard")]
     public async Task<IActionResult> Dashboard(CancellationToken ct)
@@ -59,7 +73,7 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
         var query = context.Villas.Include(v => v.Medias).AsQueryable();
         if (statut.HasValue) query = query.Where(v => v.Statut == statut.Value);
         var villas = await query.OrderByDescending(v => v.DateCreation)
-            .Select(v => new { v.Id, v.Titre, v.Quartier, v.Ville, v.Prix, v.Statut, v.ScoreMaMaison, v.DateCreation, NbMedias = v.Medias.Count })
+            .Select(v => new { v.Id, v.Titre, v.Latitude, v.Longitude, v.Quartier, v.Ville, v.Prix, v.Statut, v.ScoreMaMaison, v.DateCreation, NbMedias = v.Medias.Count })
             .ToListAsync(ct);
         return Ok(villas);
     }
@@ -69,6 +83,10 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
     {
         var villa = await context.Villas.Include(v => v.Medias).Include(v => v.PointsVisite).FirstOrDefaultAsync(v => v.Id == id, ct);
         if (villa is null) return NotFound();
+        var categories = await context.JustificatifsBien.Where(d => d.BienId == id && d.Valide)
+            .Select(d => d.Categorie).Distinct().ToListAsync(ct);
+        if (!categories.Contains("Propriete") || !categories.Contains("IdentiteProprietaire"))
+            return BadRequest(new { message = "Validez une preuve de propriété et une pièce d'identité du propriétaire avant publication." });
         villa.Publier();
         // Recalcule le score
         var score = ScoreMaMaisonService.CalculerVilla(villa, 0, villa.PointsVisite.Count > 0);
@@ -94,7 +112,7 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
         var query = context.Locations.AsQueryable();
         if (statut.HasValue) query = query.Where(l => l.Statut == statut.Value);
         var locations = await query.OrderByDescending(l => l.DateCreation)
-            .Select(l => new { l.Id, l.Titre, l.Quartier, l.Commune, l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation })
+            .Select(l => new { l.Id, l.Titre, l.Latitude, l.Longitude, l.Quartier, l.Commune, l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation })
             .ToListAsync(ct);
         return Ok(locations);
     }
@@ -104,6 +122,10 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
     {
         var location = await context.Locations.Include(l => l.Medias).FirstOrDefaultAsync(l => l.Id == id, ct);
         if (location is null) return NotFound();
+        var categories = await context.JustificatifsBien.Where(d => d.BienId == id && d.Valide)
+            .Select(d => d.Categorie).Distinct().ToListAsync(ct);
+        if (!categories.Contains("Propriete") || !categories.Contains("IdentiteProprietaire"))
+            return BadRequest(new { message = "Validez une preuve de propriété et une pièce d'identité du propriétaire avant publication." });
         location.Publier();
         var score = ScoreMaMaisonService.CalculerLocation(location, 0, 0);
         // Score appliqué directement sur la propriété
@@ -165,3 +187,5 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
         return Ok(new { message = "Signalement résolu." });
     }
 }
+
+public record CoordonneesCommand(double? Latitude, double? Longitude);

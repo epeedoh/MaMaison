@@ -33,7 +33,9 @@ public record VillaDetailDto(
     string? Modele3DUrl,
     int ScoreMaMaison,
     IEnumerable<MediaBienDto> Medias,
-    IEnumerable<PointVisite3DDto> PointsVisite
+    IEnumerable<PointVisite3DDto> PointsVisite,
+    double? Latitude = null,
+    double? Longitude = null
 );
 
 public record MediaBienDto(Guid Id, string TypeMedia, string Url, int Ordre);

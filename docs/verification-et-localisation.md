@@ -1,0 +1,11 @@
+# Publication, terrains et localisation
+
+- Un locataire peut consulter les biens à acheter ou louer. Le formulaire `/publier` et l’API de soumission de location sont réservés aux propriétaires et administrateurs. Les opportunités sont réservées aux démarcheurs et administrateurs.
+- Dans **Administration → Terrains**, le bouton **Activer les terrains / Désactiver les terrains** enregistre le réglage en base. Les terrains sont désactivés par défaut. Le réglage agit sur le catalogue public, les détails, la recherche, le menu et la carte d’accueil. Les administrateurs peuvent continuer à préparer leurs dossiers.
+- Après soumission d’une location, le propriétaire peut joindre une preuve de propriété et sa pièce d’identité. Il peut reprendre l’envoi dans **Profil → Mes annonces**.
+- Dans les listes de biens de l’administration, **Dossier et position** permet d’envoyer et de consulter les justificatifs, puis de les valider après examen. La publication d’une villa, d’une location ou d’un terrain exige au moins un justificatif validé de chaque catégorie. Les documents existants dans l’ancien dossier technique des terrains ne remplacent pas ces deux preuves.
+- Les fichiers PDF, JPEG et PNG (10 Mo maximum) sont stockés dans `App_Data/justificatifs`, hors du dossier public. Le téléchargement passe par une API authentifiée qui vérifie les droits. Le volume Docker `justificatifs_data` conserve les fichiers au redémarrage/recréation ; inclure ce volume et la base dans les sauvegardes.
+- Les coordonnées GPS peuvent être renseignées lors de la soumission d’une location ou de la création d’un terrain, puis ajustées par l’administrateur pour les trois types de biens. Relever latitude et longitude dans Google Maps et contrôler le repère affiché. L’application ne déduit pas une position exacte à partir du nom d’un quartier.
+- Une carte Google Maps et un lien externe apparaissent sur les fiches dont les coordonnées sont renseignées. Aucun jeton API n’est requis pour cette intégration ; le navigateur doit pouvoir accéder à Google Maps.
+
+La migration `JustificatifsCoordonneesEtTerrains` ajoute les coordonnées des villas et locations, les justificatifs et le paramètre des terrains. Elle est appliquée par le mécanisme de migration existant au démarrage de l’API. Les fichiers des justificatifs restent hors de Git.

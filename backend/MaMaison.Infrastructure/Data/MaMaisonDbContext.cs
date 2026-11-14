@@ -18,8 +18,14 @@ public class MaMaisonDbContext(DbContextOptions<MaMaisonDbContext> options) : Db
     public DbSet<DemandeVisite> DemandesVisite => Set<DemandeVisite>();
     public DbSet<Signalement> Signalements => Set<Signalement>();
 
+    public DbSet<ParametrePlateforme> ParametresPlateforme => Set<ParametrePlateforme>();
+    public DbSet<JustificatifBien> JustificatifsBien => Set<JustificatifBien>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<ParametrePlateforme>().HasKey(p => p.Cle);
+        modelBuilder.Entity<ParametrePlateforme>().Property(p => p.Cle).HasMaxLength(100);
+        modelBuilder.Entity<JustificatifBien>().HasIndex(d => d.BienId);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MaMaisonDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }

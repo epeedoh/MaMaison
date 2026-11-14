@@ -1,3 +1,5 @@
+import { JustificatifsComponent } from '../../../shared/components/justificatifs/justificatifs.component';
+import { BienMapComponent } from '../../../shared/components/bien-map/bien-map.component';
 import { Component, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -8,7 +10,7 @@ import { environment } from '../../../../environments/environment';
 
 @Component({
   selector: 'app-soumettre-location',
-  imports: [FormsModule, RouterLink, DecimalPipe, ImageUploadComponent],
+  imports: [JustificatifsComponent, BienMapComponent, FormsModule, RouterLink, DecimalPipe, ImageUploadComponent],
   templateUrl: './soumettre-location.component.html',
 })
 export class SoumettreLocationComponent {
@@ -16,7 +18,10 @@ export class SoumettreLocationComponent {
 
   etat = signal<'form' | 'chargement' | 'succes' | 'erreur'>('form');
 
+  bienId = '';
   form = {
+    latitude: null as number | null,
+    longitude: null as number | null,
     titre: '',
     typeBien: 6,
     quartier: '',
@@ -52,6 +57,7 @@ export class SoumettreLocationComponent {
     this.etat.set('chargement');
 
     const payload = {
+      latitude: this.form.latitude, longitude: this.form.longitude,
       titre: this.form.titre, typeBien: +this.form.typeBien,
       quartier: this.form.quartier, commune: this.form.commune,
       nombrePieces: +this.form.nombrePieces,
@@ -59,8 +65,8 @@ export class SoumettreLocationComponent {
       avance: this.form.avance, fraisAgence: this.form.fraisAgence || 0,
     };
 
-    this.http.post(`${environment.apiUrl}/locations`, payload).subscribe({
-      next: () => this.etat.set('succes'),
+    this.http.post<{ id: string }>(`${environment.apiUrl}/locations`, payload).subscribe({
+      next: result => { this.bienId = result.id; this.etat.set('succes'); },
       error: () => this.etat.set('erreur'),
     });
   }

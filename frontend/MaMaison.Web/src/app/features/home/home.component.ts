@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { FonctionnalitesService } from '../../core/services/fonctionnalites.service';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 @Component({
@@ -7,4 +8,6 @@ import { RouterLink } from '@angular/router';
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent {}
+export class HomeComponent {
+  readonly fonctionnalites = inject(FonctionnalitesService);
+}

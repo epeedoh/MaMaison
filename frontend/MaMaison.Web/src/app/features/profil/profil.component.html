@@ -45,7 +45,7 @@
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <button class="btn btn-navy" (click)="allerOnglet('demandes')">Mes demandes de visite →</button>
-        <a routerLink="/publier" class="btn btn-gold">+ Publier un bien</a>
+        @if (auth.peutPublier()) { <a routerLink="/publier" class="btn btn-gold">+ Publier un bien</a> }
         <a routerLink="/villas" class="btn btn-ghost">Explorer les villas</a>
       </div>
     }
@@ -92,7 +92,7 @@
   @if (onglet() === 'annonces') {
     <div style="display:flex;flex-direction:column;gap:16px">
       <div style="display:flex;gap:10px">
-        <a routerLink="/publier" class="btn btn-gold">+ Nouvelle annonce</a>
+        @if (auth.peutPublier()) { <a routerLink="/publier" class="btn btn-gold">+ Nouvelle annonce</a> }
       </div>
       @if (annonces.length === 0) {
         <div class="empty-state">
@@ -105,6 +105,7 @@
           <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 22px;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:space-between;gap:12px">
             <div>
               <div style="font-weight:700;color:var(--text);margin-bottom:3px">{{ a.titre }}</div>
+              <app-justificatifs [bienId]="a.id" />
               <div style="font-size:.82rem;color:var(--text-mid)">{{ a.quartier }}, {{ a.commune }} · {{ formatPrix(a.loyer) }}/mois</div>
               <div style="font-size:.72rem;color:var(--text-soft);margin-top:3px">{{ formatDate(a.dateCreation) }}</div>
             </div>

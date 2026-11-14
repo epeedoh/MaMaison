@@ -27,6 +27,7 @@ public class DemarcheursController(MaMaisonDbContext context) : ControllerBase
     }
 
     /// <summary>Soumettre une opportunité immobilière (pas de publication directe)</summary>
+    [Authorize(Roles = "Demarcheur,Admin,SuperAdmin")]
     [HttpPost("{id}/soumettre-opportunite")]
     public async Task<IActionResult> SoumettreOpportunite(
         Guid id,

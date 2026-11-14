@@ -13,6 +13,8 @@ export interface VillaListe {
 }
 
 export interface VillaDetail extends VillaListe {
+  latitude: number | null;
+  longitude: number | null;
   promoteurId: string;
   nomPromoteur: string;
   surfaceTerrain: number | null;

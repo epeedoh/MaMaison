@@ -1,5 +1,5 @@
+import { BienMapComponent } from '../../../../shared/components/bien-map/bien-map.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { DecimalPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { TerrainService } from '../../../../core/services/terrain.service';
 import { TerrainDetail, NiveauVerificationTerrain, NiveauVerificationLabels } from '../../../../core/models/terrain.model';
@@ -7,7 +7,7 @@ import { DemandeVisiteModalComponent, ModalMode } from '../../../../shared/compo
 
 @Component({
   selector: 'app-terrain-detail',
-  imports: [RouterLink, DemandeVisiteModalComponent, DecimalPipe],
+  imports: [BienMapComponent, RouterLink, DemandeVisiteModalComponent],
   templateUrl: './terrain-detail.component.html',
 })
 export class TerrainDetailComponent implements OnInit {

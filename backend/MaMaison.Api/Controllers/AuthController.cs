@@ -26,7 +26,9 @@ public class AuthController(MaMaisonDbContext context, TokenService tokenService
         var hash = HashMotDePasse(cmd.MotDePasse);
         var utilisateur = Utilisateur.Creer(
             cmd.Nom, cmd.Telephone, hash,
-            cmd.Role == RoleUtilisateur.Admin ? RoleUtilisateur.Visiteur : cmd.Role, // sécurité
+            cmd.Role is RoleUtilisateur.Visiteur or RoleUtilisateur.Acheteur or RoleUtilisateur.Locataire
+                or RoleUtilisateur.Proprietaire or RoleUtilisateur.Promoteur or RoleUtilisateur.Demarcheur
+                ? cmd.Role : RoleUtilisateur.Visiteur,
             cmd.Email);
 
         await context.Utilisateurs.AddAsync(utilisateur, ct);

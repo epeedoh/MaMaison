@@ -1,11 +1,9 @@
 using MaMaison.Application.Features.Terrains;
-using MaMaison.Application.Configuration;
 using MaMaison.Domain.Enums;
 using MaMaison.Domain.Interfaces;
 using MaMaison.Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 
 namespace MaMaison.Api.Controllers;
 
@@ -13,7 +11,6 @@ namespace MaMaison.Api.Controllers;
 [Route("api/[controller]")]
 public class TerrainsController(
     ITerrainRepository terrainRepository,
-    IOptions<FeatureFlags> featureFlags,
     MaMaisonDbContext context) : ControllerBase
 {
     private const string AvertissementJuridique =
@@ -32,6 +29,8 @@ public class TerrainsController(
         [FromQuery] int pageSize = 12,
         CancellationToken ct = default)
     {
+        if (!await context.ParametresPlateforme.AnyAsync(p => p.Cle == "terrains" && p.Actif, ct))
+            return NotFound(new { message = "Les terrains sont temporairement désactivés." });
         var query = context.Terrains.Where(t => t.Statut == StatutTerrain.Publie);
         if (!string.IsNullOrWhiteSpace(commune)) query = query.Where(t => t.Commune.Contains(commune));
         if (usage.HasValue)      query = query.Where(t => t.Usage == usage.Value);
@@ -55,8 +54,10 @@ public class TerrainsController(
     [HttpGet("{id}")]
     public async Task<IActionResult> ObtenirDetail(Guid id, CancellationToken ct)
     {
+        if (!await context.ParametresPlateforme.AnyAsync(p => p.Cle == "terrains" && p.Actif, ct))
+            return NotFound(new { message = "Les terrains sont temporairement désactivés." });
         var terrain = await terrainRepository.ObtenirParIdAsync(id, ct);
-        if (terrain is null) return NotFound();
+        if (terrain is null || terrain.Statut != StatutTerrain.Publie) return NotFound();
 
         var dto = new TerrainDetailDto(
             terrain.Id, terrain.Titre, terrain.Localisation, terrain.Commune, terrain.Quartier,

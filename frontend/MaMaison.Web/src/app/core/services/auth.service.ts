@@ -23,6 +23,8 @@ export class AuthService {
     return r === Role.Admin || r === Role.SuperAdmin;
   });
 
+  readonly peutPublier = computed(() => this.estAdmin() || this._user()?.role === Role.Proprietaire);
+
   login(cmd: LoginCommand): Observable<AuthResult> {
     return this.http.post<AuthResult>(`${this.base}/login`, cmd).pipe(
       tap(result => this.sauvegarder(result))

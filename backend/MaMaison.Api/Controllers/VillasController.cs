@@ -80,7 +80,7 @@ public class VillasController(IVillaRepository villaRepository, MaMaisonDbContex
                 p.RotationX, p.RotationY, p.RotationZ,
                 p.Ordre,
                 p.Hotspots.Select(h => new HotspotVisiteDto(
-                    h.Id, h.Libelle, h.Contenu, h.PositionX, h.PositionY, h.PositionZ)))));
+                    h.Id, h.Libelle, h.Contenu, h.PositionX, h.PositionY, h.PositionZ)))), villa.Latitude, villa.Longitude);
 
         return Ok(dto);
     }

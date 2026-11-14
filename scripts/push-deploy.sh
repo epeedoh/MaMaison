@@ -37,6 +37,7 @@ tar \
   --exclude='**/bin' \
   --exclude='**/obj' \
   --exclude='**/node_modules' \
+  --exclude='**/App_Data' \
   --exclude='**/*.user' \
   --exclude='.env' \
   --exclude='*.md' \

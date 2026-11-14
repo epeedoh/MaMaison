@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { adminGuard, authGuard } from './core/guards/auth.guard';
+import { adminGuard, authGuard, publisherGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -53,7 +53,7 @@ export const routes: Routes = [
   },
   {
     path: 'publier',
-    canActivate: [authGuard],
+    canActivate: [publisherGuard],
     loadComponent: () =>
       import('./features/proprietaire/soumettre-location/soumettre-location.component')
         .then(m => m.SoumettreLocationComponent)

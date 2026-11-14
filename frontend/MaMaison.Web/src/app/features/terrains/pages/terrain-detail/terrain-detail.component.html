@@ -58,19 +58,7 @@
           </div>
         </div>
 
-        @if (terrain.latitude && terrain.longitude) {
-          <div class="detail-section">
-            <h3>Localisation GPS</h3>
-            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--cream);border-radius:var(--r-sm);border:1px solid var(--border)">
-              <span style="font-size:1.5rem">🗺️</span>
-              <div>
-                <div style="font-size:.88rem;font-weight:600;color:var(--navy-mid)">{{ terrain.latitude | number:'1.4-6' }}° N, {{ terrain.longitude | number:'1.4-6' }}° E</div>
-                <a [href]="'https://maps.google.com/?q='+terrain.latitude+','+terrain.longitude" target="_blank" style="font-size:.78rem;color:var(--gold);font-weight:600">Voir sur Google Maps →</a>
-              </div>
-            </div>
-          </div>
-        }
-
+        <app-bien-map [latitude]="terrain.latitude" [longitude]="terrain.longitude" />
         <div class="detail-section" style="background:#FFFBEB;border-color:rgba(200,151,42,.2)">
           <h3 style="color:#92400E">Documents disponibles</h3>
           <div class="verif-levels">

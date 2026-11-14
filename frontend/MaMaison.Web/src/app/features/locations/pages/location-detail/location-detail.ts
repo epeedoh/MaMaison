@@ -1,3 +1,4 @@
+import { BienMapComponent } from '../../../../shared/components/bien-map/bien-map.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { LocationService } from '../../../../core/services/location.service';
@@ -7,7 +8,7 @@ import { SignalementModalComponent } from '../../../../shared/components/signale
 
 @Component({
   selector: 'app-location-detail',
-  imports: [RouterLink, DemandeVisiteModalComponent, SignalementModalComponent],
+  imports: [BienMapComponent, RouterLink, DemandeVisiteModalComponent, SignalementModalComponent],
   templateUrl: './location-detail.html',
   styleUrl: './location-detail.scss'
 })

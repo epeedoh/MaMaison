@@ -16,7 +16,7 @@
     <div class="navbar-nav">
       <a routerLink="/villas" routerLinkActive="nav-active" class="nav-link">Villas</a>
       <a routerLink="/locations" routerLinkActive="nav-active" class="nav-link">Locations</a>
-      <a routerLink="/terrains" routerLinkActive="nav-active" class="nav-link">Terrains</a>
+      @if (fonctionnalites.terrainsActifs()) { <a routerLink="/terrains" routerLinkActive="nav-active" class="nav-link">Terrains</a> }
     </div>
 
     <!-- Barre de recherche globale -->
@@ -32,7 +32,7 @@
         </a>
       } @else {
         <a routerLink="/login" class="nav-link" style="font-size:.8rem">Connexion</a>
-        <a routerLink="/publier" class="btn-cta">Publier</a>
+        @if (auth.peutPublier()) { <a routerLink="/publier" class="btn-cta">Publier</a> }
       }
     </div>
   </div>
@@ -66,7 +66,7 @@
       <div class="footer-links">
         <a routerLink="/villas">Villas &amp; logements</a>
         <a routerLink="/locations">Locations vérifiées</a>
-        <a routerLink="/terrains">Terrains sélectionnés</a>
+        @if (fonctionnalites.terrainsActifs()) { <a routerLink="/terrains">Terrains sélectionnés</a> }
         <a routerLink="/diaspora">Mode Diaspora 🌍</a>
       </div>
     </div>
@@ -76,7 +76,7 @@
       <div class="footer-section-title">Mon espace</div>
       <div class="footer-links">
         <a routerLink="/profil">Mon profil &amp; favoris</a>
-        <a routerLink="/publier">Publier un bien</a>
+        @if (auth.peutPublier()) { <a routerLink="/publier">Publier un bien</a> }
         <a routerLink="/devenir-apporteur">Devenir apporteur</a>
         <a routerLink="/register">Créer un compte</a>
       </div>

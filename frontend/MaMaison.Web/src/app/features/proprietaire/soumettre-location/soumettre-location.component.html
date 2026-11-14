@@ -138,6 +138,13 @@
         </div>
       </div>
 
+      <section class="detail-section">
+        <h3>Position GPS du bien</h3>
+        <label>Latitude <input name="latitude" type="number" min="-90" max="90" step="any" [(ngModel)]="form.latitude"></label>
+        <label>Longitude <input name="longitude" type="number" min="-180" max="180" step="any" [(ngModel)]="form.longitude"></label>
+        <p>Relevez les coordonnées du bien dans Google Maps puis vérifiez le repère ci-dessous.</p>
+        <app-bien-map [latitude]="form.latitude" [longitude]="form.longitude" />
+      </section>
       @if (etat() === 'erreur') {
         <div style="background:#FEE2E2;border:1px solid #FECACA;color:#991B1B;border-radius:var(--r-sm);padding:12px 16px;margin-bottom:16px;font-size:.85rem">
           ⚠️ Une erreur est survenue. Vérifiez que l'API est démarrée et réessayez.
@@ -165,3 +172,5 @@
     </form>
   }
 </div>
+
+@if (bienId) { <app-justificatifs [bienId]="bienId" /> }

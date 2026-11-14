@@ -5,6 +5,13 @@ namespace MaMaison.Domain.Entities;
 
 public class Location : BaseEntity
 {
+    public double? Latitude { get; private set; }
+    public double? Longitude { get; private set; }
+    public void DefinirCoordonnees(double latitude, double longitude)
+    {
+        Coordonnees.Valider(latitude, longitude);
+        Latitude = latitude; Longitude = longitude; MarquerModifie();
+    }
     public Guid ProprietaireId { get; private set; }
     public string Titre { get; private set; } = string.Empty;
     public TypeLocationBien TypeBien { get; private set; }

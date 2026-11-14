@@ -1,4 +1,6 @@
 using MaMaison.Application.Features.Locations;
+using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 using MaMaison.Domain.Entities;
 using MaMaison.Domain.Enums;
 using MaMaison.Domain.Interfaces;
@@ -60,23 +62,31 @@ public class LocationsController(ILocationRepository locationRepository, MaMaiso
             location.Loyer, location.Caution, location.Avance,
             location.FraisAgence, location.FraisVisite, location.TotalAPrevoir,
             location.EstDisponible, location.DateConfirmationDisponibilite,
-            location.ScoreMaMaison);
+            location.ScoreMaMaison, location.Latitude, location.Longitude);
 
         return Ok(dto);
     }
 
+    [Authorize(Roles = "Proprietaire,Admin,SuperAdmin")]
     [HttpPost]
     public async Task<IActionResult> Soumettre(
         [FromBody] SoumettreLocationCommand cmd,
         CancellationToken ct)
     {
-        var proprietaireId = Guid.NewGuid();
+        if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var proprietaireId))
+            return Unauthorized();
 
         var location = Location.Creer(
             proprietaireId, cmd.Titre, cmd.TypeBien,
             cmd.Quartier, cmd.Commune, cmd.NombrePieces,
             cmd.Loyer, cmd.Caution, cmd.Avance, cmd.FraisAgence);
 
+        if (cmd.Latitude.HasValue != cmd.Longitude.HasValue) return BadRequest(new { message = "Renseignez les deux coordonnées." });
+        if (cmd.Latitude.HasValue)
+        {
+            try { location.DefinirCoordonnees(cmd.Latitude.Value, cmd.Longitude!.Value); }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        }
         await locationRepository.AjouterAsync(location, ct);
         await locationRepository.SauvegarderAsync(ct);
 

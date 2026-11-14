@@ -1,3 +1,4 @@
+import { BienMapComponent } from '../../../../shared/components/bien-map/bien-map.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { VillaService } from '../../../../core/services/villa.service';
@@ -12,7 +13,7 @@ import { FavorisService } from '../../../../core/services/favoris.service';
 
 @Component({
   selector: 'app-villa-detail',
-  imports: [RouterLink, DemandeVisiteModalComponent, SignalementModalComponent],
+  imports: [BienMapComponent, RouterLink, DemandeVisiteModalComponent, SignalementModalComponent],
   templateUrl: './villa-detail.html',
   styleUrl: './villa-detail.scss'
 })

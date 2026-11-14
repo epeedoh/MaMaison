@@ -16,3 +16,9 @@ export const adminGuard: CanActivateFn = () => {
   if (!auth.estConnecte()) return router.createUrlTree(['/login']);
   return router.createUrlTree(['/']);
 };
+
+export const publisherGuard: CanActivateFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+  return auth.peutPublier() || router.createUrlTree([auth.estConnecte() ? '/' : '/login']);
+};

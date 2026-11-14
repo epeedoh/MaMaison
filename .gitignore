@@ -41,3 +41,6 @@ frontend/**/public/viewer-3d/libs/
 *.swp
 *.swo
 .env
+
+# Justificatifs confidentiels (stockage local)
+backend/**/App_Data/

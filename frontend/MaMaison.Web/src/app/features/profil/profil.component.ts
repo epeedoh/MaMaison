@@ -1,3 +1,4 @@
+import { JustificatifsComponent } from '../../shared/components/justificatifs/justificatifs.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +13,7 @@ type Onglet = 'resume' | 'demandes' | 'annonces' | 'favoris';
 
 @Component({
   selector: 'app-profil',
-  imports: [RouterLink, SlicePipe, FormsModule],
+  imports: [JustificatifsComponent, RouterLink, SlicePipe, FormsModule],
   templateUrl: './profil.component.html',
 })
 export class ProfilComponent implements OnInit {

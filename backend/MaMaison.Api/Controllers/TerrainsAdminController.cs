@@ -19,7 +19,7 @@ public class TerrainsAdminController(MaMaisonDbContext context) : ControllerBase
             .Include(t => t.Documents)
             .OrderByDescending(t => t.DateCreation)
             .Select(t => new {
-                t.Id, t.Titre, t.Commune, t.Surface, t.Prix,
+                t.Id, t.Titre, t.Latitude, t.Longitude, t.Commune, t.Surface, t.Prix,
                 t.Statut, t.NiveauVerification, t.ScoreMaMaison,
                 t.DateCreation, NbDocuments = t.Documents.Count
             })
@@ -34,8 +34,12 @@ public class TerrainsAdminController(MaMaisonDbContext context) : ControllerBase
             cmd.Titre, cmd.Localisation, cmd.Commune,
             cmd.Surface, cmd.Prix, cmd.Usage);
 
-        if (cmd.Latitude.HasValue && cmd.Longitude.HasValue)
-            terrain.DefinirCoordonnees(cmd.Latitude.Value, cmd.Longitude.Value);
+        if (cmd.Latitude.HasValue != cmd.Longitude.HasValue) return BadRequest(new { message = "Renseignez les deux coordonnées." });
+        if (cmd.Latitude.HasValue)
+        {
+            try { terrain.DefinirCoordonnees(cmd.Latitude.Value, cmd.Longitude!.Value); }
+            catch (ArgumentException ex) { return BadRequest(new { message = ex.Message }); }
+        }
 
         if (!string.IsNullOrWhiteSpace(cmd.Description))
             terrain.GetType().GetProperty("Description")!
@@ -58,6 +62,10 @@ public class TerrainsAdminController(MaMaisonDbContext context) : ControllerBase
             .Include(t => t.Documents)
             .FirstOrDefaultAsync(t => t.Id == id, ct);
         if (terrain is null) return NotFound();
+        var categories = await context.JustificatifsBien.Where(d => d.BienId == id && d.Valide)
+            .Select(d => d.Categorie).Distinct().ToListAsync(ct);
+        if (!categories.Contains("Propriete") || !categories.Contains("IdentiteProprietaire"))
+            return BadRequest(new { message = "Validez une preuve de propriété et une pièce d'identité du propriétaire avant publication." });
         terrain.Publier();
         // Recalcule niveau vérification selon documents
         RecalculerNiveau(terrain);

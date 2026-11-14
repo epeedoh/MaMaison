@@ -31,7 +31,9 @@ public record LocationDetailDto(
     decimal TotalAPrevoir,
     bool EstDisponible,
     DateTime? DateConfirmationDisponibilite,
-    int ScoreMaMaison
+    int ScoreMaMaison,
+    double? Latitude = null,
+    double? Longitude = null
 );
 
 public record RechercheLocationQuery(
@@ -51,5 +53,7 @@ public record SoumettreLocationCommand(
     decimal Loyer,
     decimal Caution,
     decimal Avance,
-    decimal FraisAgence = 0
+    decimal FraisAgence = 0,
+    double? Latitude = null,
+    double? Longitude = null
 );

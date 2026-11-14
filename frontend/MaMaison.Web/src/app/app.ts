@@ -1,3 +1,4 @@
+import { FonctionnalitesService } from './core/services/fonctionnalites.service';
 import { Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from './core/services/auth.service';
@@ -12,5 +13,6 @@ import { ToastComponent } from './shared/components/toast/toast.component';
 })
 export class App {
   protected title = 'MaMaison';
+  readonly fonctionnalites = inject(FonctionnalitesService);
   readonly auth = inject(AuthService);
 }

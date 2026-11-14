@@ -1,3 +1,6 @@
+import { FonctionnalitesService } from '../../../core/services/fonctionnalites.service';
+import { JustificatifsComponent } from '../../../shared/components/justificatifs/justificatifs.component';
+import { BienMapComponent } from '../../../shared/components/bien-map/bien-map.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,10 +12,11 @@ type Onglet = 'dashboard' | 'villas' | 'locations' | 'terrains' | 'demarcheurs' 
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [RouterLink, SlicePipe, FormsModule],
+  imports: [JustificatifsComponent, BienMapComponent, RouterLink, SlicePipe, FormsModule],
   templateUrl: './admin-dashboard.component.html',
 })
 export class AdminDashboardComponent implements OnInit {
+  private readonly fonctionnalites = inject(FonctionnalitesService);
   private readonly http = inject(HttpClient);
   private readonly base = `${environment.apiUrl}/admin`;
 
@@ -30,7 +34,31 @@ export class AdminDashboardComponent implements OnInit {
   loading = signal(true);
   message = signal('');
 
-  ngOnInit() { this.chargerDashboard(); }
+  terrainsActifs = false;
+  parametresCharges = false;
+  parametresEnCours = false;
+  dossier: any = null;
+  ngOnInit() {
+    this.chargerDashboard();
+    this.http.get<{ terrainsActifs: boolean }>(`${environment.apiUrl}/fonctionnalites`).subscribe({
+      next: r => { this.terrainsActifs = r.terrainsActifs; this.parametresCharges = true; },
+      error: () => this.message.set('Impossible de charger le paramètre des terrains.')
+    });
+  }
+  basculerTerrains() {
+    this.parametresEnCours = true;
+    this.http.put<{ terrainsActifs: boolean }>(`${environment.apiUrl}/fonctionnalites/terrains`, { actif: !this.terrainsActifs }).subscribe({
+      next: r => { this.terrainsActifs = r.terrainsActifs; this.parametresEnCours = false; this.message.set('Paramètre des terrains enregistré.'); this.fonctionnalites.actualiser(); },
+      error: () => { this.parametresEnCours = false; this.message.set('Échec de l’enregistrement.'); }
+    });
+  }
+  ouvrirDossier(bien: any) { this.dossier = { ...bien }; }
+  enregistrerPosition() {
+    this.http.put(`${this.base}/biens/${this.dossier.id}/coordonnees`, { latitude: this.dossier.latitude, longitude: this.dossier.longitude }).subscribe({
+      next: () => this.message.set('Position enregistrée.'),
+      error: e => this.message.set(e.error?.message ?? 'Position invalide.')
+    });
+  }
 
   chargerDashboard() {
     this.loading.set(true);
@@ -76,7 +104,7 @@ export class AdminDashboardComponent implements OnInit {
   publierTerrain(id: string) {
     this.http.put(`${this.base}/terrains/${id}/publier`, {}).subscribe({
       next: (r: any) => { this.message.set(`✅ Terrain publié · Niveau: ${r.niveau}`); this.chargerTerrains(); },
-      error: () => this.message.set('❌ Erreur.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur.')
     });
   }
 
@@ -91,49 +119,49 @@ export class AdminDashboardComponent implements OnInit {
     this.http.put(`${environment.apiUrl}/demarcheurs/${id}/verifier`, '"https://example.com/cni.jpg"',
       { headers: {'Content-Type':'application/json'} }).subscribe({
       next: () => { this.message.set('✅ Démarcheur vérifié.'); this.chargerDemarcheurs(); },
-      error: () => this.message.set('❌ Erreur.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur.')
     });
   }
 
   suspendreD(id: string) {
     this.http.put(`${environment.apiUrl}/demarcheurs/${id}/suspendre`, {}).subscribe({
       next: () => { this.message.set('🚫 Démarcheur suspendu.'); this.chargerDemarcheurs(); },
-      error: () => this.message.set('❌ Erreur.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur.')
     });
   }
 
   publierVilla(id: string) {
     this.http.put(`${this.base}/villas/${id}/publier`, {}).subscribe({
       next: (r: any) => { this.message.set(`✅ Villa publiée · Score: ${r.score}/100`); this.chargerVillas(); },
-      error: () => this.message.set('❌ Erreur lors de la publication.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur lors de la publication.')
     });
   }
 
   validerLocation(id: string) {
     this.http.put(`${this.base}/locations/${id}/valider`, {}).subscribe({
       next: (r: any) => { this.message.set(`✅ Location validée · Score: ${r.score}/100`); this.chargerLocations(); },
-      error: () => this.message.set('❌ Erreur de validation.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur de validation.')
     });
   }
 
   rejeterLocation(id: string) {
     this.http.put(`${this.base}/locations/${id}/rejeter`, 'null', { headers: {'Content-Type':'application/json'} }).subscribe({
       next: () => { this.message.set('🗑 Location rejetée.'); this.chargerLocations(); },
-      error: () => this.message.set('❌ Erreur.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur.')
     });
   }
 
   confirmerDemande(id: string) {
     this.http.put(`${this.base}/demandes/${id}/confirmer`, {}).subscribe({
       next: () => { this.message.set('✅ Demande confirmée.'); this.chargerDemandes(); },
-      error: () => this.message.set('❌ Erreur.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur.')
     });
   }
 
   resoudreSignalement(id: string) {
     this.http.put(`${this.base}/signalements/${id}/resoudre`, {}).subscribe({
       next: () => { this.message.set('✅ Résolu.'); this.chargerSignalements(); },
-      error: () => this.message.set('❌ Erreur.')
+      error: e => this.message.set(e.error?.message ?? '❌ Erreur.')
     });
   }
 

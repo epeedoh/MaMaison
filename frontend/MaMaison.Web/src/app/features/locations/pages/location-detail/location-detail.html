@@ -12,6 +12,7 @@
   }
 
   @if (!loading && !error && location) {
+    <app-bien-map [latitude]="location.latitude" [longitude]="location.longitude" />
     <div class="detail-layout">
 
       <!-- Principale -->

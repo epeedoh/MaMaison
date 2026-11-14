@@ -15,3 +15,6 @@ docs
 assets
 viewer-3d
 frontend
+
+# Documents confidentiels conservés dans le volume du serveur
+**/App_Data

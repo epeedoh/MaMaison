@@ -13,6 +13,8 @@ export interface LocationListe {
 }
 
 export interface LocationDetail extends LocationListe {
+  latitude: number | null;
+  longitude: number | null;
   caution: number;
   avance: number;
   fraisAgence: number;

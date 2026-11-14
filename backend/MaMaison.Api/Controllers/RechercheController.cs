@@ -41,7 +41,7 @@ public class RechercheController(MaMaisonDbContext context) : ControllerBase
             .ToListAsync(ct);
 
         var terrains = await context.Terrains
-            .Where(t => t.Statut == StatutTerrain.Publie &&
+            .Where(t => t.Statut == StatutTerrain.Publie && context.ParametresPlateforme.Any(p => p.Cle == "terrains" && p.Actif) &&
                        (t.Titre.Contains(terme) || t.Commune.Contains(terme) || t.Localisation.Contains(terme)))
             .OrderByDescending(t => t.ScoreMaMaison)
             .Take(limit)

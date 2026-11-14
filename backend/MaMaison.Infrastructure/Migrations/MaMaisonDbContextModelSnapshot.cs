@@ -185,6 +185,43 @@ namespace MaMaison.Infrastructure.Migrations
                     b.ToTable("HotspotsVisite");
                 });
 
+            modelBuilder.Entity("MaMaison.Domain.Entities.JustificatifBien", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("BienId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Categorie")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateCreation")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("DateModification")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Fichier")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Valide")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BienId");
+
+                    b.ToTable("JustificatifsBien");
+                });
+
             modelBuilder.Entity("MaMaison.Domain.Entities.Location", b =>
                 {
                     b.Property<Guid>("Id")
@@ -226,6 +263,12 @@ namespace MaMaison.Infrastructure.Migrations
                     b.Property<decimal?>("FraisVisite")
                         .HasPrecision(18)
                         .HasColumnType("decimal(18,0)");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<decimal>("Loyer")
                         .HasPrecision(18)
@@ -301,6 +344,20 @@ namespace MaMaison.Infrastructure.Migrations
                     b.HasIndex("TerrainId");
 
                     b.ToTable("MediasBien");
+                });
+
+            modelBuilder.Entity("MaMaison.Domain.Entities.ParametrePlateforme", b =>
+                {
+                    b.Property<string>("Cle")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("Actif")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Cle");
+
+                    b.ToTable("ParametresPlateforme");
                 });
 
             modelBuilder.Entity("MaMaison.Domain.Entities.PointVisite3D", b =>
@@ -556,6 +613,12 @@ namespace MaMaison.Infrastructure.Migrations
                     b.Property<string>("ImagePrincipaleUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<double?>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double?>("Longitude")
+                        .HasColumnType("float");
 
                     b.Property<string>("Modele3DUrl")
                         .HasMaxLength(500)
