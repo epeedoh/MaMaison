@@ -1,0 +1,160 @@
+:root { color-scheme: dark; font-family: 'Segoe UI', Arial, sans-serif; color: #fff; background: #242926; }
+* { box-sizing: border-box; letter-spacing: 0; }
+body { margin: 0; overflow: hidden; }
+button, select, input { font: inherit; }
+button, a, select, input { touch-action: manipulation; }
+button, a { -webkit-tap-highlight-color: transparent; }
+button { cursor: pointer; color: inherit; }
+button:focus-visible, a:focus-visible, select:focus-visible { outline: 2px solid #bddecc; outline-offset: 4px; }
+[hidden] { display: none !important; }
+#tour { position: relative; width: 100%; height: 100dvh; min-height: 260px; isolation: isolate; }
+#renderCanvas { display: block; width: 100%; height: 100%; outline: none; touch-action: none; cursor: grab; }
+#renderCanvas:active { cursor: grabbing; }
+.tour-header { position: absolute; inset: 0 0 auto; display: flex; gap: 18px; align-items: center; padding: max(22px, env(safe-area-inset-top)) 28px 44px; background: linear-gradient(#0007, transparent); pointer-events: none; }
+.tour-header > a { pointer-events: auto; }
+.icon-button { display: inline-flex; align-items: center; justify-content: center; width: 42px; height: 42px; padding: 11px; flex-shrink: 0; border: 1px solid #ffffff35; border-radius: 6px; background: #242926cc; backdrop-filter: blur(12px); text-decoration: none; }
+.icon-button img, .walk-button img { width: 20px; height: 20px; filter: invert(1); }
+.icon-button:hover { background: #424d46; }
+.identity { display: flex; flex-direction: column; gap: 4px; text-shadow: 0 1px 8px #0009; }
+.brand { font-size: 24px; font-weight: 650; line-height: 1; }
+.brand-dot { color: #bdd5bd; }
+.scene-kind { font-size: 10px; font-weight: 600; }
+.ambiance { margin-left: auto; font-size: 12px; text-shadow: 0 1px 5px #000; }
+.tools { position: absolute; right: 24px; top: 42%; display: flex; flex-direction: column; gap: 8px; }
+.tour-footer { position: absolute; inset: auto 0 0; display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 56px 32px max(44px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, #0009); pointer-events: none; }
+.tour-footer button, .tour-footer nav { pointer-events: auto; }
+.overline { font-size: 10px; font-weight: 650; color: #ffffffc9; }
+h1 { margin: 5px 0 0; font-weight: 500; font-size: 25px; line-height: 1.2; }
+.room-meta { min-width: 150px; text-shadow: 0 1px 8px #0009; }
+.viewpoints { display: flex; padding: 4px; border: 1px solid #ffffff3b; background: #242926cc; backdrop-filter: blur(16px); border-radius: 6px; }
+.viewpoints button { min-height: 38px; min-width: 80px; padding: 8px 15px; background: transparent; border: 0; border-radius: 3px; color: #ddd; font-size: 13px; }
+.viewpoints button[aria-pressed="true"] { background: #e7eee6; color: #202b24; }
+.walk-button { min-height: 46px; min-width: 130px; display: flex; justify-content: center; align-items: center; gap: 10px; padding: 12px 18px; border: 1px solid #ffffff60; background: #254638; border-radius: 6px; font-size: 13px; }
+.walk-button:hover { background: #345d49; }
+.credits { position: absolute; bottom: max(12px, env(safe-area-inset-bottom)); left: 32px; color: #ffffffc2; text-shadow: 0 1px 4px #000; font-size: 10px; text-decoration: none; }
+.credits:hover { text-decoration: underline; }
+.settings-panel { position: absolute; right: 78px; top: 100px; width: min(280px, calc(100% - 100px)); padding: 18px; border: 1px solid #ffffff3b; border-radius: 8px; background: #202924f2; backdrop-filter: blur(16px); z-index: 3; }
+.panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.panel-title h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.panel-title .icon-button { width: 30px; height: 30px; padding: 6px; background: transparent; border: 0; }
+.settings-panel > label { display: block; margin: 16px 0 10px; font-size: 13px; }
+select { width: 100%; padding: 10px; background: #35433b; color: #fff; border: 1px solid #ffffff40; border-radius: 4px; }
+input[type="range"] { width: 100%; accent-color: #b9d6c1; }
+.settings-panel > .toggle-row { display: flex; justify-content: space-between; align-items: center; }
+.settings-panel { max-height: calc(100dvh - 125px); overflow: auto; }
+#fov-value { float: right; color: #b9d6c1; }
+#room-area { margin-left: 10px; }
+.map-panel { position: absolute; top: 105px; left: 28px; width: 300px; padding: 11px; border: 1px solid #ffffff50; border-radius: 6px; background: #25322aee; z-index: 3; }
+.map-panel .panel-title { margin-bottom: 10px; }
+#floor-plan { display: block; width: 100%; height: auto; }
+.interact-button { position: absolute; left: 50%; bottom: 145px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 10px 16px; border: 1px solid #ffffff66; border-radius: 6px; background: #203d32e8; font-size: 13px; max-width: calc(100% - 32px); }
+.interact-button img { width: 20px; height: 20px; filter: invert(1); }
+.walking .map-panel { pointer-events: none; opacity: .8; }
+@media (max-width: 650px) { .map-panel { left: 16px; top: 85px; width: min(280px, calc(100% - 90px)); } .interact-button { bottom: 155px; left: auto; right: 16px; transform: none; max-width: 205px; } }
+@media (max-height: 480px) { .map-panel { width: 210px; top: 68px; left: 160px; } .map-panel .panel-title { margin-bottom: 4px; } .settings-panel { max-height: calc(100dvh - 40px); } .interact-button { bottom: 85px; } }
+input[type="checkbox"] { width: 18px; height: 18px; accent-color: #b9d6c1; }
+#reticle { position: absolute; width: 4px; height: 4px; top: calc(50% - 2px); left: calc(50% - 2px); background: #fff; border-radius: 50%; box-shadow: 0 0 2px #000; pointer-events: none; }
+.walking .tour-header, .walking .room-meta, .walking .viewpoints, .walking .tools, .walking .credits { opacity: 0; pointer-events: none; }
+.walking .tour-header a, .walking .viewpoints button { pointer-events: none; }
+.touch-controls { display: none; }
+#joystick { width: 112px; height: 112px; border-radius: 50%; background: #ffffff15; border: 1px solid #ffffff65; touch-action: none; display: grid; place-items: center; }
+#stick { width: 44px; height: 44px; border-radius: 50%; background: #ffffffe0; box-shadow: 0 2px 15px #0003; pointer-events: none; }
+#fade { position: absolute; inset: 0; pointer-events: none; background: #202924; opacity: 0; transition: opacity .16s; z-index: 4; }
+#fade.active { opacity: 1; }
+#loading { position: absolute; inset: 0; background: #202924; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 22px; z-index: 6; padding: 32px; text-align: center; }
+.loading-brand { font-size: 32px; font-weight: 600; }
+#loading-label { font-size: 13px; max-width: 400px; color: #d5ded7; }
+progress { width: min(220px, 80%); height: 3px; accent-color: #a4c8b0; }
+#retry { background: #496353; border: 1px solid #ffffff50; padding: 10px 20px; border-radius: 4px; }
+#notice { position: absolute; left: 50%; top: 110px; transform: translateX(-50%); max-width: min(420px, 85%); padding: 12px 18px; background: #242926ed; border-radius: 6px; font-size: 13px; z-index: 5; }
+@media (pointer: coarse) { .touch-controls { display: block; position: absolute; bottom: 145px; left: 26px; } #walk { display: none; } }
+@media (max-width: 650px) { .tour-header { padding: max(16px, env(safe-area-inset-top)) 16px 40px; gap: 12px; } .brand { font-size: 22px; } .ambiance { font-size: 10px; max-width: 80px; text-align: right; } .tour-footer { padding: 45px 16px 38px; gap: 12px; flex-wrap: wrap; } .room-meta { min-width: 0; flex-basis: 100%; } h1 { font-size: 20px; } .viewpoints { flex: 1; } .viewpoints button { flex: 1; min-width: 0; padding: 8px 10px; font-size: 12px; } .walk-button { min-width: 46px; padding: 12px; } .walk-button span { display: none; } .tools { right: 16px; top: 30%; } .credits { left: 16px; } .settings-panel { right: 70px; top: 85px; } }
+@media (max-height: 480px) { .tour-header { padding-top: 10px; } .tour-footer { padding-top: 20px; padding-bottom: 24px; flex-wrap: nowrap; } .room-meta { flex-basis: auto; } .tools { top: 25%; } .touch-controls { bottom: 95px; } .settings-panel { top: 20px; } .credits { bottom: 5px; } }
+.look-controls { display: none; }
+#look-joystick { width: 112px; height: 112px; border-radius: 50%; border: 1px solid #ffffff65; background: #ffffff15; touch-action: none; display: grid; place-items: center; }
+#look-stick { width: 44px; height: 44px; border-radius: 50%; background: #ffffffe0; display: grid; place-items: center; box-shadow: 0 2px 15px #0003; pointer-events: none; }
+#look-stick img { width: 22px; height: 22px; opacity: .7; }
+#door-actions, #room-selection { position: absolute; left: 50%; bottom: 145px; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; max-width: calc(100% - 32px); }
+#door-actions .interact-button { position: static; transform: none; max-width: none; white-space: nowrap; }
+#room-selection { padding: 8px 12px; border: 1px solid #ffffff40; border-radius: 6px; background: #24372ded; }
+#selected-room { min-width: 90px; font-size: 14px; }
+.map-panel .viewpoints { margin-top: 8px; }
+.map-panel .viewpoints button { min-width: 0; flex: 1; padding: 8px; }
+#floor-plan { cursor: pointer; }
+body:not([data-mode="walk"]) .touch-controls, body:not([data-mode="walk"]) .look-controls,
+body:not([data-mode="walk"]) #walk, body:not([data-mode="walk"]) #recenter { display: none !important; }
+@media (pointer: coarse) { .look-controls { display: block; position: absolute; right: 26px; bottom: 145px; } }
+@media (max-width: 650px) {
+  .modes button { padding: 8px 7px; }
+  #door-actions { bottom: 270px; gap: 6px; }
+  #door-actions .interact-button { padding: 10px; font-size: 12px; }
+  #room-selection { bottom: 155px; }
+}
+@media (max-height: 480px) {
+  .look-controls, .touch-controls { bottom: 95px; }
+  .tools { top: 70px; flex-direction: row; gap: 6px; right: 16px; }
+  .tools .icon-button { width: 36px; height: 36px; padding: 8px; }
+  #door-actions, #room-selection { bottom: 92px; }
+  .map-panel { top: 66px; width: 198px; }
+}
+@media (prefers-reduced-motion: reduce) { #fade { transition: none; } }
+.modes img, .mobile-credits { display: none; }
+#panel-backdrop { position: absolute; inset: 0; border: 0; background: #0007; z-index: 2; width: 100%; height: 100%; }
+.panel-title .icon-button { width: 44px; height: 44px; padding: 12px; }
+.map-panel, .settings-panel { overscroll-behavior: contain; }
+body.panel-open .touch-controls, body.panel-open .look-controls, body.panel-open #door-actions,
+body.panel-open #room-selection { visibility: hidden; }
+@media (max-width: 700px), (pointer: coarse) and (max-height: 600px) {
+  body { overscroll-behavior: none; }
+  #tour { min-height: 0; }
+  .tour-header { padding: calc(10px + env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) 20px max(12px, env(safe-area-inset-left)); gap: 10px; }
+  .icon-button { width: 44px; height: 44px; padding: 12px; }
+  .brand { font-size: 20px; }
+  .scene-kind { font-size: 9px; }
+  .ambiance { font-size: 10px; max-width: 75px; }
+  .tools { top: calc(70px + env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right)); left: auto; flex-direction: row; gap: 6px; }
+  .tools .icon-button { width: 44px; height: 44px; padding: 12px; }
+  .tour-footer { padding: 0; gap: 0; display: block; background: none; }
+  .room-meta { position: absolute; left: max(16px, env(safe-area-inset-left)); bottom: calc(86px + env(safe-area-inset-bottom)); max-width: calc(100% - 32px); }
+  .room-meta .overline { font-size: 9px; }
+  .room-meta h1 { font-size: 18px; line-height: 1.25; overflow-wrap: anywhere; }
+  .modes { width: 100%; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border: 0; border-top: 1px solid #ffffff30; border-radius: 0; padding: 6px max(10px, env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background: #17251ff5; gap: 4px; }
+  .modes button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-width: 0; height: 60px; padding: 4px; font-size: 11px; line-height: 1.2; border-radius: 6px; }
+  .modes img { display: block; width: 22px; height: 22px; filter: invert(1); }
+  .modes button[aria-pressed="true"] img { filter: none; }
+  #walk, .credits { display: none; }
+  .touch-controls { left: max(18px, env(safe-area-inset-left)); bottom: calc(144px + env(safe-area-inset-bottom)); }
+  .look-controls { right: max(18px, env(safe-area-inset-right)); bottom: calc(144px + env(safe-area-inset-bottom)); }
+  #joystick, #look-joystick { width: 104px; height: 104px; background: #17251f35; }
+  #door-actions { bottom: calc(264px + env(safe-area-inset-bottom)); width: max-content; max-width: calc(100% - 24px); gap: 6px; }
+  #door-actions .interact-button { min-height: 48px; padding: 10px 12px; white-space: normal; min-width: 0; font-size: 12px; }
+  #door-actions .interact-button span { overflow-wrap: anywhere; }
+  #room-selection { bottom: calc(140px + env(safe-area-inset-bottom)); max-width: calc(100% - 24px); }
+  #visit-room span { display: inline; }
+  .settings-panel, .map-panel { position: absolute; inset: auto 0 0; width: 100%; max-height: calc(100dvh - env(safe-area-inset-top) - 16px); padding: 14px max(20px, env(safe-area-inset-right)) calc(20px + env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); border: 0; border-top: 1px solid #ffffff45; border-radius: 8px 8px 0 0; background: #1d2b25; overflow-y: auto; }
+  .panel-title { margin-bottom: 8px; }
+  .panel-title h2 { font-size: 18px; }
+  #floor-plan { width: min(100%, 300px, 46dvh); margin: 0 auto; }
+  .map-panel .viewpoints { margin-top: 16px; }
+  .map-panel .viewpoints button { min-height: 48px; }
+  .settings-panel > label { margin: 12px 0 4px; font-size: 14px; }
+  .settings-panel select { min-height: 48px; font-size: 16px; }
+  .settings-panel input[type="range"] { height: 40px; margin: 0; }
+  .settings-panel .toggle-row { min-height: 44px; gap: 16px; }
+  .settings-panel input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
+  .mobile-credits { display: inline-flex; align-items: center; min-height: 44px; margin-top: 12px; color: #c0d9ca; font-size: 13px; }
+  #notice { top: calc(124px + env(safe-area-inset-top)); width: max-content; max-width: calc(100% - 32px); }
+}
+@media (pointer: coarse) and (max-height: 600px) and (orientation: landscape) {
+  .tour-header { padding-top: max(8px, env(safe-area-inset-top)); }
+  .ambiance { display: none; }
+  .tools { top: max(8px, env(safe-area-inset-top)); }
+  .room-meta { display: none; }
+  .modes { padding-top: 4px; padding-bottom: calc(4px + env(safe-area-inset-bottom)); }
+  .modes button { height: 48px; flex-direction: row; gap: 8px; font-size: 12px; }
+  .touch-controls, .look-controls { bottom: calc(76px + env(safe-area-inset-bottom)); }
+  #door-actions, #room-selection { bottom: calc(88px + env(safe-area-inset-bottom)); max-width: calc(100% - 280px); }
+  .settings-panel, .map-panel { inset: 0 0 0 auto; width: min(380px, 70%); max-height: 100dvh; border-radius: 0; border-top: 0; border-left: 1px solid #ffffff45; padding-top: max(12px, env(safe-area-inset-top)); }
+  #floor-plan { width: min(100%, 46dvh); }
+  #notice { top: 65px; }
+}

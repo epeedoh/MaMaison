@@ -67,7 +67,7 @@ public class LocationsController(ILocationRepository locationRepository, MaMaiso
         return Ok(dto);
     }
 
-    [Authorize(Roles = "Proprietaire,Admin,SuperAdmin")]
+    [Authorize(Roles = "Proprietaire,Promoteur,Demarcheur,AgentImmobilier,Admin,SuperAdmin")]
     [HttpPost]
     public async Task<IActionResult> Soumettre(
         [FromBody] SoumettreLocationCommand cmd,

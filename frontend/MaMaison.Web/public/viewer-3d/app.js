@@ -1,7 +1,8 @@
 // MaMaison — Viewer Teia-style
-// ArcRotateCamera + click-to-teleport + floor spots
+// UniversalCamera (marche libre ZQSD/WASD + souris, pointer lock) + click-to-teleport + floor spots
 
 const API_BASE = '/api';
+const EYE_HEIGHT = 1.65; // hauteur d'œil d'un adulte debout
 let engine, scene, camera;
 let villaId  = new URLSearchParams(window.location.search).get('villaId');
 let viewpointActif = 0;
@@ -14,8 +15,8 @@ const VIEWPOINTS = [
         nom: 'Salon', label: 'Salon — 35 m²', couleur: '#F5A623',
         target:  new BABYLON.Vector3(0, 1.4, 1.5),
         alpha:   Math.PI + 0.35,
-        beta:    1.10,    // ~63° du zénith
-        radius:  6.5,
+        beta:    1.45,    // hauteur d'œil, sous le plafond
+        radius:  5.5,
         spot:    { x: 0, z: 2 },
         hotspots: [
             { libelle: 'Canapé & salon',  contenu: 'Canapé 3 places · Table basse noyer & laiton · Tapis terracotta', x:  0.5, z: 3.4 },
@@ -27,8 +28,8 @@ const VIEWPOINTS = [
         nom: 'Cuisine', label: 'Cuisine — 18 m²', couleur: '#7ED321',
         target:  new BABYLON.Vector3(-8.5, 1.4, -4.5),
         alpha:   -0.5,
-        beta:    1.05,
-        radius:  5.5,
+        beta:    1.45,
+        radius:  4.5,
         spot:    { x: -7, z: -4.5 },
         hotspots: [
             { libelle: 'Plan de travail', contenu: 'Inox brossé 4ml · Meubles blancs · Hotte design', x: -10, z: -7.5 },
@@ -39,8 +40,8 @@ const VIEWPOINTS = [
         nom: 'Chambre', label: 'Chambre — 22 m²', couleur: '#D0021B',
         target:  new BABYLON.Vector3(-8.5, 1.4, 4),
         alpha:   Math.PI * 0.55,
-        beta:    1.08,
-        radius:  5.5,
+        beta:    1.45,
+        radius:  4.5,
         spot:    { x: -7, z: 4 },
         hotspots: [
             { libelle: 'Lit King-Size',  contenu: '200×200 cm · Tête de lit bois massif · Literie lin', x: -8.5, z: 3.8 },
@@ -84,23 +85,57 @@ function construireViewer() {
 
     const canvas = document.getElementById('renderCanvas');
     engine = new BABYLON.Engine(canvas, true, { antialias: true, stencil: true });
+    // Plafonne la résolution réelle sur écrans haute densité (mobile) — évite de
+    // rendre à 3x la résolution physique pour un gain visuel imperceptible.
+    engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio || 1, 1.5));
     scene  = new BABYLON.Scene(engine);
     scene.clearColor = new BABYLON.Color4(0.82, 0.90, 0.97, 1);
 
-    // ── ArcRotateCamera ─────────────────────────────────────────
+    // ── Environnement HDRI — éclairage ambiant + reflets PBR réalistes ──
+    // (CDN officiel Babylon.js, studio neutre — pas de skybox visible, juste
+    // les reflets/la lumière ambiante qu'il apporte aux matériaux PBR)
+    scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+        'https://assets.babylonjs.com/environments/studio.env', scene);
+    scene.environmentIntensity = 0.7;
+
+    // ── Collisions — empêche physiquement la caméra de traverser murs/sol/plafond ──
+    scene.collisionsEnabled = true;
+    scene.gravity = new BABYLON.Vector3(0, 0, 0); // pas de gravité, hauteur d'œil fixe
+
+    // ── UniversalCamera — marche libre façon FPS ─────────────────
     const vp0 = VIEWPOINTS[0];
-    camera = new BABYLON.ArcRotateCamera('cam',
-        vp0.alpha, vp0.beta, vp0.radius, vp0.target, scene);
-    camera.lowerRadiusLimit  = 1.5;
-    camera.upperRadiusLimit  = 18;
-    camera.lowerBetaLimit    = 0.25;
-    camera.upperBetaLimit    = Math.PI / 2.05;
-    camera.wheelPrecision    = 60;
-    camera.panningSensibility = 0;   // pas de pan, seulement orbite
-    camera.inertia           = 0.5;
-    camera.angularSensibilityX = 800;
-    camera.angularSensibilityY = 800;
+    camera = new BABYLON.UniversalCamera('cam',
+        new BABYLON.Vector3(vp0.spot.x, EYE_HEIGHT, vp0.spot.z), scene);
+    camera.setTarget(vp0.target.clone());
+
+    // On désactive le déplacement clavier natif de Babylon : il avance dans l'axe
+    // exact du regard (donc plonge dans le sol/plafond si on regarde en haut/bas).
+    // On gère ZQSD/WASD nous-mêmes, à plat, pour un déplacement horizontal pur.
+    camera.inputs.removeByType('FreeCameraKeyboardMoveInput');
+    camera.angularSensibility = 3200; // regard souris — plus haut = plus doux
+
+    // Pas de collision moteur Babylon ici : sur cette scène, le système de
+    // collision mesh-vs-ellipsoïde de Babylon peut dégénérer (cas constatés en
+    // test : plusieurs secondes, voire un gel complet, après ~1s de marche
+    // soutenue contre un mur). On reste donc dans la maison via un simple
+    // cadrage de la position (cf. limiterDansLaMaison), déterministe et rapide.
+    camera.checkCollisions = false;
+    camera.applyGravity    = false;
+    camera.minZ = 0.05;
+
     camera.attachControl(canvas, true);
+    activerDeplacementHorizontal(canvas);
+
+    // Empêche de regarder pile à la verticale (singularité mathématique qui
+    // peut faire dégénérer le calcul de déplacement, voir activerDeplacementHorizontal)
+    const LIMITE_PITCH = 1.3; // ~74°, suffisant pour regarder le plafond/sol sans excès
+    scene.onBeforeRenderObservable.add(() => {
+        if (camera.rotation.x >  LIMITE_PITCH) camera.rotation.x =  LIMITE_PITCH;
+        if (camera.rotation.x < -LIMITE_PITCH) camera.rotation.x = -LIMITE_PITCH;
+    });
+
+    // ── Pointer lock — regard souris façon jeu vidéo ─────────────
+    activerPointerLock(canvas);
 
     // ── Éclairage ───────────────────────────────────────────────
     const hemi = new BABYLON.HemisphericLight('hemi', new BABYLON.Vector3(0,1,0), scene);
@@ -114,8 +149,15 @@ function construireViewer() {
     sun.diffuse   = new BABYLON.Color3(1, 0.97, 0.87);
 
     const sg = new BABYLON.ShadowGenerator(1024, sun);
-    sg.useExponentialShadowMap = true;
+    sg.useBlurExponentialShadowMap = true; // ombres douces (vs. bords durs/numériques)
+    sg.blurKernel = 16;
     sg.bias = 0.002;
+
+    // ── Environnement HDRI — reflets et éclairage ambiant réalistes sur les
+    // matériaux PBR (inox, laiton, verre…), hébergé gratuitement par Babylon.js.
+    scene.environmentTexture = BABYLON.CubeTexture.CreateFromPrefilteredData(
+        'https://assets.babylonjs.com/environments/environmentSpecular.env', scene);
+    scene.environmentIntensity = 0.7; // discret : on ne veut pas un studio photo, juste de la nuance
 
     // ── Post-processing ─────────────────────────────────────────
     const pp = new BABYLON.DefaultRenderingPipeline('pp', true, scene, [camera]);
@@ -128,6 +170,18 @@ function construireViewer() {
     pp.imageProcessing.toneMappingType    = 1; // ACES
     pp.imageProcessing.exposure  = 1.1;
     pp.imageProcessing.contrast  = 1.06;
+
+    // ── Occlusion ambiante — ombres de contact (coins, sous les meubles) qui
+    // donnent du volume ; l'un des gains de réalisme les moins chers en perf.
+    if (BABYLON.SSAO2RenderingPipeline.IsSupported) {
+        const ssao = new BABYLON.SSAO2RenderingPipeline('ssao', scene, {
+            ssaoRatio: 0.5, blurRatio: 0.5
+        }, [camera]);
+        ssao.radius = 1.2;
+        ssao.totalStrength = 0.9;
+        ssao.base = 0.2;
+        ssao.expensiveBlur = false;
+    }
 
     // ── Villa 3D ─────────────────────────────────────────────────
     construireVilla(sg);
@@ -143,6 +197,91 @@ function construireViewer() {
     construireRoomSelector();
     teleporterVers(0, false); // position initiale sans animation
     afficherLoading(false);
+}
+
+/* ================================================================
+   POINTER LOCK — regard souris façon FPS, sans glisser-déposer
+   ================================================================ */
+function activerPointerLock(canvas) {
+    canvas.addEventListener('click', () => {
+        if (document.pointerLockElement !== canvas) canvas.requestPointerLock?.();
+    });
+
+    document.addEventListener('pointerlockchange', () => {
+        const verrouille = document.pointerLockElement === canvas;
+        document.getElementById('crosshair')?.classList.toggle('hidden', !verrouille);
+        document.getElementById('move-hint')?.classList.toggle('hidden', verrouille);
+        canvas.style.cursor = verrouille ? 'none' : 'grab';
+    });
+}
+
+/* ================================================================
+   DÉPLACEMENT — ZQSD/WASD à plat (toujours horizontal, jamais incliné
+   par le regard), comme dans un FPS classique. La hauteur d'œil ne
+   change donc jamais : impossible de "tomber" dans le sol ou le toit.
+   ================================================================ */
+function activerDeplacementHorizontal(canvas) {
+    const touches = new Set();
+    // e.code = position PHYSIQUE de la touche, indépendante du clavier :
+    // "KeyW" se déclenche aussi bien en appuyant sur le W d'un QWERTY que sur
+    // le Z (même position) d'un AZERTY — donc ZQSD fonctionne sans code séparé.
+    const AVANCER = ['KeyW','ArrowUp'], RECULER = ['KeyS','ArrowDown'],
+          GAUCHE  = ['KeyA','ArrowLeft'], DROITE  = ['KeyD','ArrowRight'];
+
+    window.addEventListener('keydown', e => touches.add(e.code));
+    window.addEventListener('keyup',   e => touches.delete(e.code));
+    // Évite de garder une touche "collée" si la fenêtre perd le focus
+    window.addEventListener('blur', () => touches.clear());
+
+    const VITESSE = 3.2; // m/s
+
+    scene.onBeforeRenderObservable.add(() => {
+        if (!touches.size) return;
+        // dt borné : un onglet remis au premier plan peut renvoyer un delta énorme
+        const dt = Math.min(engine.getDeltaTime() / 1000, 0.1);
+
+        // Direction de la caméra projetée sur le plan horizontal (on ignore le pitch).
+        const avantBrut = camera.getDirection(BABYLON.Axis.Z);
+        avantBrut.y = 0;
+        if (avantBrut.lengthSquared() < 1e-6) return;
+        const avant  = avantBrut.normalize();
+        const droite = BABYLON.Vector3.Cross(BABYLON.Axis.Y, avant).normalize();
+
+        const dep = BABYLON.Vector3.Zero();
+        if (AVANCER.some(k => touches.has(k)))  dep.addInPlace(avant);
+        if (RECULER.some(k => touches.has(k)))  dep.subtractInPlace(avant);
+        if (DROITE.some(k => touches.has(k)))   dep.addInPlace(droite);
+        if (GAUCHE.some(k => touches.has(k)))   dep.subtractInPlace(droite);
+
+        if (dep.lengthSquared() > 0 && Number.isFinite(dep.lengthSquared())) {
+            dep.normalize().scaleInPlace(VITESSE * dt);
+            // Déplacement direct (pas de moteur de collision Babylon, voir plus
+            // haut) — on reste dans la maison via un simple cadrage de zone.
+            camera.position.addInPlace(dep);
+            limiterDansLaMaison(camera.position);
+        }
+    });
+}
+
+/* ================================================================
+   LIMITES DE LA MAISON — empêche de sortir du plan (maison en "L" :
+   salon à l'est, aile cuisine/chambre à l'ouest). Volontairement
+   simple et déterministe : pas de moteur de collision, donc pas de
+   risque de cas dégénéré/gel.
+   ================================================================ */
+function limiterDansLaMaison(pos) {
+    const SALON = { xMin: -6.8, xMax: 6.8, zMin: -2.9, zMax: 6.9 };
+    const AILE  = { xMin: -11.8, xMax: -3.1, zMin: -7.9, zMax: 7.9 };
+
+    const dansSalon = pos.x >= SALON.xMin && pos.x <= SALON.xMax && pos.z >= SALON.zMin && pos.z <= SALON.zMax;
+    const dansAile  = pos.x >= AILE.xMin  && pos.x <= AILE.xMax  && pos.z >= AILE.zMin  && pos.z <= AILE.zMax;
+    if (dansSalon || dansAile) return; // déjà dans une zone valide
+
+    // Hors des deux zones : on referme sur la plus proche (ramène doucement
+    // vers l'intérieur plutôt que de bloquer net, pour rester fluide).
+    const zone = Math.abs(pos.x - (-3.1)) < Math.abs(pos.x - 6.8) ? AILE : SALON;
+    pos.x = Math.min(Math.max(pos.x, zone.xMin), zone.xMax);
+    pos.z = Math.min(Math.max(pos.z, zone.zMin), zone.zMax);
 }
 
 /* ================================================================
@@ -247,15 +386,39 @@ function creerHotspots(vp) {
     scene.meshes.filter(m => m.name.startsWith('hs_')).forEach(m => m.dispose());
     if (!vp.hotspots) return;
     vp.hotspots.forEach((h, i) => {
-        const sp = BABYLON.MeshBuilder.CreateSphere(`hs_${i}`,
-            { diameter: 0.2, segments: 8 }, scene);
+        // Badge "i" plat et discret (au lieu d'une sphère jaune façon ampoule)
+        const sp = BABYLON.MeshBuilder.CreatePlane(`hs_${i}`, { size: 0.26 }, scene);
         sp.position.set(h.x, 1.2, h.z);
+        sp.isPickable = true;
+
+        const dt = new BABYLON.DynamicTexture(`hsTex_${i}`, { width: 128, height: 128 }, scene);
+        const ctx = dt.getContext();
+        ctx.clearRect(0, 0, 128, 128);
+        ctx.beginPath(); ctx.arc(64, 64, 58, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(5,13,26,.82)'; ctx.fill();
+        ctx.lineWidth = 4; ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.stroke();
+        ctx.fillStyle = '#F5D98A';
+        ctx.font = 'bold 60px Georgia, serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('i', 64, 68);
+        dt.hasAlpha = true; dt.update();
+
         const m = new BABYLON.StandardMaterial(`hmat_${i}`, scene);
-        m.diffuseColor  = new BABYLON.Color3(0.96, 0.72, 0.08);
-        m.emissiveColor = new BABYLON.Color3(0.55, 0.35, 0.0);
+        m.diffuseTexture  = dt;
+        m.emissiveColor   = BABYLON.Color3.White();
+        m.opacityTexture  = dt;
+        m.backFaceCulling = false;
+        m.disableLighting = true;
         sp.material = m;
+
         let tt = i * 0.9;
-        scene.registerBeforeRender(() => { tt += 0.04; sp.position.y = 1.2 + 0.08 * Math.sin(tt); });
+        scene.registerBeforeRender(() => {
+            tt += 0.03;
+            sp.position.y = 1.2 + 0.05 * Math.sin(tt);
+            // billboardMode rendait parfois le badge ovale selon l'angle —
+            // on force un face-à-caméra explicite, garanti circulaire.
+            sp.lookAt(camera.position);
+        });
         sp.actionManager = new BABYLON.ActionManager(scene);
         sp.actionManager.registerAction(
             new BABYLON.ExecuteCodeAction(BABYLON.ActionManager.OnPickTrigger,
@@ -264,70 +427,42 @@ function creerHotspots(vp) {
 }
 
 /* ================================================================
-   TÉLÉPORTATION — animation fluide ArcRotateCamera
+   TÉLÉPORTATION — déplace le joueur (style "point de spawn" jeu vidéo)
    ================================================================ */
 function teleporterVers(index, anime = true) {
     if (index < 0 || index >= VIEWPOINTS.length) return;
     viewpointActif = index;
 
     const vp = VIEWPOINTS[index];
+    const destination = new BABYLON.Vector3(vp.spot.x, EYE_HEIGHT, vp.spot.z);
     fermerInfo();
 
     if (!anime) {
-        camera.alpha  = vp.alpha;
-        camera.beta   = vp.beta;
-        camera.radius = vp.radius;
-        camera.target = vp.target.clone();
+        camera.position.copyFrom(destination);
+        camera.setTarget(vp.target.clone());
         creerHotspots(vp);
         mettreAJourSelector(index);
         return;
     }
 
-    // Fondu rapide
+    // Fondu rapide façon "écran de chargement" entre deux points de spawn
     afficherLoading(true);
     setTimeout(() => {
-        // Animation alpha/beta/radius
         const ease = new BABYLON.CubicEase();
         ease.setEasingMode(BABYLON.EasingFunction.EASINGMODE_EASEINOUT);
 
-        const animTarget = new BABYLON.Animation('aTarget','target', 60,
+        const animPos = new BABYLON.Animation('aPos', 'position', 60,
             BABYLON.Animation.ANIMATIONTYPE_VECTOR3,
             BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        animTarget.setEasingFunction(ease);
-        animTarget.setKeys([
-            { frame: 0,  value: camera.target.clone() },
-            { frame: 40, value: vp.target.clone() }
+        animPos.setEasingFunction(ease);
+        animPos.setKeys([
+            { frame: 0,  value: camera.position.clone() },
+            { frame: 30, value: destination }
         ]);
 
-        const animAlpha = new BABYLON.Animation('aAlpha','alpha', 60,
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        animAlpha.setEasingFunction(ease);
-        animAlpha.setKeys([
-            { frame: 0,  value: camera.alpha },
-            { frame: 40, value: vp.alpha }
-        ]);
-
-        const animBeta = new BABYLON.Animation('aBeta','beta', 60,
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        animBeta.setEasingFunction(ease);
-        animBeta.setKeys([
-            { frame: 0,  value: camera.beta },
-            { frame: 40, value: vp.beta }
-        ]);
-
-        const animRadius = new BABYLON.Animation('aRadius','radius', 60,
-            BABYLON.Animation.ANIMATIONTYPE_FLOAT,
-            BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
-        animRadius.setEasingFunction(ease);
-        animRadius.setKeys([
-            { frame: 0,  value: camera.radius },
-            { frame: 40, value: vp.radius }
-        ]);
-
-        camera.animations = [animTarget, animAlpha, animBeta, animRadius];
-        scene.beginAnimation(camera, 0, 40, false, 1, () => {
+        camera.animations = [animPos];
+        scene.beginAnimation(camera, 0, 30, false, 1, () => {
+            camera.setTarget(vp.target.clone());
             creerHotspots(vp);
             mettreAJourSelector(index);
             afficherLoading(false);
@@ -396,6 +531,80 @@ function mat(id, hex, r = 0.7, m = 0) {
     return MAT[id] = mat;
 }
 
+// Bump procédural très léger pour mur peint — du bruit doux, pas de motif
+// visible, juste assez pour que la lumière n'accroche pas un plat parfait.
+function texPlatre() {
+    const dt = new BABYLON.DynamicTexture('tPlatre', { width: 256, height: 256 }, scene);
+    const ctx = dt.getContext();
+    ctx.fillStyle = '#8080ff'; // bleu neutre = "pas de relief" en normal map
+    ctx.fillRect(0, 0, 256, 256);
+    for (let i = 0; i < 3000; i++) {
+        const x = Math.random() * 256, y = Math.random() * 256;
+        const v = 118 + Math.random() * 20; // léger bruit autour du neutre
+        ctx.fillStyle = `rgb(${v},${v},255)`;
+        ctx.fillRect(x, y, 1.4, 1.4);
+    }
+    dt.update();
+    dt.uScale = dt.vScale = 6;
+    return dt;
+}
+
+// Bump procédural en trame croisée pour tissu (canapé, coussins, literie) —
+// un quadrillage fin qui suggère un tissage sans être un motif visible.
+function texTissu(tuilage = 10) {
+    const dt = new BABYLON.DynamicTexture('tTissu' + tuilage, { width: 128, height: 128 }, scene);
+    const ctx = dt.getContext();
+    ctx.fillStyle = '#8080ff';
+    ctx.fillRect(0, 0, 128, 128);
+    ctx.strokeStyle = 'rgba(96,96,255,.5)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 128; i += 4) {
+        ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 128); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(128, i); ctx.stroke();
+    }
+    dt.update();
+    dt.uScale = dt.vScale = tuilage;
+    return dt;
+}
+
+/* ================================================================
+   MEUBLES RÉELS — modèles CC0 (Poly Haven, libres de droits), téléchargés
+   une fois et hébergés dans assets/meubles/ plutôt que résolus en direct
+   depuis Poly Haven à chaque visite (lenteur/indisponibilité du service
+   tiers évitée, pas de dépendance réseau externe en production).
+   Échelle/centrage automatiques pour ne pas dépendre des unités exactes
+   du modèle source.
+   ================================================================ */
+async function chargerMeuble(slug, fichierGltf, x, z, rotY, largeurCible, sg) {
+    try {
+        const rootUrl = `assets/meubles/${slug}/`;
+        const resultat = await BABYLON.SceneLoader.ImportMeshAsync('', rootUrl, fichierGltf, scene);
+        const racine = new BABYLON.TransformNode('grp_' + slug, scene);
+        resultat.meshes.forEach(m => {
+            if (!m.parent) m.parent = racine;
+            m.receiveShadows = true;
+            if (sg) sg.addShadowCaster(m, true);
+        });
+
+        racine.computeWorldMatrix(true);
+        const b1 = racine.getHierarchyBoundingVectors();
+        const taille = b1.max.subtract(b1.min);
+        const echelle = largeurCible / Math.max(taille.x, taille.z, 0.01);
+        racine.scaling.setAll(echelle);
+
+        racine.computeWorldMatrix(true);
+        const b2 = racine.getHierarchyBoundingVectors();
+        racine.position.x += x - (b2.min.x + b2.max.x) / 2;
+        racine.position.z += z - (b2.min.z + b2.max.z) / 2;
+        racine.position.y += -b2.min.y;
+        racine.rotation.y = rotY;
+        return racine;
+    } catch (e) {
+        console.warn('Échec du chargement du meuble', slug, e);
+        return null;
+    }
+}
+
 function b(n, w, h, d, x, y, z, matId, sg) {
     const mesh = BABYLON.MeshBuilder.CreateBox(n, { width:w, height:h, depth:d }, scene);
     mesh.position.set(x, y, z);
@@ -411,45 +620,6 @@ function c(n, h, dt, db, x, y, z, matId, sg, tess = 20) {
     if (matId) mesh.material = matId;
     if (sg) sg.addShadowCaster(mesh);
     return mesh;
-}
-
-function texParquet(c1, c2) {
-    const dt = new BABYLON.DynamicTexture('tp'+c1, { width:512, height:512 }, scene);
-    const ctx = dt.getContext();
-    const n = 7, ph = 512/n;
-    [c1,c2,c1,c2,c1,c2,c1].forEach((col, i) => {
-        ctx.fillStyle = col;
-        ctx.fillRect(0, i*ph, 512, ph - 2);
-        ctx.globalAlpha = 0.06;
-        for (let x = 0; x < 512; x += 14 + Math.random()*10) {
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 0.6;
-            ctx.beginPath();
-            ctx.moveTo(x + Math.random()*4, i*ph);
-            ctx.lineTo(x + Math.random()*4, (i+1)*ph);
-            ctx.stroke();
-        }
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#1A0800';
-        ctx.fillRect(0, (i+1)*ph - 2, 512, 2);
-    });
-    dt.update(); dt.uScale = 3.5; dt.vScale = 2.5; return dt;
-}
-function texCarrelage() {
-    const dt = new BABYLON.DynamicTexture('tc', { width:512, height:512 }, scene);
-    const ctx = dt.getContext();
-    const n = 8, s = 512/n;
-    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
-        const v = 215 + ((i+j)%2)*18;
-        ctx.fillStyle = `rgb(${v},${v-3},${v-6})`;
-        ctx.fillRect(j*s+2, i*s+2, s-4, s-4);
-    }
-    ctx.strokeStyle='#C8C4BE'; ctx.lineWidth=4;
-    for (let i = 0; i <= n; i++) {
-        ctx.beginPath(); ctx.moveTo(0,i*s); ctx.lineTo(512,i*s); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(i*s,0); ctx.lineTo(i*s,512); ctx.stroke();
-    }
-    dt.update(); dt.uScale=3; dt.vScale=3; return dt;
 }
 
 /* ================================================================
@@ -474,9 +644,47 @@ function construireVilla(sg) {
     const mTeteLit   = mat('teteLit', '#2A1A0E', 0.70);
     const mVerre     = mat('verre',   '#9BBFCC', 0.05);
 
-    mParquet.albedoTexture   = texParquet('#8C6A40','#6B4E2A');
-    mParqCh.albedoTexture    = texParquet('#6E4F28','#5A3D1E');
-    mCarrelage.albedoTexture = texCarrelage();
+    // Vraies textures photo (CDN gratuits — Babylon.js et three.js examples,
+    // tous deux CORS-ouverts) plutôt que les textures dessinées au canvas.
+    const texBoisAlbedo = () => { const t = new BABYLON.Texture('https://threejs.org/examples/textures/hardwood2_diffuse.jpg', scene); t.uScale = 3; t.vScale = 3; return t; };
+    mParquet.albedoTexture = texBoisAlbedo();
+    mParqCh.albedoTexture  = texBoisAlbedo();
+    // Légère teinte pour rester proche du parquet chêne visé (la photo est assez neutre)
+    mParquet.albedoColor = BABYLON.Color3.FromHexString('#E8DCC8');
+    mParqCh.albedoColor  = BABYLON.Color3.FromHexString('#D8C8AC');
+
+    // Carrelage damier — bien plus crédible en cuisine que le pavé extérieur
+    // ("floor.png" de Babylon) utilisé dans une première tentative.
+    mCarrelage.albedoTexture = new BABYLON.Texture('https://threejs.org/examples/textures/floors/FloorsCheckerboard_S_Diffuse.jpg', scene);
+    mCarrelage.albedoTexture.uScale = mCarrelage.albedoTexture.vScale = 4;
+    mCarrelage.albedoColor = BABYLON.Color3.FromHexString('#FFFFFF');
+
+    // Murs — pas de texture photo fiable trouvée pour du plâtre/peinture (les
+    // candidats disponibles en hotlink sont de la brique/pierre, pas adaptés).
+    // On génère un bump procédural très subtil : un mur peint reste uni à
+    // l'œil, mais accroche légèrement la lumière au lieu d'être plat-numérique.
+    const bumpPlatre = texPlatre();
+    bumpPlatre.level = 0.35; // reste subtil, pas un mur "bosselé"
+    mMur.bumpTexture    = bumpPlatre;
+    mMurAcc.bumpTexture = bumpPlatre;
+
+    // Tissus (canapé, coussins, literie) — même principe : un tissage discret
+    // plutôt qu'une couleur plate numérique.
+    const bumpTissu = texTissu(10);
+    bumpTissu.level = 0.4;
+    mCanape.bumpTexture  = bumpTissu;
+    mCoussin.bumpTexture = bumpTissu;
+
+    // Bois foncé (table basse, table de nuit) — même photo que le parquet,
+    // tuilage réduit à 1 (un seul pan de grain) pour éviter la distorsion
+    // visible sur de petits objets quand le motif se répète trop.
+    const texBoisFonce = new BABYLON.Texture('https://threejs.org/examples/textures/hardwood2_diffuse.jpg', scene);
+    texBoisFonce.uScale = texBoisFonce.vScale = 1;
+    mNoyer.albedoTexture   = texBoisFonce;
+    mNoyer.albedoColor     = BABYLON.Color3.FromHexString('#3A2010');
+    mTeteLit.albedoTexture = texBoisFonce;
+    mTeteLit.albedoColor   = BABYLON.Color3.FromHexString('#4A2A14');
+    mLin.bumpTexture     = bumpTissu;
 
     // Spots lumière
     const addSpot = (x,y,z,n,i,r) => {
@@ -501,11 +709,13 @@ function construireVilla(sg) {
     addFloor('flCo',2.5,8,-4.25,-0.5,mat('beton','#C8C4BE',0.80));
 
     // PLAFONDS
-    [['plS',14,10,0,2],['plC',7,7,-8.5,-4.5],['plCh',7,8,-8.5,4],['plCo',2.5,8,-4.25,-0.5]].forEach(([n,w,d,x,z])=>
-        b(n,w,0.1,d,x,H+0.05,z,mPlafond));
+    [['plS',14,10,0,2],['plC',7,7,-8.5,-4.5],['plCh',7,8,-8.5,4],['plCo',2.5,8,-4.25,-0.5]].forEach(([n,w,d,x,z])=>{
+        const plaf = b(n,w,0.1,d,x,H+0.05,z,mPlafond);
+        plaf.checkCollisions = true;
+    });
 
-    // MURS EXTÉRIEURS
-    const mw = (n,w,h,d,x,y,z,m) => { const mesh=b(n,w,h,d,x,y,z,m); mesh.receiveShadows=true; return mesh; };
+    // MURS EXTÉRIEURS — collidables pour empêcher la caméra de les traverser
+    const mw = (n,w,h,d,x,y,z,m) => { const mesh=b(n,w,h,d,x,y,z,m); mesh.receiveShadows=true; mesh.checkCollisions=true; return mesh; };
     mw('mSN',14,H,0.2,0,H/2,7.1,mMur); mw('mSS',14,H,0.2,0,H/2,-3.1,mMur);
     mw('mSE',0.2,H,10,7.1,H/2,2,mMur);
     mw('mCN',7,H,0.2,-8.5,H/2,-8.1,mMurAcc); mw('mCW',0.2,H,7,-12.1,H/2,-4.5,mMurAcc);
@@ -528,19 +738,11 @@ function construireVilla(sg) {
     const mTapis = mat('tapis','#8B6852',0.95);
     b('tapis',4.5,0.03,3.0,1,0.015,2,mTapis);
 
-    // Canapé
-    b('canBase',2.4,0.44,0.95,0.5,0.22,3.5,mCanape,sg);
-    b('canDos',2.4,0.52,0.18,0.5,0.72,3.9,mCanape,sg);
-    b('canBG',0.18,0.52,0.95,-0.7,0.46,3.5,mCanape,sg);
-    b('canBD',0.18,0.52,0.95,1.7,0.46,3.5,mCanape,sg);
-    [-0.35,0.5,1.3].forEach((x,i)=>b(`cc${i}`,0.52,0.28,0.1,x,0.60,3.62,mCoussin,sg));
+    // Canapé — vrai modèle CC0 (Poly Haven, hébergé localement)
+    chargerMeuble('sofa_02', 'sofa_02_1k.gltf', 0.5, 3.7, Math.PI, 2.0, sg);
 
-    // Fauteuil
-    b('fB',0.95,0.44,0.85,3.2,0.22,3.2,mCanape,sg);
-    b('fD',0.95,0.52,0.18,3.2,0.72,3.6,mCanape,sg);
-    b('fBG',0.16,0.48,0.85,2.74,0.44,3.2,mCanape,sg);
-    b('fBD',0.16,0.48,0.85,3.66,0.44,3.2,mCanape,sg);
-    b('fC',0.72,0.26,0.1,3.2,0.60,3.32,mCoussin,sg);
+    // Fauteuil — vrai modèle CC0
+    chargerMeuble('mid_century_lounge_chair', 'mid_century_lounge_chair_1k.gltf', 3.2, 3.3, -Math.PI / 2, 0.95, sg);
 
     // Table basse
     b('tb',1.2,0.06,0.7,1.2,0.46,2.2,mNoyer,sg);
@@ -553,7 +755,18 @@ function construireVilla(sg) {
     b('mTVP',3.0,0.04,0.45,0,0.52,-2.4,mat('tpn','#B8923A',0.5),sg);
     b('tv',1.9,1.05,0.06,0,1.3,-2.48,mNoir,sg);
     b('tvB',1.95,1.1,0.04,0,1.3,-2.45,mat('tvb','#111',0.1),sg);
-    const eLed=mat('elum','#1A2A4A',0.1); eLed.emissiveColor=new BABYLON.Color3(0.05,0.12,0.3);
+    // Écran avec un dégradé d'ambiance plutôt qu'un bleu plat — suggère un
+    // écran allumé (veille/économiseur) sans avoir à charger une vraie image.
+    const dtEcran = new BABYLON.DynamicTexture('tEcran', { width: 256, height: 144 }, scene);
+    const ctxEcran = dtEcran.getContext();
+    const grad = ctxEcran.createLinearGradient(0, 0, 256, 144);
+    grad.addColorStop(0, '#0D1B3A'); grad.addColorStop(0.55, '#142A52'); grad.addColorStop(1, '#0A1428');
+    ctxEcran.fillStyle = grad; ctxEcran.fillRect(0, 0, 256, 144);
+    dtEcran.update();
+    const eLed = mat('elum', '#1A2A4A', 0.15);
+    eLed.albedoTexture  = dtEcran;
+    eLed.emissiveTexture = dtEcran;
+    eLed.emissiveColor  = new BABYLON.Color3(0.4, 0.4, 0.4);
     b('ecr',1.85,0.99,0.01,0,1.3,-2.44,eLed);
     const ledMat=mat('led','#FFEEB8',0.1); ledMat.emissiveColor=new BABYLON.Color3(1,0.93,0.7);
     b('ledTV',2.8,0.04,0.04,0,0.0,-2.18,ledMat);
@@ -588,11 +801,10 @@ function construireVilla(sg) {
     });
 
     // ── CHAMBRE ────────────────────────────────────────────────
-    b('lit',2.0,0.32,2.2,-8.5,0.16,4,mLin,sg);
-    b('litD',2.0,0.04,2.2,-8.5,0.34,4,mCoussin,sg);
-    b('tete',2.0,0.9,0.14,-8.5,0.65,5.05,mTeteLit,sg);
-    b('pied',2.0,0.28,0.12,-8.5,0.14,2.9,mTeteLit,sg);
-    [-0.45,0.45].forEach((x,i)=>b(`orl${i}`,0.58,0.14,0.38,-8.5+x,0.42,4.8,mCoussin,sg));
+    // Lit — vrai modèle CC0 (seul lit disponible en CC0 chez Poly Haven est
+    // un style gothique/ancien ; détail à ajuster plus tard si le style ne
+    // convient pas, mais nettement mieux qu'une boîte plate).
+    chargerMeuble('GothicBed_01', 'GothicBed_01_1k.gltf', -8.5, 4, Math.PI / 2, 2.0, sg);
     b('couv',2.0,0.08,0.65,-8.5,0.38,3.5,mat('cm','#9B8B7A',0.85));
     [-1.2,1.2].forEach((x,i)=>{
         b(`cv${i}`,0.55,0.55,0.42,-8.5+x,0.275,4,mTeteLit,sg);
@@ -604,4 +816,8 @@ function construireVilla(sg) {
     mVerre.alpha=0.35;
     b('mirArm',1.05,2.3,0.04,-8.1,1.15,7.4,mVerre);
     b('tapisCh',2.8,0.03,2.0,-8.5,0.015,3.2,mat('tCh','#6B5A8A',0.92));
+
+    // ── Perf : aucun matériau du décor ne change après construction ──
+    // freeze() évite à Babylon de revérifier/recompiler leurs bindings à chaque frame.
+    Object.values(MAT).forEach(m => m.freeze());
 }

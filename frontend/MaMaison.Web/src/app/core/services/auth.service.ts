@@ -23,7 +23,18 @@ export class AuthService {
     return r === Role.Admin || r === Role.SuperAdmin;
   });
 
-  readonly peutPublier = computed(() => this.estAdmin() || this._user()?.role === Role.Proprietaire);
+  readonly peutPublier = computed(() => {
+    const role = this._user()?.role;
+    return role === Role.Proprietaire || role === Role.Promoteur
+      || role === Role.Demarcheur || role === Role.AgentImmobilier
+      || role === Role.Admin || role === Role.SuperAdmin;
+  });
+
+  readonly peutGererBiens = computed(() => this.peutPublier());
+  readonly peutVerifierTerrain = computed(() => {
+    const role = this._user()?.role;
+    return role === Role.VerificateurTerrain || role === Role.Admin || role === Role.SuperAdmin;
+  });
 
   login(cmd: LoginCommand): Observable<AuthResult> {
     return this.http.post<AuthResult>(`${this.base}/login`, cmd).pipe(

@@ -266,3 +266,36 @@ body {
 @keyframes spin { to { transform:rotate(360deg); } }
 
 .hidden { display:none !important; }
+
+/* ── Viseur (vue libre / pointer lock) ── */
+#crosshair {
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 8px; height: 8px;
+    margin: -4px 0 0 -4px;
+    border: 1.5px solid rgba(255,255,255,.85);
+    border-radius: 50%;
+    box-shadow: 0 0 0 1px rgba(0,0,0,.4);
+    pointer-events: none;
+    z-index: 50;
+}
+
+/* ── Indication pour activer la vue libre ── */
+#move-hint {
+    position: absolute;
+    bottom: 96px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(5,13,26,.78);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.12);
+    color: rgba(255,255,255,.75);
+    font-size: .76rem;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 20px;
+    white-space: nowrap;
+    pointer-events: none;
+    z-index: 50;
+}
+#move-hint strong { color: #F5D98A; font-weight: 700; }
