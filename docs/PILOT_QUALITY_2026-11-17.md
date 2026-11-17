@@ -36,6 +36,8 @@ qu'a l'API de meme origine. Aucune migration ni seed en environnement Production
 Navigation Acheter/Louer, catalogue alimente par l'API, image d'Abidjan attribuee,
 palette blanc/charbon/vert avec accent terre cuite, boutons et titres plus sobres,
 menu mobile en dialogue, focus clavier et animations reduites selon preference.
+Administration compacte, indicateurs sur deux colonnes mobiles et erreur de
+chargement explicite plutot que des statistiques perimees.
 Etats chargement/vide/erreur, contact et connexion adaptes aux petits ecrans.
 
 | Profil | Entrees principales | Controle |
@@ -54,7 +56,8 @@ villa temoin et respecte le reglage admin existant, sans activation implicite.
 ## Validation avant activation
 
 - .NET Release : 130 tests passes (100 API, 24 domaine, 6 application).
-- Angular : 122 tests passes sous Edge/ChromeHeadless. API simulee dans les tests.
+- Angular : 122 tests passes sous Edge/ChromeHeadless, puis 2 tests cibles pour
+  le tableau de bord admin. API simulee dans les tests.
 - Acces demo : 7 tests Node passes.
 - Restore NuGet en mode verrouille ; lockfiles versionnes ; npm ci.
 - Audits dependances : aucune alerte runtime .NET/npm connue au controle.

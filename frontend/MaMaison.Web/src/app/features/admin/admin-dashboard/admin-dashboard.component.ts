@@ -15,6 +15,7 @@ type Onglet = 'dashboard' | 'villas' | 'locations' | 'terrains' | 'demarcheurs' 
   selector: 'app-admin-dashboard',
   imports: [SiteSettingsComponent, JustificatifsComponent, BienMapComponent, RouterLink, SlicePipe, FormsModule],
   templateUrl: './admin-dashboard.component.html',
+  styleUrl: './admin-dashboard.component.scss',
 })
 export class AdminDashboardComponent implements OnInit {
   private readonly fonctionnalites = inject(FonctionnalitesService);
@@ -63,9 +64,10 @@ export class AdminDashboardComponent implements OnInit {
 
   chargerDashboard() {
     this.loading.set(true);
+    this.dashboard = null;
     this.http.get(`${this.base}/dashboard`).subscribe({
       next: d => { this.dashboard = d; this.loading.set(false); },
-      error: () => this.loading.set(false)
+      error: () => { this.loading.set(false); this.message.set('Le tableau de bord ne peut pas être chargé. Réessayez.'); }
     });
   }
 

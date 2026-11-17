@@ -1,10 +1,8 @@
 <!-- HEADER -->
-<section class="hero" style="min-height:220px;padding:56px 24px 80px">
-  <div class="orb orb-1" style="opacity:.5"></div>
-  <div class="hero-content">
-    <div class="hero-eyebrow">✦ MaMaison Verified — Back-office</div>
-    <h1 class="hero-title" style="font-size:2rem">Administration</h1>
-    <p class="hero-sub" style="margin-bottom:0">Gérez les biens, validez les annonces, traitez les demandes.</p>
+<section class="admin-header">
+  <div class="page-container">
+    <h1>Administration</h1>
+    <a routerLink="/" class="btn btn-ghost"><img src="/viewer-3d/vendor/icons/arrow-left.svg" alt="">Retour au site</a>
   </div>
 </section>
 
@@ -12,13 +10,13 @@
 <div class="hero-filter-wrap" style="margin-bottom:0">
   <div class="hero-filter" style="padding:10px 16px;gap:8px;flex-wrap:wrap">
     @for (tab of [
-      {id:'dashboard',label:'📊 Dashboard'},
-      {id:'villas',label:'🏠 Villas'},
-      {id:'locations',label:'🔑 Locations'},
-      {id:'terrains',label:'📍 Terrains'},
-      {id:'demarcheurs',label:'🤝 Démarcheurs'},
-      {id:'demandes',label:'📋 Demandes'},
-      {id:'signalements',label:'🚨 Signalements'},
+      {id:'dashboard',label:'Vue d’ensemble'},
+      {id:'villas',label:'Villas'},
+      {id:'locations',label:'Locations'},
+      {id:'terrains',label:'Terrains'},
+      {id:'demarcheurs',label:'Démarcheurs'},
+      {id:'demandes',label:'Demandes'},
+      {id:'signalements',label:'Signalements'},
       {id:'reglages',label:'Réglages du site'}
     ]; track tab.id) {
       <button class="btn btn-sm"
@@ -28,11 +26,10 @@
         {{ tab.label }}
       </button>
     }
-    <a routerLink="/" class="btn btn-ghost btn-sm" style="margin-left:auto">← Site</a>
   </div>
 </div>
 
-<div class="page-container" style="padding-top:40px">
+<div class="page-container" style="padding-top:24px">
   @if (onglet() === 'reglages') { <app-site-settings /> }
 
   <!-- Message flash -->
@@ -47,7 +44,7 @@
     @if (loading()) {
       <div class="loading-wrap"><div class="spinner"></div></div>
     } @else if (dashboard) {
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;margin-bottom:32px">
+      <div class="admin-stats">
         @for (stat of [
           {label:'Villas publiées',  val:dashboard.villas?.publiees,     sub:'/ '+dashboard.villas?.total+' total',         icon:'🏠'},
           {label:'En validation',    val:dashboard.villas?.enValidation, sub:'villas à traiter',                            icon:'⏳'},
@@ -58,11 +55,10 @@
           {label:'Utilisateurs',     val:dashboard.utilisateurs,         sub:'inscrits',                                   icon:'👤'},
           {label:'Terrains',         val:dashboard.terrains?.publies,    sub:'/ '+dashboard.terrains?.total+' total',      icon:'📍'},
         ]; track stat.label) {
-          <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-sm)">
-            <div style="font-size:1.5rem;margin-bottom:6px">{{ stat.icon }}</div>
-            <div style="font-size:1.8rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.025em">{{ stat.val ?? 0 }}</div>
-            <div style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft)">{{ stat.label }}</div>
-            <div style="font-size:.72rem;color:var(--text-soft);margin-top:2px">{{ stat.sub }}</div>
+          <div class="admin-stat">
+            <strong>{{ stat.val ?? 0 }}</strong>
+            <span>{{ stat.label }}</span>
+            <small>{{ stat.sub }}</small>
           </div>
         }
       </div>

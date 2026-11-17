@@ -1,0 +1,16 @@
+.admin-header { border-bottom: 1px solid var(--border); background: white; }
+.admin-header .page-container { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 24px; }
+.admin-header h1 { margin: 0; font: 600 24px var(--font-body); color: var(--text); }
+.admin-header img { width: 16px; height: 16px; }
+.admin-stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 24px; }
+.admin-stat { display: flex; flex-direction: column; gap: 4px; padding: 20px; background: white; min-width: 0; }
+.admin-stat strong { color: var(--navy-mid); font-size: 28px; font-weight: 600; }
+.admin-stat span { color: var(--text); font-size: 14px; }
+.admin-stat small { color: var(--text-soft); font-size: 12px; }
+@media (max-width: 800px) {
+  .admin-header .page-container { align-items: flex-start; padding-block: 20px; }
+  .admin-header h1 { font-size: 21px; }
+  .admin-header a { padding: 4px 0; min-height: 32px; font-size: 12px; }
+  .admin-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .admin-stat { padding: 14px; }
+}

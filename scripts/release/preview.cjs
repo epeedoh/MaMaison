@@ -34,7 +34,9 @@ http.createServer(async (req, res) => {
       role:Number((req.headers.authorization || '').split('-').at(-1)) || 2,dateInscription:'2026-11-17T00:00:00Z'});
     if(p === '/api/profil/stats') return send(res,{nbDemandes:0,nbLocations:0,nbSignalements:0});
     if(p === '/api/admin/site-config') return send(res,{demo3dEnabled:true,version:id,updatedAt:null});
-    if(p === '/api/admin/dashboard') return send(res,{});
+    if(p === '/api/admin/dashboard') return send(res,{villas:{publiees:1,total:1,enValidation:0},
+      locations:{publiees:0,total:0,enVerification:0},demandesVisite:{enAttente:0,total:0},
+      signalements:{enAttente:0},terrains:{publies:0,total:0},utilisateurs:1});
     if(p.startsWith('/api/admin/') || p.startsWith('/api/profil/') || p === '/api/demarcheurs') return send(res,[]);
     return send(res,{},404);
   }
