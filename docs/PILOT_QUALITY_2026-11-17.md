@@ -50,14 +50,17 @@ Etats chargement/vide/erreur, contact et connexion adaptes aux petits ecrans.
 
 Les coordonnees de contact viennent du compte ; le profil se synchronise apres
 modification du nom. Les brouillons de contact survivent a une reconnexion.
+La candidature apporteur affiche une connexion ou un contact selon le role,
+utilise les coordonnees du compte et explique les refus au lieu d'envoyer un
+formulaire public vers une API authentifiee. Aucune promesse de delai non etayee.
 WhatsApp n'apparait que si un numero valide est configure. La 3D est nommee
 villa temoin et respecte le reglage admin existant, sans activation implicite.
 
 ## Validation avant activation
 
 - .NET Release : 130 tests passes (100 API, 24 domaine, 6 application).
-- Angular : 122 tests passes sous Edge/ChromeHeadless, puis 2 tests cibles pour
-  le tableau de bord admin. API simulee dans les tests.
+- Angular : 124 tests passes sous Edge/ChromeHeadless, puis 4 tests cibles pour
+  la candidature apporteur. API simulee dans les tests.
 - Acces demo : 7 tests Node passes.
 - Restore NuGet en mode verrouille ; lockfiles versionnes ; npm ci.
 - Audits dependances : aucune alerte runtime .NET/npm connue au controle.
