@@ -27,6 +27,7 @@ backend/**/appsettings.Production.json
 Thumbs.db
 *.log
 *.tmp
+scripts/release/__pycache__/
 
 # Assets 3D volumineux (gérer séparément)
 assets/models/*.glb

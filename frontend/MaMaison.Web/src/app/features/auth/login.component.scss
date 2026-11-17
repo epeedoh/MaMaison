@@ -1,0 +1,25 @@
+:host { display: block; background: #fff; color: #252b29; letter-spacing: 0; }
+.login-page { padding: 48px 20px 64px; min-height: 65vh; }
+.login-content { width: 100%; max-width: 420px; margin: auto; }
+.brand { display: inline-block; font-size: 1.1rem; font-weight: 700; color: #205640; margin-bottom: 24px; }
+.brand span { color: #8a4c38; font-size: .8rem; }
+h1 { font: 700 1.75rem/1.3 var(--font-body, sans-serif); letter-spacing: 0; margin-bottom: 16px; }
+p { line-height: 1.6; overflow-wrap: anywhere; }
+.destination { color: #59645f; font-size: .88rem; margin-bottom: 8px; }
+.notice { color: #205640; font-size: .92rem; margin-bottom: 12px; }
+form { display: grid; gap: 18px; margin-top: 24px; }
+.field { display: flex; flex-direction: column; gap: 7px; }
+label { font-size: .88rem; font-weight: 600; }
+input { width: 100%; padding: 12px; border: 1px solid #bac7bf; background: #fff; border-radius: 6px; font: inherit; color: #252b29; }
+.action { min-height: 44px; padding: 10px 16px; border: 1px solid #205640; border-radius: 6px; cursor: pointer; font: inherit; font-weight: 600; }
+.primary { background: #205640; color: #fff; }
+.primary:hover { background: #174431; }
+:disabled { opacity: .55; cursor: not-allowed; }
+:is(input, button, a):focus-visible { outline: 2px solid #205640; outline-offset: 3px; }
+.error { color: #8b3f31; border-left: 3px solid #ad715d; padding-left: 12px; font-size: .88rem; }
+.register-link { font-size: .88rem; margin-top: 20px; }
+.register-link a, .account-link { color: #205640; text-decoration: underline; }
+.account-link { display: inline-block; margin-top: 14px; }
+.back-link { display: flex; gap: 8px; align-items: center; color: #59645f; font-size: .85rem; margin-top: 26px; }
+.back-link img { width: 18px; height: 18px; }
+@media (max-width: 480px) { .login-page { padding: 32px 18px 40px; } }

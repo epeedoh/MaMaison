@@ -37,5 +37,6 @@ export enum Role {
 
 export const RoleLabels: Record<number, string> = {
   0: 'Visiteur', 1: 'Acheteur', 2: 'Locataire', 3: 'Propriétaire',
-  4: 'Promoteur', 5: 'Démarcheur', 8: 'Admin', 9: 'Super Admin',
+  4: 'Promoteur', 5: 'Démarcheur', 6: 'Agent immobilier', 7: 'Vérificateur terrain',
+  8: 'Administrateur', 9: 'Super administrateur', 10: 'Support', 11: 'Partenaire',
 };

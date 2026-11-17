@@ -18,11 +18,11 @@ public class PublicationTests
         .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
 
     [Fact]
-    public void SoumissionReserveeAuxProprietairesEtAdministrateurs()
+    public void SoumissionReserveeAuxRolesDePublication()
     {
         var auth = typeof(LocationsController).GetMethod(nameof(LocationsController.Soumettre))!
             .GetCustomAttributes(typeof(AuthorizeAttribute), false).Cast<AuthorizeAttribute>().Single();
-        Assert.Equal(new[] { "Proprietaire", "Admin", "SuperAdmin" }, auth.Roles!.Split(','));
+        Assert.Equal(new[] { "Proprietaire", "Promoteur", "Demarcheur", "AgentImmobilier", "Admin", "SuperAdmin" }, auth.Roles!.Split(','));
     }
 
     [Fact]

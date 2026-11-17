@@ -1,0 +1,20 @@
+:host { display: block; }
+.contact-heading { padding: 40px 24px 28px; text-align: center; background: #f2f5f4; }
+h1 { font-size: 2rem; margin-bottom: 12px; }
+h2 { font-size: 1.25rem; margin-bottom: 20px; }
+.contact-content { max-width: 680px; padding-top: 32px; padding-bottom: 40px; }
+.contact-fields { border: 0; padding: 0; margin: 24px 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.filter-field { min-width: 0; }
+.contact-wide { grid-column: 1 / -1; }
+input, select, textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+textarea { padding: 12px 14px; border: 1px solid var(--border); border-radius: 6px; font: inherit; resize: vertical; }
+.contact-notice { padding: 16px; background: #edf4f5; border-left: 3px solid #426a70; }
+.contact-notice p { margin-bottom: 8px; }
+.contact-error { margin-top: 16px; padding: 12px; background: #fee2e2; color: #991b1b; }
+.contact-success p { margin-bottom: 24px; }
+.contact-direct { margin-top: 28px; padding-top: 24px; border-top: 1px solid var(--border); }
+.btn { min-height: 48px; height: auto; white-space: normal; text-align: center; }
+@media (max-width: 480px) {
+  h1 { font-size: 1.75rem; }
+  .contact-fields { grid-template-columns: minmax(0, 1fr); }
+}

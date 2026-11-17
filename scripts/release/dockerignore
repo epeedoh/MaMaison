@@ -1,0 +1,8 @@
+*
+!publish/
+!publish/**
+!browser/
+!browser/**
+!nginx.conf
+!Dockerfile.api
+!Dockerfile.web

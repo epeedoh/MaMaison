@@ -6,7 +6,7 @@ import { SeoService } from '../../../../core/services/seo.service';
 import { StatistiquesService } from '../../../../core/services/statistiques.service';
 import { VillaDetail as VillaDetailModel, TypeVillaLabels } from '../../../../core/models/villa.model';
 import { AnalysePrixBien } from '../../../../core/models/statistiques.model';
-import { environment } from '../../../../../environments/environment';
+import { SiteConfigService } from '../../../../core/services/site-config.service';
 import { DemandeVisiteModalComponent, ModalMode } from '../../../../shared/components/demande-visite-modal/demande-visite-modal.component';
 import { SignalementModalComponent } from '../../../../shared/components/signalement-modal/signalement-modal.component';
 import { FavorisService } from '../../../../core/services/favoris.service';
@@ -23,6 +23,7 @@ export class VillaDetailComponent implements OnInit {
   private readonly statsService = inject(StatistiquesService);
   private readonly seo = inject(SeoService);
   readonly favoris = inject(FavorisService);
+  readonly siteConfig = inject(SiteConfigService);
 
   villa: VillaDetailModel | null = null;
   analyse: AnalysePrixBien | null = null;
@@ -37,9 +38,8 @@ export class VillaDetailComponent implements OnInit {
   ouvrirSignalement() { this.signalementOuvert.set(true); }
   fermerSignalement() { this.signalementOuvert.set(false); }
 
-  ouvrirWhatsApp() {
-    const msg = encodeURIComponent(`Bonjour, je suis intéressé par la villa "${this.villa?.titre}" sur MaMaison Verified.`);
-    window.open(`https://wa.me/2250700000000?text=${msg}`, '_blank');
+  get whatsappUrl(): string | null {
+    return this.siteConfig.whatsappUrl(`Bonjour, je suis intéressé par la villa "${this.villa?.titre}" sur MaMaison.`);
   }
 
   ngOnInit() {
@@ -48,7 +48,7 @@ export class VillaDetailComponent implements OnInit {
       next: v => {
         this.villa = v;
         this.loading = false;
-        this.seo.setVilla(v.titre, v.quartier, v.prix, v.imagePrincipaleUrl ?? undefined);
+        this.seo.setPage(v.titre, `${v.titre} à ${v.quartier} — ${this.formatPrix(v.prix)}. Informations déclarées dans l'annonce.`, v.imagePrincipaleUrl ?? undefined);
         this.statsService.analyserBien(id).subscribe(a => this.analyse = a);
       },
       error: () => { this.error = true; this.loading = false; }
@@ -67,10 +67,6 @@ export class VillaDetailComponent implements OnInit {
 
   fermerModal() {
     this.modalOuvert.set(false);
-  }
-
-  ouvrirVisite3D() {
-    window.location.href = `${environment.viewer3dUrl}?villaId=${this.villa!.id}`;
   }
 
   formatPrix(prix: number) {

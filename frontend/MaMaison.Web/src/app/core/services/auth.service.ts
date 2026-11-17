@@ -59,6 +59,11 @@ export class AuthService {
     return localStorage.getItem(TOKEN_KEY);
   }
 
+  actualiserNom(nom: string): void {
+    const user = this._user();
+    if (user) this.sauvegarder({ ...user, nom });
+  }
+
   private sauvegarder(result: AuthResult) {
     localStorage.setItem(TOKEN_KEY, result.token);
     localStorage.setItem(USER_KEY, JSON.stringify(result));

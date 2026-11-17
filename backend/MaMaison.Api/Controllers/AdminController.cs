@@ -148,9 +148,17 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
     [HttpGet("demandes")]
     public async Task<IActionResult> GetDemandes(CancellationToken ct)
     {
-        var demandes = await context.DemandesVisite
-            .OrderByDescending(d => d.DateCreation)
-            .Select(d => new { d.Id, d.BienId, d.Statut, d.DateSouhaitee, d.Commentaire, d.DateCreation })
+        var demandes = await (
+            from d in context.DemandesVisite.AsNoTracking()
+            join u in context.Utilisateurs on d.UtilisateurId equals u.Id into utilisateurs
+            from u in utilisateurs.DefaultIfEmpty()
+            orderby d.DateCreation descending
+            select new
+            {
+                d.Id, d.BienId, d.Statut, d.DateSouhaitee, d.Commentaire, d.DateCreation,
+                Nom = u == null ? null : u.Nom,
+                Telephone = u == null ? null : u.Telephone
+            })
             .ToListAsync(ct);
         return Ok(demandes);
     }

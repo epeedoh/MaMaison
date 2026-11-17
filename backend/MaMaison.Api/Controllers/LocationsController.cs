@@ -54,7 +54,8 @@ public class LocationsController(ILocationRepository locationRepository, MaMaiso
     public async Task<IActionResult> ObtenirDetail(Guid id, CancellationToken ct)
     {
         var location = await locationRepository.ObtenirParIdAsync(id, ct);
-        if (location is null) return NotFound();
+        if (location is null || location.Statut != StatutLocation.Publie || !location.EstDisponible)
+            return NotFound();
 
         var dto = new LocationDetailDto(
             location.Id, location.Titre, location.TypeBien,

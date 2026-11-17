@@ -11,6 +11,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton<MaMaison.Api.Controllers.SiteSettingsStore>();
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -41,6 +42,10 @@ builder.Services.AddInMemoryRateLimiting();
 
 // ── JWT Authentication ──────────────────────────────────────────
 builder.Services.AddScoped<TokenService>();
+
+if (!builder.Environment.IsDevelopment()
+    && (builder.Configuration["Jwt:Secret"]?.Length ?? 0) < 32)
+    throw new InvalidOperationException("A configured JWT signing key is required in production.");
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]
     ?? "MaMaison-Secret-Key-2025-At-Least-32-Characters!";
@@ -99,8 +104,9 @@ var app = builder.Build();
 app.MapOpenApi();
 
 // Migration + seed au démarrage
-using (var scope = app.Services.CreateScope())
+if (app.Environment.IsDevelopment())
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<MaMaisonDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<MaMaisonDbContext>>();
     await db.Database.MigrateAsync();

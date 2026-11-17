@@ -1,0 +1,5 @@
+FROM nginx:1.28-alpine
+ENV API_UPSTREAM=mamaison_pilote_api:8080
+COPY browser/ /usr/share/nginx/html/
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+EXPOSE 80

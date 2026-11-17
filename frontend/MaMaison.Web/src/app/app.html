@@ -1,105 +1,100 @@
-<nav class="navbar">
+<a class="skip-link" href="#main-content">Aller au contenu</a>
+<nav class="navbar" aria-label="Navigation principale">
   <div class="navbar-inner">
-    <a routerLink="/" class="brand">
-      <div class="brand-logo">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <rect width="28" height="28" rx="7" fill="#0F1F3D"/>
-          <path d="M14 6L4 13h3v9h6v-5h2v5h6V13h3L14 6z" fill="#C8972A"/>
-        </svg>
-      </div>
-      <div class="brand-text">
-        <span class="brand-name">MaMaison</span>
-        <span class="brand-tag">VERIFIED</span>
-      </div>
+    <a routerLink="/" class="brand" aria-label="MaMaison, accueil">
+      <span class="brand-logo"><img src="/viewer-3d/vendor/icons/home.svg" alt=""></span>
+      <span class="brand-text"><span class="brand-name">MaMaison<span class="brand-dot">.</span></span><span class="brand-tag">Côte d'Ivoire</span></span>
     </a>
-
     <div class="navbar-nav">
-      <a routerLink="/villas" routerLinkActive="nav-active" class="nav-link">Villas</a>
-      <a routerLink="/locations" routerLinkActive="nav-active" class="nav-link">Locations</a>
-      @if (fonctionnalites.terrainsActifs()) { <a routerLink="/terrains" routerLinkActive="nav-active" class="nav-link">Terrains</a> }
+      <details #buyMenu class="nav-dropdown" (keydown.escape)="fermerAchat()">
+        <summary class="nav-link nav-link-dropdown" [class.nav-active]="achatActif()">Acheter <img class="ui-icon" src="/viewer-3d/vendor/icons/plus.svg" alt=""></summary>
+        <div class="nav-dropdown-menu" (click)="buyMenu.open = false">
+          <a routerLink="/villas" routerLinkActive="nav-active" ariaCurrentWhenActive="page" class="nav-dropdown-item"><img class="ui-icon" src="/viewer-3d/vendor/icons/home.svg" alt="">Villas et résidences</a>
+          @if (fonctionnalites.terrainsActifs()) { <a routerLink="/terrains" routerLinkActive="nav-active" ariaCurrentWhenActive="page" class="nav-dropdown-item"><img class="ui-icon" src="/viewer-3d/vendor/icons/map.svg" alt="">Terrains</a> }
+        </div>
+      </details>
+      <a routerLink="/locations" routerLinkActive="nav-active" ariaCurrentWhenActive="page" class="nav-link">Louer</a>
     </div>
-
-    <!-- Barre de recherche globale -->
-    <app-search-bar style="flex:1;max-width:380px"></app-search-bar>
-
-    <div class="navbar-end" style="display:flex;align-items:center;gap:8px">
+    <app-search-bar class="global-search"></app-search-bar>
+    <button type="button" class="mobile-menu-toggle" title="Ouvrir le menu" aria-haspopup="dialog" aria-label="Ouvrir le menu" aria-controls="mobile-menu" [attr.aria-expanded]="menuMobileOuvert()" (click)="ouvrirMenuMobile()"><img src="/viewer-3d/vendor/icons/menu.svg" alt=""></button>
+    <div class="navbar-end">
       @if (auth.estConnecte()) {
-        @if (auth.estAdmin()) {
-          <a routerLink="/admin" routerLinkActive="nav-active" class="nav-link" style="font-size:.75rem">Admin</a>
-        }
-        <a routerLink="/profil" routerLinkActive="nav-active" class="nav-link" style="font-size:.78rem">
-          👤 {{ auth.user()?.nom }}
-        </a>
+        @if (auth.estAdmin()) { <a routerLink="/admin" routerLinkActive="nav-active" class="nav-link">Admin</a> }
+        <a routerLink="/profil" routerLinkActive="nav-active" class="nav-link account-link" aria-label="Mon compte" [title]="auth.user()?.nom || 'Mon compte'"><img class="ui-icon" src="/viewer-3d/vendor/icons/user.svg" alt=""><span>Mon compte</span></a>
       } @else {
-        <a routerLink="/login" class="nav-link" style="font-size:.8rem">Connexion</a>
-        @if (auth.peutPublier()) { <a routerLink="/publier" class="btn-cta">Publier</a> }
+        <a routerLink="/login" class="nav-link account-link" aria-label="Connexion" title="Connexion"><img class="ui-icon" src="/viewer-3d/vendor/icons/user.svg" alt=""><span>Connexion</span></a>
       }
+      @if (auth.peutPublier()) { <a routerLink="/publier" class="btn-cta"><img class="ui-icon icon-light" src="/viewer-3d/vendor/icons/plus.svg" alt="">Publier un bien</a> }
     </div>
   </div>
 </nav>
-
-<router-outlet />
+<dialog #mobileMenu id="mobile-menu" class="mobile-menu" aria-label="Menu principal" (cancel)="fermerMenuMobile()" (close)="fermerMenuMobile()" (click)="gererClicMenu($event)" (keydown)="gererClavierMenu($event)">
+  <header class="mobile-menu-header">
+    <a routerLink="/" class="brand" aria-label="MaMaison, accueil">
+      <span class="brand-text"><span class="brand-name">MaMaison<span class="brand-dot">.</span></span><span class="brand-tag">Côte d'Ivoire</span></span>
+    </a>
+    <button type="button" class="mobile-menu-close" title="Fermer le menu" aria-label="Fermer le menu" autofocus (click)="fermerMenuMobile()"><img src="/viewer-3d/vendor/icons/x.svg" alt=""></button>
+  </header>
+  <nav class="mobile-menu-content" aria-label="Toutes les rubriques">
+    <section class="mobile-menu-section" aria-labelledby="menu-logement-title">
+      <h2 id="menu-logement-title">Trouver mon logement</h2>
+      <a class="menu-property-link" routerLink="/villas" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page">
+        <span class="menu-icon"><img src="/viewer-3d/vendor/icons/home.svg" alt=""></span><span>Acheter une villa</span><img class="menu-arrow" src="/viewer-3d/vendor/icons/arrow-left.svg" alt="">
+      </a>
+      <a class="menu-property-link" routerLink="/locations" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page">
+        <span class="menu-icon"><img src="/viewer-3d/vendor/icons/door-open.svg" alt=""></span><span>Louer un logement</span><img class="menu-arrow" src="/viewer-3d/vendor/icons/arrow-left.svg" alt="">
+      </a>
+      @if (fonctionnalites.terrainsActifs()) {
+      <a class="menu-property-link" routerLink="/terrains" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page">
+        <span class="menu-icon"><img src="/viewer-3d/vendor/icons/map.svg" alt=""></span><span>Acheter un terrain</span><img class="menu-arrow" src="/viewer-3d/vendor/icons/arrow-left.svg" alt="">
+      </a>
+      }
+    </section>
+    <section class="mobile-menu-section" aria-labelledby="menu-espace-title">
+      <h2 id="menu-espace-title">Mon espace</h2>
+      <div class="menu-shortcuts">
+        <a [routerLink]="auth.estConnecte() ? '/profil' : '/login'" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/heart.svg" alt=""><span>Mes favoris</span></a>
+      </div>
+    </section>
+    <section class="mobile-menu-section" aria-labelledby="menu-projet-title">
+      <h2 id="menu-projet-title">Un projet avec MaMaison</h2>
+      @if (auth.peutPublier()) { <a class="menu-project-link" routerLink="/publier" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/plus.svg" alt=""><span>Publier une annonce</span></a> }
+      <a class="menu-project-link" routerLink="/diaspora" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/navigation.svg" alt=""><span>Acheter depuis l'étranger</span></a>
+      <details class="menu-partners" [open]="rubriquePartenairesActive()">
+        <summary><span>Partenaires et apporteurs</span><img src="/viewer-3d/vendor/icons/plus.svg" alt=""></summary>
+        <div>
+          <a routerLink="/partenaires" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page">Devenir partenaire</a>
+          <a routerLink="/devenir-apporteur" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page">Devenir apporteur</a>
+        </div>
+      </details>
+      @if (auth.estAdmin()) { <a class="menu-project-link" routerLink="/admin" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/sliders-horizontal.svg" alt=""><span>Administration</span></a> }
+    </section>
+  </nav>
+  <footer class="mobile-menu-footer">
+    @if (auth.estConnecte()) {
+      <a routerLink="/profil" class="menu-account-action"><img src="/viewer-3d/vendor/icons/user.svg" alt=""><span>Mon compte</span></a>
+    } @else {
+      <a routerLink="/login" class="menu-account-action"><img src="/viewer-3d/vendor/icons/user.svg" alt=""><span>Se connecter</span></a>
+      <p class="menu-register">Nouveau ici ? <a routerLink="/register">Créer un compte</a></p>
+    }
+    <a routerLink="/contact" class="menu-help">Besoin d'aide ? <span>Contactez-nous</span></a>
+  </footer>
+</dialog>
+<nav class="mobile-tabs" aria-label="Navigation principale mobile">
+  <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/home.svg" alt=""><span>Accueil</span></a>
+  <a routerLink="/villas" [class.active]="achatActif()" [attr.aria-current]="achatActif() ? 'page' : null"><img src="/viewer-3d/vendor/icons/map.svg" alt=""><span>Acheter</span></a>
+  <a routerLink="/locations" routerLinkActive="active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/door-open.svg" alt=""><span>Louer</span></a>
+  @if (auth.peutPublier()) { <a routerLink="/publier" routerLinkActive="active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/plus.svg" alt=""><span>Publier</span></a> }
+  <a [routerLink]="auth.estConnecte() ? '/profil' : '/login'" routerLinkActive="active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/user.svg" alt=""><span>Compte</span></a>
+</nav>
+<main id="main-content" tabindex="-1"><router-outlet /></main>
 <app-toast></app-toast>
-
 <footer class="site-footer-full">
   <div class="footer-grid">
-    <!-- Brand -->
-    <div>
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-          <rect width="28" height="28" rx="7" fill="#C8972A"/>
-          <path d="M14 6L4 13h3v9h6v-5h2v5h6V13h3L14 6z" fill="white"/>
-        </svg>
-        <div>
-          <div style="font-family:var(--font-disp);font-weight:700;color:white;font-size:1rem">MaMaison</div>
-          <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--gold)">VERIFIED</div>
-        </div>
-      </div>
-      <p style="font-size:.82rem;color:rgba(255,255,255,.4);line-height:1.6;max-width:220px">
-        Plateforme immobilière de confiance en Côte d'Ivoire. Biens vérifiés, promoteurs certifiés.
-      </p>
-    </div>
-
-    <!-- Biens -->
-    <div>
-      <div class="footer-section-title">Découvrir</div>
-      <div class="footer-links">
-        <a routerLink="/villas">Villas &amp; logements</a>
-        <a routerLink="/locations">Locations vérifiées</a>
-        @if (fonctionnalites.terrainsActifs()) { <a routerLink="/terrains">Terrains sélectionnés</a> }
-        <a routerLink="/diaspora">Mode Diaspora 🌍</a>
-      </div>
-    </div>
-
-    <!-- Espace -->
-    <div>
-      <div class="footer-section-title">Mon espace</div>
-      <div class="footer-links">
-        <a routerLink="/profil">Mon profil &amp; favoris</a>
-        @if (auth.peutPublier()) { <a routerLink="/publier">Publier un bien</a> }
-        <a routerLink="/devenir-apporteur">Devenir apporteur</a>
-        <a routerLink="/register">Créer un compte</a>
-      </div>
-    </div>
-
-    <!-- Contact -->
-    <div>
-      <div class="footer-section-title">Contact</div>
-      <div class="footer-links">
-        <a routerLink="/partenaires">Partenaires</a>
-        <a routerLink="/contact">Nous contacter</a>
-        <a href="https://wa.me/2250700000000" target="_blank">WhatsApp 💬</a>
-        <a routerLink="/admin">Back-office admin</a>
-      </div>
-      <div style="margin-top:16px;font-size:.75rem;color:rgba(255,255,255,.3)">
-        Abidjan, Côte d'Ivoire<br>
-        contact&#64;mamaison.ci
-      </div>
-    </div>
+    <div class="footer-brand"><a routerLink="/" class="brand-name">MaMaison<span class="brand-dot">.</span></a><p>Votre projet immobilier<br>en Côte d'Ivoire.</p><span>Abidjan, Côte d'Ivoire</span></div>
+    <div><div class="footer-section-title">Votre recherche</div><div class="footer-links"><a routerLink="/villas">Villas et résidences</a><a routerLink="/locations">Locations</a>@if (fonctionnalites.terrainsActifs()) { <a routerLink="/terrains">Terrains</a> }<a routerLink="/diaspora">Depuis l'étranger</a></div></div>
+    <div><div class="footer-section-title">Votre espace</div><div class="footer-links"><a routerLink="/profil">Compte et favoris</a>@if (auth.peutPublier()) { <a routerLink="/publier">Publier un bien</a> }<a routerLink="/devenir-apporteur">Devenir apporteur</a>@if (auth.estAdmin()) { <a routerLink="/admin">Administration</a> }</div></div>
+    <div><div class="footer-section-title">MaMaison</div><div class="footer-links"><a routerLink="/partenaires">Nos partenaires</a><a routerLink="/contact">Nous contacter</a>@if (siteConfig.demo3dEnabled()) { <a [href]="siteConfig.demo3dUrl">La villa témoin 3D</a> }</div></div>
   </div>
-
-  <div class="footer-bottom">
-    <span>© 2026 MaMaison Verified — Tous droits réservés</span>
-    <span>Louer · Acheter · Visiter · Investir en confiance</span>
-  </div>
+  <div class="footer-bottom"><span>© 2026 MaMaison</span><span>Acheter. Louer. Se projeter.</span></div>
 </footer>

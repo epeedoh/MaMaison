@@ -5,6 +5,7 @@ import { LocationService } from '../../../../core/services/location.service';
 import { LocationDetail as LocationDetailModel, TypeLocationLabels } from '../../../../core/models/location.model';
 import { DemandeVisiteModalComponent, ModalMode } from '../../../../shared/components/demande-visite-modal/demande-visite-modal.component';
 import { SignalementModalComponent } from '../../../../shared/components/signalement-modal/signalement-modal.component';
+import { SiteConfigService } from '../../../../core/services/site-config.service';
 
 @Component({
   selector: 'app-location-detail',
@@ -15,6 +16,7 @@ import { SignalementModalComponent } from '../../../../shared/components/signale
 export class LocationDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly locationService = inject(LocationService);
+  readonly siteConfig = inject(SiteConfigService);
 
   location: LocationDetailModel | null = null;
   loading = true;
@@ -29,10 +31,8 @@ export class LocationDetailComponent implements OnInit {
   ouvrirSignalement() { this.signalementOuvert.set(true); }
   fermerSignalement() { this.signalementOuvert.set(false); }
 
-  ouvrirWhatsApp(telephone: string) {
-    const msg = encodeURIComponent(`Bonjour, je suis intéressé par votre annonce sur MaMaison Verified.`);
-    const num = telephone.replace(/\D/g, '');
-    window.open(`https://wa.me/${num}?text=${msg}`, '_blank');
+  get whatsappUrl(): string | null {
+    return this.siteConfig.whatsappUrl(`Bonjour, je suis intéressé par la location "${this.location?.titre}" sur MaMaison.`);
   }
 
   ngOnInit() {

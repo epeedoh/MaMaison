@@ -1,6 +1,8 @@
+using System.Security.Claims;
 using MaMaison.Application.Features.Visites;
 using MaMaison.Domain.Entities;
 using MaMaison.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +10,7 @@ namespace MaMaison.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class DemandesVisiteController(MaMaisonDbContext context) : ControllerBase
 {
     [HttpPost]
@@ -15,13 +18,12 @@ public class DemandesVisiteController(MaMaisonDbContext context) : ControllerBas
         [FromBody] SoumettreDemandeVisiteCommand cmd,
         CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(cmd.Nom))
-            return BadRequest(new { message = "Le nom est requis." });
-
-        if (string.IsNullOrWhiteSpace(cmd.Telephone))
-            return BadRequest(new { message = "Le téléphone est requis." });
-
-        var utilisateurId = Guid.NewGuid();
+        if (User.Identity?.IsAuthenticated != true
+            || !Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var utilisateurId)
+            || utilisateurId == Guid.Empty)
+            return Unauthorized();
+        if (!await context.Utilisateurs.AnyAsync(u => u.Id == utilisateurId && u.EstActif, ct))
+            return Unauthorized();
 
         var demande = DemandeVisite.Creer(
             bienId: cmd.BienId,
@@ -39,18 +41,24 @@ public class DemandesVisiteController(MaMaisonDbContext context) : ControllerBas
     }
 
     [HttpGet]
+    [Authorize(Roles = "Admin,SuperAdmin")]
     public async Task<IActionResult> Lister(CancellationToken ct)
     {
-        var demandes = await context.DemandesVisite
-            .OrderByDescending(d => d.DateCreation)
-            .Select(d => new
+        var demandes = await (
+            from d in context.DemandesVisite.AsNoTracking()
+            join u in context.Utilisateurs on d.UtilisateurId equals u.Id into utilisateurs
+            from u in utilisateurs.DefaultIfEmpty()
+            orderby d.DateCreation descending
+            select new
             {
                 d.Id,
                 d.BienId,
                 d.Statut,
                 d.DateSouhaitee,
                 d.Commentaire,
-                d.DateCreation
+                d.DateCreation,
+                Nom = u == null ? null : u.Nom,
+                Telephone = u == null ? null : u.Telephone
             })
             .ToListAsync(ct);
 

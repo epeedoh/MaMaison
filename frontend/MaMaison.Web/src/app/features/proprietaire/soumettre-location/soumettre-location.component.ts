@@ -5,16 +5,17 @@ import { DecimalPipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
-import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { environment } from '../../../../environments/environment';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-soumettre-location',
-  imports: [JustificatifsComponent, BienMapComponent, FormsModule, RouterLink, DecimalPipe, ImageUploadComponent],
+  imports: [JustificatifsComponent, BienMapComponent, FormsModule, RouterLink, DecimalPipe],
   templateUrl: './soumettre-location.component.html',
 })
 export class SoumettreLocationComponent {
   private readonly http = inject(HttpClient);
+  readonly auth = inject(AuthService);
 
   etat = signal<'form' | 'chargement' | 'succes' | 'erreur'>('form');
 
@@ -31,9 +32,6 @@ export class SoumettreLocationComponent {
     caution: null as number | null,
     avance: null as number | null,
     fraisAgence: 0,
-    nomProprietaire: '',
-    telephoneProprietaire: '',
-    emailProprietaire: '',
   };
 
   readonly typesBien = [
@@ -47,13 +45,15 @@ export class SoumettreLocationComponent {
   }
 
   get formValide(): boolean {
-    return !!(this.form.titre && this.form.quartier && this.form.commune &&
-      this.form.loyer && this.form.caution != null && this.form.avance != null &&
-      this.form.nomProprietaire && this.form.telephoneProprietaire);
+    return !!(this.form.titre.trim() && this.form.quartier.trim() && this.form.commune.trim() &&
+      (this.form.loyer ?? 0) > 0 && this.form.caution != null && this.form.caution >= 0 &&
+      this.form.avance != null && this.form.avance >= 0 && this.form.fraisAgence >= 0 &&
+      Number.isInteger(this.form.nombrePieces) && this.form.nombrePieces > 0 &&
+      this.auth.estConnecte());
   }
 
   soumettre() {
-    if (!this.formValide) return;
+    if (!this.formValide || this.etat() === 'chargement') return;
     this.etat.set('chargement');
 
     const payload = {
@@ -69,5 +69,13 @@ export class SoumettreLocationComponent {
       next: result => { this.bienId = result.id; this.etat.set('succes'); },
       error: () => this.etat.set('erreur'),
     });
+  }
+
+  nouvelleAnnonce() {
+    this.bienId = '';
+    this.form = { latitude: null, longitude: null, titre: '', typeBien: 6,
+      quartier: '', commune: '', nombrePieces: 2, loyer: null, caution: null,
+      avance: null, fraisAgence: 0 };
+    this.etat.set('form');
   }
 }

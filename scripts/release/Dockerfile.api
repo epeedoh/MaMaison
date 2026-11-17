@@ -1,0 +1,8 @@
+FROM mcr.microsoft.com/dotnet/aspnet:10.0.15-alpine
+RUN apk add --no-cache icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+ENV ASPNETCORE_URLS=http://+:8080
+WORKDIR /app
+COPY publish/ .
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "MaMaison.Api.dll"]

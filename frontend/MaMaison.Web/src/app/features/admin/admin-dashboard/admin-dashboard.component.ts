@@ -1,4 +1,5 @@
 import { FonctionnalitesService } from '../../../core/services/fonctionnalites.service';
+import { SiteSettingsComponent } from '../site-settings.component';
 import { JustificatifsComponent } from '../../../shared/components/justificatifs/justificatifs.component';
 import { BienMapComponent } from '../../../shared/components/bien-map/bien-map.component';
 import { Component, OnInit, inject, signal } from '@angular/core';
@@ -8,11 +9,11 @@ import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
 import { environment } from '../../../../environments/environment';
 
-type Onglet = 'dashboard' | 'villas' | 'locations' | 'terrains' | 'demarcheurs' | 'demandes' | 'signalements';
+type Onglet = 'dashboard' | 'villas' | 'locations' | 'terrains' | 'demarcheurs' | 'demandes' | 'signalements' | 'reglages';
 
 @Component({
   selector: 'app-admin-dashboard',
-  imports: [JustificatifsComponent, BienMapComponent, RouterLink, SlicePipe, FormsModule],
+  imports: [SiteSettingsComponent, JustificatifsComponent, BienMapComponent, RouterLink, SlicePipe, FormsModule],
   templateUrl: './admin-dashboard.component.html',
 })
 export class AdminDashboardComponent implements OnInit {

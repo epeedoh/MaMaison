@@ -55,7 +55,7 @@ public class VillasController(IVillaRepository villaRepository, MaMaisonDbContex
     public async Task<IActionResult> ObtenirDetail(Guid id, CancellationToken ct)
     {
         var villa = await villaRepository.ObtenirAvecPointsVisiteAsync(id, ct);
-        if (villa is null) return NotFound();
+        if (villa is null || villa.Statut != StatutVilla.Publie) return NotFound();
 
         var dto = new VillaDetailDto(
             villa.Id,

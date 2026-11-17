@@ -18,7 +18,8 @@
       {id:'terrains',label:'📍 Terrains'},
       {id:'demarcheurs',label:'🤝 Démarcheurs'},
       {id:'demandes',label:'📋 Demandes'},
-      {id:'signalements',label:'🚨 Signalements'}
+      {id:'signalements',label:'🚨 Signalements'},
+      {id:'reglages',label:'Réglages du site'}
     ]; track tab.id) {
       <button class="btn btn-sm"
               [class.btn-navy]="onglet() === tab.id"
@@ -32,6 +33,7 @@
 </div>
 
 <div class="page-container" style="padding-top:40px">
+  @if (onglet() === 'reglages') { <app-site-settings /> }
 
   <!-- Message flash -->
   @if (message()) {
@@ -185,7 +187,7 @@
       <section class="detail-section">
         <h2>Disponibilité des terrains</h2>
         <p>{{ terrainsActifs ? 'Les terrains sont visibles au public.' : 'Les terrains sont désactivés pour le public.' }}</p>
-        <button type="button" [disabled]="!parametresCharges || parametresEnCours" (click)="basculerTerrains()">{{ terrainsActifs ? 'Désactiver les terrains' : 'Activer les terrains' }}</button>
+        <label style="display:flex;align-items:center;gap:12px;min-height:44px"><input type="checkbox" [checked]="terrainsActifs" [disabled]="!parametresCharges || parametresEnCours" (change)="basculerTerrains()">Afficher les terrains dans le catalogue public</label>
       </section>
       <!-- Formulaire nouveau terrain -->
       <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow-sm)">
@@ -321,6 +323,7 @@
         <div style="overflow-x:auto">
           <table style="width:100%;border-collapse:collapse;font-size:.84rem">
             <thead><tr style="background:var(--cream)">
+              <th style="text-align:left;padding:11px 18px">Contact</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">ID Bien</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Date souhaitée</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Commentaire</th>
@@ -330,7 +333,8 @@
             <tbody>
               @for (d of demandes; track d.id) {
                 <tr style="border-top:1px solid var(--border)">
-                  <td style="padding:12px 18px;font-family:monospace;font-size:.78rem;color:var(--text-mid)">{{ d.bienId | slice:0:8 }}…</td>
+                  <td style="padding:12px 18px"><strong>{{ d.nom || 'Compte non disponible' }}</strong><br>{{ d.telephone || 'Non renseigné' }}</td>
+                  <td style="padding:12px 18px;font-family:monospace;font-size:.78rem;color:var(--text-mid)">{{ d.bienId === '00000000-0000-0000-0000-000000000000' ? 'Contact général' : (d.bienId | slice:0:8) }}</td>
                   <td style="padding:12px 18px;color:var(--text-mid)">{{ d.dateSouhaitee ? formatDate(d.dateSouhaitee) : '—' }}</td>
                   <td style="padding:12px 18px;color:var(--text-mid);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.commentaire || '—' }}</td>
                   <td style="padding:12px 18px">

@@ -1,162 +1,148 @@
-<section class="hero" style="min-height:240px;padding:56px 24px 80px">
-  <div class="orb orb-1" style="opacity:.5"></div>
-  <div class="hero-content">
-    <div class="hero-eyebrow">✦ Mon espace</div>
-    <h1 class="hero-title" style="font-size:2rem">{{ auth.user()?.nom }}</h1>
-    <p class="hero-sub" style="margin-bottom:0">{{ auth.user()?.telephone }} · Profil {{ auth.user()?.role !== undefined ? ['Visiteur','Acheteur','Locataire','Propriétaire','Promoteur','Démarcheur','Agent','Vérificateur','Admin','Super Admin','Support','Partenaire'][auth.user()!.role] : '' }}</p>
-  </div>
-</section>
-
-<div class="hero-filter-wrap" style="margin-bottom:0">
-  <div class="hero-filter" style="padding:10px 16px;gap:8px">
-    @for (tab of [{id:'resume',label:'📊 Résumé'},{id:'demandes',label:'📋 Mes demandes'},{id:'annonces',label:'🔑 Mes annonces'},{id:'favoris',label:'❤️ Favoris ('+favoris.count()+')'}]; track tab.id) {
-      <button class="btn btn-sm" [class.btn-navy]="onglet()===tab.id" [class.btn-ghost]="onglet()!==tab.id" (click)="allerOnglet(tab.id)">{{ tab.label }}</button>
+<div class="profile-page">
+  <header class="profile-header">
+    <div class="identity">
+      <span class="avatar" aria-hidden="true"><img src="/viewer-3d/vendor/icons/user.svg" alt=""></span>
+      <div>
+        <p class="eyebrow">Mon compte</p>
+        <h1>{{ nomAffiche() }}</h1>
+        <p class="identity-meta">{{ profil()?.telephone ?? auth.user()?.telephone }} <span class="role-label">{{ roleLabel() }}</span></p>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="action" (click)="activerEdit()" [disabled]="!profil() || saving() || sessionExpiree()">
+        <img src="/viewer-3d/vendor/icons/sliders-horizontal.svg" alt=""> Modifier le profil
+      </button>
+      <button type="button" class="action" (click)="auth.deconnecter()"><img src="/viewer-3d/vendor/icons/door-open.svg" alt=""> Déconnexion</button>
+    </div>
+  </header>
+  <nav class="profile-tabs" aria-label="Rubriques du compte">
+    @for (tab of onglets(); track tab.id) {
+      <button type="button" [class.active]="onglet() === tab.id" [attr.aria-current]="onglet() === tab.id ? 'page' : null" (click)="allerOnglet(tab.id)">
+        <img [src]="'/viewer-3d/vendor/icons/' + tab.icon + '.svg'" alt="">{{ tab.label }}
+      </button>
     }
-    <button class="btn btn-ghost btn-sm" (click)="activerEdit()">✏️ Modifier</button>
-    <button class="btn btn-ghost btn-sm" style="margin-left:auto;color:#E53E3E" (click)="auth.deconnecter()">Déconnexion</button>
-  </div>
-</div>
-
-<div class="page-container" style="padding-top:40px">
-
-  <!-- ── ÉDITION PROFIL ── -->
+  </nav>
+  @if (sessionExpiree()) {
+    <div class="feedback error" role="alert"><p>Votre session a expiré.</p><a class="action" routerLink="/login" [queryParams]="{ returnUrl: '/profil', reason: 'session-expiree' }">Se reconnecter</a></div>
+  }
   @if (editMode) {
-    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:24px;box-shadow:var(--shadow);margin-bottom:24px;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:end">
-      <div class="filter-field"><label>Nom complet</label><input type="text" [(ngModel)]="editNom" placeholder="Votre nom"></div>
-      <div class="filter-field"><label>Email</label><input type="email" [(ngModel)]="editEmail" placeholder="votre@email.com"></div>
-      <button class="btn btn-navy" (click)="sauvegarderProfil()" [disabled]="!editNom.trim()">Sauvegarder</button>
-      <button class="btn btn-ghost" (click)="editMode = false">Annuler</button>
-    </div>
+    <section class="edit-section" aria-labelledby="edit-title">
+      <h2 id="edit-title">Informations personnelles</h2>
+      <form #profilForm="ngForm" (ngSubmit)="sauvegarderProfil()" class="edit-form">
+        <div class="field"><label for="profil-nom">Nom complet</label><input id="profil-nom" name="nom" autocomplete="name" required [(ngModel)]="editNom" [disabled]="saving()"></div>
+        <div class="field"><label for="profil-email">Email</label><input id="profil-email" name="email" type="email" email autocomplete="email" [(ngModel)]="editEmail" [disabled]="saving()" aria-describedby="email-note"></div>
+        <p id="email-note" class="muted form-note">Un champ email vide conserve l’adresse déjà enregistrée.</p>
+        @if (saveErreur) { <p class="feedback error form-note" role="alert">{{ saveErreur }}</p> }
+        <div class="actions form-note">
+          <button class="action primary" type="submit" [disabled]="profilForm.invalid || !editNom.trim() || saving() || sessionExpiree()">{{ saving() ? 'Enregistrement…' : 'Enregistrer' }}</button>
+          <button class="action" type="button" (click)="editMode = false" [disabled]="saving()">Annuler</button>
+        </div>
+      </form>
+    </section>
   }
-
-  <!-- ── RÉSUMÉ ── -->
   @if (onglet() === 'resume') {
-    @if (loading()) {
-      <div class="loading-wrap"><div class="spinner"></div></div>
-    } @else {
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:16px;margin-bottom:32px">
-        @for (s of [{icon:'📋',val:stats?.nbDemandes??0,lbl:'Demandes de visite'},{icon:'🔑',val:stats?.nbLocations??0,lbl:'Annonces publiées'},{icon:'🚨',val:stats?.nbSignalements??0,lbl:'Signalements'},{icon:'❤️',val:favoris.count(),lbl:'Biens favoris'}]; track s.lbl) {
-          <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 20px;box-shadow:var(--shadow-sm);text-align:center">
-            <div style="font-size:1.8rem;margin-bottom:6px">{{ s.icon }}</div>
-            <div style="font-size:2rem;font-weight:900;color:var(--navy-mid);letter-spacing:-.025em">{{ s.val }}</div>
-            <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-soft);margin-top:2px">{{ s.lbl }}</div>
-          </div>
-        }
-      </div>
-      <div style="display:flex;gap:10px;flex-wrap:wrap">
-        <button class="btn btn-navy" (click)="allerOnglet('demandes')">Mes demandes de visite →</button>
-        @if (auth.peutPublier()) { <a routerLink="/publier" class="btn btn-gold">+ Publier un bien</a> }
-        <a routerLink="/villas" class="btn btn-ghost">Explorer les villas</a>
-      </div>
-    }
-  }
-
-  <!-- ── DEMANDES ── -->
-  @if (onglet() === 'demandes') {
-    <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
-      <div style="padding:16px 22px;border-bottom:1px solid var(--border)">
-        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Mes demandes de visite</h2>
-      </div>
-      @if (demandes.length === 0) {
-        <div class="empty-state">
-          <span class="empty-icon">📋</span>
-          <h3>Aucune demande</h3>
-          <p>Explorez nos villas et demandez une visite.</p>
-          <a routerLink="/villas" class="btn btn-navy" style="margin-top:16px;display:inline-flex">Explorer les villas</a>
-        </div>
-      } @else {
-        <div style="display:flex;flex-direction:column">
-          @for (d of demandes; track d.id) {
-            <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
-              <div>
-                <div style="font-size:.78rem;font-family:monospace;color:var(--text-soft)">Bien {{ d.bienId | slice:0:8 }}…</div>
-                @if (d.dateSouhaitee) {
-                  <div style="font-size:.85rem;font-weight:600;color:var(--text)">📅 {{ formatDate(d.dateSouhaitee) }}</div>
-                }
-                @if (d.commentaire) {
-                  <div style="font-size:.8rem;color:var(--text-mid);margin-top:3px">{{ d.commentaire }}</div>
-                }
-                <div style="font-size:.72rem;color:var(--text-soft);margin-top:4px">{{ formatDate(d.dateCreation) }}</div>
-              </div>
-              <span class="badge" [class.badge-amber]="d.statut===0" [class.badge-green]="d.statut===1" [class.badge-gray]="d.statut===2||d.statut===3">
-                {{ statutDemandeLabel[d.statut] ?? '?' }}
-              </span>
-            </div>
-          }
-        </div>
+    <section aria-labelledby="activity-title" class="profile-section">
+      <h2 id="activity-title">Mon activité</h2>
+      @if (loading()) {
+        <p class="feedback" role="status">Chargement des indicateurs…</p>
+      } @else if (statsErreur) {
+        <div class="feedback error" role="alert"><p>{{ statsErreur }}</p><button class="action" type="button" (click)="chargerStats()">Réessayer</button></div>
+      } @else if (stats) {
+        <dl class="stats-grid">
+          <div><dt>Demandes de visite</dt><dd>{{ stats.nbDemandes }}</dd></div>
+          @if (auth.peutPublier()) { <div><dt>Mes annonces</dt><dd>{{ stats.nbLocations }}</dd></div> }
+          <div><dt>Biens favoris</dt><dd>{{ favoris.count() }}</dd></div>
+          <div><dt>Signalements</dt><dd>{{ stats.nbSignalements }}</dd></div>
+        </dl>
       }
-    </div>
-  }
-
-  <!-- ── ANNONCES ── -->
-  @if (onglet() === 'annonces') {
-    <div style="display:flex;flex-direction:column;gap:16px">
-      <div style="display:flex;gap:10px">
-        @if (auth.peutPublier()) { <a routerLink="/publier" class="btn btn-gold">+ Nouvelle annonce</a> }
+      <div class="actions">
+        <button class="action primary" type="button" (click)="allerOnglet('demandes')">Mes demandes de visite</button>
+        @if (auth.peutPublier()) { <a routerLink="/publier" class="action"><img src="/viewer-3d/vendor/icons/plus.svg" alt="">Publier un bien</a> }
+        @if (auth.estAdmin()) { <a routerLink="/admin" class="action"><img src="/viewer-3d/vendor/icons/sliders-horizontal.svg" alt="">Administration</a> }
+        <a routerLink="/locations" class="action">Explorer les locations</a>
+        <a routerLink="/villas" class="action">Explorer les villas</a>
       </div>
-      @if (annonces.length === 0) {
-        <div class="empty-state">
-          <span class="empty-icon">🔑</span>
-          <h3>Aucune annonce</h3>
-          <p>Publiez votre premier bien gratuitement.</p>
-        </div>
+    </section>
+    <section class="profile-section" aria-labelledby="account-title">
+      <h2 id="account-title">Mes coordonnées</h2>
+      @if (profilLoading()) {
+        <p class="feedback" role="status">Chargement du profil…</p>
+      } @else if (profilErreur) {
+        <div class="feedback error" role="alert"><p>{{ profilErreur }}</p><button class="action" type="button" (click)="chargerProfil()">Réessayer</button></div>
+      } @else if (profil(); as compte) {
+        <dl class="account-details">
+          <div><dt>Nom complet</dt><dd>{{ compte.nom }}</dd></div>
+          <div><dt>Téléphone</dt><dd>{{ compte.telephone }}</dd></div>
+          <div><dt>Email</dt><dd>{{ compte.email || 'Non renseigné' }}</dd></div>
+          <div><dt>Rôle</dt><dd>{{ roleLabel() }}</dd></div>
+        </dl>
+      }
+    </section>
+  }
+  @if (onglet() === 'demandes') {
+    <section class="profile-section" aria-labelledby="requests-title">
+      <div class="section-heading"><h2 id="requests-title">Mes demandes de visite</h2><button type="button" class="icon-action" title="Actualiser les demandes" aria-label="Actualiser les demandes" (click)="chargerDemandes()" [disabled]="demandesLoading()"><img src="/viewer-3d/vendor/icons/rotate-ccw.svg" alt=""></button></div>
+      @if (demandesLoading()) {
+        <p class="feedback" role="status">Chargement des demandes…</p>
+      } @else if (demandesErreur) {
+        <div class="feedback error" role="alert"><p>{{ demandesErreur }}</p><button type="button" class="action" (click)="chargerDemandes()">Réessayer</button></div>
+      } @else if (demandes.length === 0) {
+        <div class="empty-state"><h3>Aucune demande de visite</h3><a routerLink="/villas" class="action">Explorer les villas</a></div>
+      } @else {
+        <ul class="record-list">
+          @for (d of demandes; track d.id) {
+            <li class="record-row">
+              <div><h3>Bien {{ d.bienId | slice:0:8 }}</h3>
+                @if (d.dateSouhaitee) { <p>Date souhaitée : {{ formatDate(d.dateSouhaitee) }}</p> }
+                @if (d.commentaire) { <p class="comment">{{ d.commentaire }}</p> }
+                <p class="muted">Demande du {{ formatDate(d.dateCreation) }}</p>
+              </div>
+              <span class="status" [class.pending]="d.statut === 0" [class.confirmed]="d.statut === 1">{{ statutDemandeLabel[d.statut] ?? 'Statut inconnu' }}</span>
+            </li>
+          }
+        </ul>
+      }
+    </section>
+  }
+  @if (onglet() === 'annonces' && auth.peutPublier()) {
+    <section class="profile-section" aria-labelledby="listings-title">
+      <div class="section-heading"><h2 id="listings-title">Mes annonces de location</h2><div class="actions"><a routerLink="/publier" class="action primary"><img src="/viewer-3d/vendor/icons/plus.svg" alt="">Nouvelle annonce</a><button type="button" class="icon-action" title="Actualiser les annonces" aria-label="Actualiser les annonces" (click)="chargerAnnonces()" [disabled]="annoncesLoading()"><img src="/viewer-3d/vendor/icons/rotate-ccw.svg" alt=""></button></div></div>
+      @if (annoncesLoading()) {
+        <p class="feedback" role="status">Chargement des annonces…</p>
+      } @else if (annoncesErreur) {
+        <div class="feedback error" role="alert"><p>{{ annoncesErreur }}</p><button type="button" class="action" (click)="chargerAnnonces()">Réessayer</button></div>
+      } @else if (annonces.length === 0) {
+        <div class="empty-state"><h3>Aucune annonce de location</h3></div>
       } @else {
         @for (a of annonces; track a.id) {
-          <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);padding:18px 22px;box-shadow:var(--shadow-sm);display:flex;align-items:center;justify-content:space-between;gap:12px">
-            <div>
-              <div style="font-weight:700;color:var(--text);margin-bottom:3px">{{ a.titre }}</div>
-              <app-justificatifs [bienId]="a.id" />
-              <div style="font-size:.82rem;color:var(--text-mid)">{{ a.quartier }}, {{ a.commune }} · {{ formatPrix(a.loyer) }}/mois</div>
-              <div style="font-size:.72rem;color:var(--text-soft);margin-top:3px">{{ formatDate(a.dateCreation) }}</div>
+          <article class="listing">
+            <div class="record-row">
+              <div><h3>{{ a.titre }}</h3><p>{{ a.quartier }}, {{ a.commune }}</p><p class="price">{{ formatPrix(a.loyer) }} / mois</p><p class="muted">Créée le {{ formatDate(a.dateCreation) }}</p></div>
+              <div class="actions"><span class="status" [class.confirmed]="a.statut === 2" [class.pending]="a.statut === 1">{{ statutLocationLabel[a.statut] ?? 'Statut inconnu' }}</span><a [routerLink]="['/locations', a.id]" class="action"><img src="/viewer-3d/vendor/icons/eye.svg" alt="">Voir</a></div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <span class="badge" [class.badge-green]="a.statut===2" [class.badge-amber]="a.statut===1" [class.badge-gray]="a.statut===0">
-                {{ statutLocationLabel[a.statut] ?? '?' }}
-              </span>
-              <a [routerLink]="['/locations', a.id]" class="btn btn-ghost btn-sm">Voir</a>
-            </div>
-          </div>
+            <details class="documents"><summary>Justificatifs confidentiels</summary><app-justificatifs [bienId]="a.id" /></details>
+          </article>
         }
       }
-    </div>
+    </section>
   }
-
-  <!-- ── FAVORIS ── -->
   @if (onglet() === 'favoris') {
-    @if (favoris.count() === 0) {
-      <div class="empty-state">
-        <span class="empty-icon">❤️</span>
-        <h3>Aucun favori</h3>
-        <p>Cliquez sur ❤️ sur une fiche pour sauvegarder un bien.</p>
-        <a routerLink="/villas" class="btn btn-navy" style="margin-top:16px;display:inline-flex">Explorer</a>
+    <section class="profile-section" aria-labelledby="favorites-title">
+      <div class="section-heading"><h2 id="favorites-title">Mes favoris ({{ favoris.count() }})</h2>
+        @if (favoris.count() > 0) { <button type="button" class="action danger" (click)="favoris.viderFavoris()">Tout supprimer</button> }
       </div>
-    } @else {
-      <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center">
-        <p class="results-count"><strong>{{ favoris.count() }}</strong> bien(s) sauvegardé(s)</p>
-        <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="favoris.viderFavoris()">Tout supprimer</button>
-      </div>
-      <div class="card-grid">
-        @for (f of favoris.favoris(); track f.id) {
-          <div class="prop-card">
-            <div class="card-visual" [style.background]="f.type==='villa' ? 'linear-gradient(140deg,#0F1F3D,#162944)' : f.type==='location' ? 'linear-gradient(140deg,#071428,#0A1F3A)' : 'linear-gradient(140deg,#071A07,#0D2810)'">
-              <span class="card-visual-icon">{{ f.type==='villa'?'🏠':f.type==='location'?'🔑':'📍' }}</span>
-              <div class="card-price">{{ formatPrix(f.prix) }}{{ f.type==='location'?' /mois':'' }}</div>
-            </div>
-            <div class="card-body">
-              <div class="card-title">{{ f.titre }}</div>
-              <div class="card-loc"><span>📍</span><span>{{ f.quartier }}</span></div>
-              <div class="card-footer">
-                <span class="badge badge-navy">{{ f.type }}</span>
-                <div style="display:flex;gap:6px">
-                  <a [routerLink]="'/'+f.type+'s/'+f.id" class="btn btn-ghost btn-sm">Voir</a>
-                  <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="favoris.retirerFavori(f.id)">✕</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </div>
-    }
+      @if (favoris.count() === 0) {
+        <div class="empty-state"><h3>Aucun bien sauvegardé</h3><a routerLink="/villas" class="action">Explorer les villas</a></div>
+      } @else {
+        <ul class="record-list">
+          @for (f of favoris.favoris(); track f.id) {
+            <li class="record-row">
+              <div class="favorite-identity"><img class="property-icon" [src]="'/viewer-3d/vendor/icons/' + (f.type === 'terrain' ? 'map' : 'home') + '.svg'" alt=""><div><p class="muted">{{ typeFavoriLabel[f.type] }}</p><h3>{{ f.titre }}</h3><p>{{ f.quartier }}</p><p class="price">{{ formatPrix(f.prix) }}{{ f.type === 'location' ? ' / mois' : '' }}</p></div></div>
+              <div class="actions"><a [routerLink]="['/' + f.type + 's', f.id]" class="action"><img src="/viewer-3d/vendor/icons/eye.svg" alt="">Voir</a><button type="button" class="icon-action danger" (click)="favoris.retirerFavori(f.id)" [attr.aria-label]="'Retirer ' + f.titre + ' des favoris'" title="Retirer des favoris"><img src="/viewer-3d/vendor/icons/x.svg" alt=""></button></div>
+            </li>
+          }
+        </ul>
+      }
+    </section>
   }
-
 </div>

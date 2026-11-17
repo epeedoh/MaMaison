@@ -1,168 +1,44 @@
-<!-- ======================================================
-     HERO — plein écran dark navy
-     ====================================================== -->
-<section class="hero" style="min-height: 100svh; justify-content: center;">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-
-  <div class="hero-content">
-    <div class="hero-eyebrow">
-      ✦ Plateforme Immobilière Premium · Côte d'Ivoire
-    </div>
-
-    <h1 class="hero-title">
-      Trouvez votre<br>
-      <span class="gold-text">bien d'exception</span>
-    </h1>
-
-    <p class="hero-sub">
-      Villas de luxe, locations haut de gamme et terrains constructibles —
-      le patrimoine immobilier de Côte d'Ivoire à portée de main.
-    </p>
-
-    <div class="hero-ctas">
-      <a routerLink="/villas" class="btn btn-gold" style="height:50px; padding: 0 32px; font-size:.95rem;">
-        Explorer les villas
-      </a>
-      <a routerLink="/locations" class="btn btn-hero-outline" style="height:50px; padding: 0 28px; font-size:.95rem;">
-        Voir les locations
-      </a>
-    </div>
-
-    <div class="hero-stats" style="margin-top: 56px;">
-      <div class="hero-stat">
-        <strong>120+</strong>
-        <span>Biens actifs</span>
-      </div>
-      <div class="hero-stat">
-        <strong>3</strong>
-        <span>Catégories</span>
-      </div>
-      <div class="hero-stat">
-        <strong>Verified</strong>
-        <span>Plateforme</span>
-      </div>
-    </div>
+<section class="home-masthead" [class.photo-unavailable]="!cityPhotoAvailable">
+  @if (cityPhotoAvailable) { <img class="city-photo" src="/images/abidjan-plateau-1280.jpg" alt="Le Plateau et la lagune Ébrié, Abidjan, 2020" width="1280" height="623" fetchpriority="high" (error)="cityPhotoAvailable = false"> }
+  <div class="page-container masthead-content"><p class="home-eyebrow">CÔTE D'IVOIRE</p><h1>MaMaison<span>.</span></h1><p class="masthead-sub">L'immobilier à Abidjan et ses environs.</p></div>
+  @if (cityPhotoAvailable) { <div class="photo-credit"><a href="https://commons.wikimedia.org/wiki/File:Abidjan_View_of_the_plateau_district.jpg" target="_blank" rel="noopener">Le Plateau, 2020 · Sidkumar23</a><a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a></div> }
+</section>
+<section class="home-intro page-container">
+  <div class="home-controls">
+    <fieldset class="home-categories"><legend class="sr-only">Votre projet immobilier</legend>
+      @for (option of options(); track option.value) {
+        <label [class.selected]="category === option.value"><input type="radio" name="home-category" [value]="option.value" [checked]="category === option.value" (change)="choisir(option.value)"><span>{{ option.label }}</span></label>
+      }
+    </fieldset>
+    <a class="refine-link" aria-label="Affiner la recherche" title="Affiner la recherche" [routerLink]="['/', category]"><img class="ui-icon" src="/viewer-3d/vendor/icons/sliders-horizontal.svg" alt=""><span>Affiner la recherche</span></a>
   </div>
 </section>
-
-<!-- ======================================================
-     3 MODULES — Villas · Locations · Terrains
-     ====================================================== -->
-<section class="modules-section">
-  <div class="page-container">
-
-    <div class="modules-header">
-      <div class="modules-eyebrow">Nos modules</div>
-      <h2 class="modules-title">
-        Tout l'immobilier<br>
-        en un seul endroit
-      </h2>
-      <p class="modules-sub">
-        Naviguez entre nos trois univers immobiliers
-        et trouvez exactement ce que vous cherchez.
-      </p>
-    </div>
-
-    <div class="modules-grid">
-
-      <!-- Villas -->
-      <div class="module-card">
-        <span class="module-icon">🏛️</span>
-        <div class="module-tag">Villas de luxe</div>
-        <h3 class="module-title">Villas &amp; Résidences</h3>
-        <p class="module-desc">
-          Découvrez nos villas premium sélectionnées pour leur architecture,
-          leur situation et leurs prestations haut de gamme à travers toute
-          la Côte d'Ivoire.
-        </p>
-        <div class="module-highlights">
-          <div class="highlight">
-            <span class="highlight-value">60+</span>
-            <span class="highlight-label">Villas</span>
+<section class="page-container home-list" aria-label="Annonces" [attr.aria-busy]="loading">
+  <header><h2>{{ category === 'villas' ? 'Villas et résidences' : category === 'locations' ? 'Biens à louer' : 'Terrains à découvrir' }}</h2><p class="results-count" role="status" aria-atomic="true">{{ loading ? 'Chargement…' : error ? '' : total + ' annonce' + (total > 1 ? 's' : '') }}</p></header>
+  @if (loading) {
+    <div class="card-grid skeleton-grid" aria-hidden="true">@for (n of [1,2,3]; track n) { <div class="skeleton-card"><div></div><span></span><span></span></div> }</div>
+  } @else if (error) {
+    <div class="empty-state" role="alert"><h3>Les annonces sont momentanément indisponibles.</h3><p>Veuillez réessayer dans quelques instants.</p><button type="button" class="btn btn-outline" (click)="charger()"><img class="ui-icon" src="/viewer-3d/vendor/icons/rotate-ccw.svg" alt="">Réessayer</button></div>
+  } @else if (!properties.length) {
+    <div class="empty-state"><h3>Aucun bien disponible pour le moment.</h3><p>Consultez les autres catégories ou revenez prochainement.</p></div>
+  } @else {
+    <div class="card-grid">
+      @for (property of properties; track property.id) {
+        <a class="prop-card" [routerLink]="['/', category, property.id]">
+          <div class="card-visual">
+            @if (property.image) { <img class="property-photo" [src]="property.image" [alt]="property.title" loading="lazy" (error)="property.image = null"> }
+            @else { <div class="photo-pending"><img src="/viewer-3d/vendor/icons/home.svg" alt=""><span>Photos non communiquées</span></div> }
+            <div class="card-price">{{ prix(property.price) }} @if (category === 'locations') { <small>/ mois</small> }</div>
           </div>
-          <div class="highlight">
-            <span class="highlight-value">Visite 3D</span>
-            <span class="highlight-label">Disponible</span>
-          </div>
-          <div class="highlight">
-            <span class="highlight-value">Premium</span>
-            <span class="highlight-label">Sélection</span>
-          </div>
-        </div>
-        <div class="module-cta">
-          <a routerLink="/villas" class="btn btn-navy btn-full">
-            Voir les villas &rarr;
-          </a>
-        </div>
-      </div>
-
-      <!-- Locations -->
-      <div class="module-card">
-        <span class="module-icon">🔑</span>
-        <div class="module-tag">Locations</div>
-        <h3 class="module-title">Locations</h3>
-        <p class="module-desc">
-          Appartements meublés, villas en location et résidences de standing —
-          des offres vérifiées pour vos projets de court, moyen et long séjour
-          à Abidjan et au-delà.
-        </p>
-        <div class="module-highlights">
-          <div class="highlight">
-            <span class="highlight-value">40+</span>
-            <span class="highlight-label">Locations</span>
-          </div>
-          <div class="highlight">
-            <span class="highlight-value">Mensuel</span>
-            <span class="highlight-label">Tarification</span>
-          </div>
-          <div class="highlight">
-            <span class="highlight-value">Vérifié</span>
-            <span class="highlight-label">Annonces</span>
-          </div>
-        </div>
-        <div class="module-cta">
-          <a routerLink="/locations" class="btn btn-navy btn-full">
-            Voir les locations &rarr;
-          </a>
-        </div>
-      </div>
-
-      @if (fonctionnalites.terrainsActifs()) {
-      <!-- Terrains -->
-      <div class="module-card">
-        <span class="module-icon">🌿</span>
-        <div class="module-tag">Terrains</div>
-        <h3 class="module-title">Terrains</h3>
-        <p class="module-desc">
-          Terrains constructibles, parcelles viabilisées et foncier
-          d'investissement — constituez votre patrimoine immobilier sur
-          les meilleures zones de développement du pays.
-        </p>
-        <div class="module-highlights">
-          <div class="highlight">
-            <span class="highlight-value">20+</span>
-            <span class="highlight-label">Terrains</span>
-          </div>
-          <div class="highlight">
-            <span class="highlight-value">Viabilisé</span>
-            <span class="highlight-label">Options</span>
-          </div>
-          <div class="highlight">
-            <span class="highlight-value">Foncier</span>
-            <span class="highlight-label">Sécurisé</span>
-          </div>
-        </div>
-        <div class="module-cta">
-          <a routerLink="/terrains" class="btn btn-navy btn-full">
-            Voir les terrains &rarr;
-          </a>
-        </div>
-      </div>
-
+          <div class="card-body"><h3 class="card-title">{{ property.title }}</h3><p class="card-loc">{{ property.place }}</p><div class="card-footer"><span>{{ property.specs }}</span><span class="card-open">Découvrir<img class="icon-forward" src="/viewer-3d/vendor/icons/arrow-left.svg" alt=""></span></div></div>
+        </a>
       }
     </div>
-  </div>
+    <a class="all-properties btn btn-outline" [routerLink]="['/', category]">Voir toutes les annonces<img class="ui-icon icon-forward" src="/viewer-3d/vendor/icons/arrow-left.svg" alt=""></a>
+  }
 </section>
+
+<div class="home-services page-container">
+  @if (auth.peutPublier()) { <a routerLink="/publier"><img class="ui-icon" src="/viewer-3d/vendor/icons/plus.svg" alt=""><span><strong>Vous proposez un bien ?</strong><small>Publier une annonce</small></span><img class="ui-icon icon-forward" src="/viewer-3d/vendor/icons/arrow-left.svg" alt=""></a> }
+  <a routerLink="/diaspora"><img class="ui-icon" src="/viewer-3d/vendor/icons/navigation.svg" alt=""><span><strong>Votre projet, depuis l'étranger.</strong><small>Espace diaspora</small></span><img class="ui-icon icon-forward" src="/viewer-3d/vendor/icons/arrow-left.svg" alt=""></a>
+</div>

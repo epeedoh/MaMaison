@@ -10,5 +10,6 @@ RUN npm run build -- --configuration production
 # ── Serve avec nginx ──────────────────────────────────────────
 FROM nginx:1.25-alpine AS final
 COPY --from=build /app/dist/MaMaison.Web/browser /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+ENV API_UPSTREAM=mamaison_api:8080
+COPY nginx.conf /etc/nginx/templates/default.conf.template
 EXPOSE 80
