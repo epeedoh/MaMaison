@@ -96,6 +96,21 @@ def main():
         images[component] = output(['docker', 'image', 'inspect', tag, '--format', '{{.Id}}'])
     subprocess.run(['docker', 'run', '--rm', '--network', 'mamaison-pilote_pilot',
                     images['web'], 'nginx', '-t'], check=True)
+    probe = output(['docker', 'run', '-d', '--network', 'mamaison-pilote_pilot', images['web']])
+    try:
+        # Exercise nginx as its normal worker user, including nested asset directories.
+        for relative in ['release.json', 'index.html', 'images/abidjan-plateau-1280.jpg',
+                         'viewer-3d/vendor/icons/home.svg', 'viewer-3d/demo-access.mjs']:
+            for attempt in range(10):
+                result = subprocess.run(['docker', 'exec', probe, 'wget', '-qO-',
+                    'http://127.0.0.1/' + relative], capture_output=True)
+                if result.returncode == 0:
+                    break
+                time.sleep(1)
+            assert result.returncode == 0, f'Web asset unavailable before activation: {relative}'
+            assert hashlib.sha256(result.stdout).hexdigest() == manifest['files']['browser/' + relative]
+    finally:
+        subprocess.run(['docker', 'rm', '-f', probe], check=True, stdout=subprocess.DEVNULL)
     # Verify target identities again after the build, before replacing any service.
     now = inspect(TARGETS)
     assert all(now[name]['Id'] == before[name]['Id'] for name in TARGETS), 'Concurrent deployment detected'

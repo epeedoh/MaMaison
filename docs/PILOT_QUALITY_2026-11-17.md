@@ -96,6 +96,12 @@ override compose prive, sans restauration SQL. Pas de migration ni conversion
 des mots de passe ; le schema reste compatible. Le rollback n'est pas considere
 teste tant qu'il n'a pas ete execute et verifie. Le principal reste inchange.
 
+La recette publique d'une premiere activation a detecte des repertoires statiques
+non lisibles par nginx, dus aux permissions du transport protege. Retour aux deux
+anciennes images execute et identites verifiees, sans restauration SQL. Correction
+des permissions explicites dans l'image web et controle HTTP des images, icones et
+modules dans un conteneur ephemere avant les activations suivantes.
+
 ## Reste a traiter avant generalisation
 
 1. Remplacer le stockage SHA256 historique des mots de passe par un KDF adapte,
