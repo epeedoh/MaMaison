@@ -66,11 +66,13 @@ async function run() {
   await req(8,'PUT',dossier+'proprietaire',204,{telephone:tel(3)});
   await req(3,'PUT',dossier+'responsable',204,{telephone:tel(6)});
   await req(8,'PUT',admin+'valider',200);
-  const v=await req(2,'POST','demandesvisite',201,{bienId:id,nature:'visite'});
-  const rappel=await req(2,'POST','demandesvisite',201,{bienId:id,nature:'rappel'});
+  const contact={bienId:id,nom:users[2].nom,telephone:users[2].telephone};
+  const v=await req(2,'POST','demandesvisite',201,{...contact,nature:'visite'});
+  const rappel=await req(2,'POST','demandesvisite',201,{...contact,nature:'rappel'});
   const visites=await req(6,'GET',dossier+'visites',200);assert.deepEqual(visites.map(d=>d.id),[v.id]);
   await req(6,'GET',docs,404);await req(5,'GET',dossier+'visites',404);
-  await req(6,'PUT',dossier+'visites/'+v.id+'/confirmer',204,{date:new Date(Date.now()+86400000).toISOString()});
+  const slot = new Date(Date.now()+86400000); slot.setUTCHours(14,35,0,0);
+  await req(6,'PUT',dossier+'visites/'+v.id+'/confirmer',204,{date:slot.toISOString()});
   await req(8,'PUT','admin/demandes/'+rappel.id+'/repondre',204,'Rappel programme');
   const types = {'.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.html':'text/html','.json':'application/json','.svg':'image/svg+xml','.woff2':'font/woff2','.jpg':'image/jpeg'};
   server=http.createServer((q,s)=>{
@@ -84,7 +86,7 @@ async function run() {
   const ui='http://127.0.0.1:'+await listen(server);
   browser=await chromium.launch({channel:'chrome',headless:true});
   for(let n=0;n<roles.length;n++){
-    const ctx=await browser.newContext({viewport:n%2?{width:390,height:844}:{width:1366,height:900},serviceWorkers:'block'});
+    const ctx=await browser.newContext({timezoneId:'America/Toronto',viewport:n%2?{width:390,height:844}:{width:1366,height:900},serviceWorkers:'block'});
     await ctx.addInitScript(x=>{localStorage.setItem('mm_token',x.token);localStorage.setItem('mm_user',JSON.stringify(x));},users[n]);
     const p=await ctx.newPage();p.setDefaultTimeout(10000);await p.goto(ui+'/profil');
     await p.locator('.account-details').getByText('QA '+roles[n],{exact:true}).waitFor();
@@ -101,7 +103,7 @@ async function run() {
       }
     }else{
       await p.getByRole('button',{name:'Mes demandes envoyées',exact:true}).last().click();
-      if(n===2){await p.getByText(/Rappel programme/).waitFor();await p.getByText(/Rendez-vous :/).waitFor();}
+      if(n===2){await p.getByText(/Rappel programme/).waitFor();await p.getByText(/Rendez-vous :.*14:35.*Abidjan/).waitFor();}
       else await p.getByText('Aucune demande envoyée',{exact:true}).waitFor();
     }
     await ctx.close();console.log('Browser + API OK: '+roles[n]);

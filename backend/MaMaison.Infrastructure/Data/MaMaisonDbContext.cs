@@ -26,6 +26,9 @@ public class MaMaisonDbContext(DbContextOptions<MaMaisonDbContext> options) : Db
         modelBuilder.Entity<ParametrePlateforme>().HasKey(p => p.Cle);
         modelBuilder.Entity<ParametrePlateforme>().Property(p => p.Cle).HasMaxLength(100);
         modelBuilder.Entity<JustificatifBien>().HasIndex(d => d.BienId);
+        // SQL datetime2 does not preserve the UTC kind of the confirmed appointment.
+        modelBuilder.Entity<DemandeVisite>().Property(d => d.DateConfirmee)
+            .HasConversion(v => v, v => v.HasValue ? DateTime.SpecifyKind(v.Value, DateTimeKind.Utc) : (DateTime?)null);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MaMaisonDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
     }
