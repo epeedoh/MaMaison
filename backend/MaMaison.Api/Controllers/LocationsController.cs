@@ -78,6 +78,12 @@ public class LocationsController(ILocationRepository locationRepository, MaMaiso
             return Unauthorized();
 
         if (cmd.PourMonCompte && !User.IsInRole("Proprietaire")) return Forbid();
+        if (string.IsNullOrWhiteSpace(cmd.Titre) || cmd.Titre.Length > 200 ||
+            string.IsNullOrWhiteSpace(cmd.Quartier) || cmd.Quartier.Length > 100 ||
+            string.IsNullOrWhiteSpace(cmd.Commune) || cmd.Commune.Length > 100 ||
+            !Enum.IsDefined(cmd.TypeBien) || cmd.NombrePieces is < 1 or > 20 ||
+            cmd.Loyer <= 0 || cmd.Caution < 0 || cmd.Avance < 0 || cmd.FraisAgence < 0)
+            return BadRequest(new { message = "Vérifiez le bien, le nombre de pièces, le loyer et les frais." });
         if (User.IsInRole("Demarcheur") && await context.Demarcheurs.AnyAsync(d =>
             d.UtilisateurId == proprietaireId && d.Statut == StatutDemarcheur.Suspendu, ct)) return Forbid();
         var location = Location.Creer(

@@ -166,6 +166,16 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
+  changerVisibiliteLocation(id: string, action: 'retirer' | 'reexaminer') {
+    this.http.put<void>(`${this.base}/locations/${id}/${action}`, {}).subscribe({
+      next: () => {
+        this.message.set(action === 'retirer' ? 'Annonce retirée du catalogue. Dossier conservé.' : 'Dossier renvoyé en vérification.');
+        this.chargerLocations();
+      },
+      error: e => this.message.set(e.error?.message ?? 'Modification non confirmée. Actualisez la liste.')
+    });
+  }
+
   confirmerDemande(id: string) {
     this.http.put(`${this.base}/demandes/${id}/confirmer`, {}).subscribe({
       next: () => { this.message.set('✅ Demande confirmée.'); this.chargerDemandes(); },

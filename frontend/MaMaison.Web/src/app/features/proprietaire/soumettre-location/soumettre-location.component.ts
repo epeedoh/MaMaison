@@ -32,8 +32,8 @@ export class SoumettreLocationComponent {
     commune: '',
     nombrePieces: 2,
     loyer: null as number | null,
-    caution: null as number | null,
-    avance: null as number | null,
+    caution: 0 as number | null,
+    avance: 0 as number | null,
     fraisAgence: 0,
   };
 
@@ -51,7 +51,7 @@ export class SoumettreLocationComponent {
     return !!(this.form.titre.trim() && this.form.quartier.trim() && this.form.commune.trim() &&
       (this.form.loyer ?? 0) > 0 && this.form.caution != null && this.form.caution >= 0 &&
       this.form.avance != null && this.form.avance >= 0 && this.form.fraisAgence >= 0 &&
-      Number.isInteger(this.form.nombrePieces) && this.form.nombrePieces > 0 &&
+      Number.isInteger(this.form.nombrePieces) && this.form.nombrePieces > 0 && this.form.nombrePieces <= 20 &&
       this.auth.estConnecte());
   }
 
@@ -79,8 +79,8 @@ export class SoumettreLocationComponent {
     this.pourMonCompte = false;
     this.bienId = '';
     this.form = { latitude: null, longitude: null, titre: '', typeBien: 6,
-      quartier: '', commune: '', nombrePieces: 2, loyer: null, caution: null,
-      avance: null, fraisAgence: 0 };
+      quartier: '', commune: '', nombrePieces: 2, loyer: null, caution: 0,
+      avance: 0, fraisAgence: 0 };
     this.etat.set('form');
   }
 }

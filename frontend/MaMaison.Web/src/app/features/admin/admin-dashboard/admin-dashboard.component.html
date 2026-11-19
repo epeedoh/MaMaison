@@ -173,7 +173,14 @@
                         <button class="btn btn-outline btn-sm" (click)="rejeterLocation(l.id,motif.value)">Notifier le rejet</button></details>
                     }
                     <button type="button" class="btn btn-ghost btn-sm" (click)="ouvrirDossier(l)">Dossier et position</button>
-                    @if (l.statut===2) { <a [routerLink]="['/locations', l.id]" class="btn btn-ghost btn-sm">Voir</a> }
+                    @if (l.statut===2) {
+                      <a [routerLink]="['/locations', l.id]" class="btn btn-ghost btn-sm">Voir</a>
+                      <details><summary>Retirer du catalogue</summary>
+                        <p>Le dossier et les rendez-vous confirmés seront conservés.</p>
+                        <button type="button" class="btn btn-outline btn-sm" (click)="changerVisibiliteLocation(l.id,'retirer')">Confirmer le retrait</button>
+                      </details>
+                    }
+                    @if (l.statut===5) { <button type="button" class="btn btn-outline btn-sm" (click)="changerVisibiliteLocation(l.id,'reexaminer')">Renvoyer en vérification</button> }
                   </td>
                 </tr>
               }

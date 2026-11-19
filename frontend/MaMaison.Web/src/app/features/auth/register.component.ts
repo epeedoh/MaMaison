@@ -29,11 +29,16 @@ export class RegisterComponent {
     { value: Role.Demarcheur,   label: 'Démarcheur / Apporteur' },
   ];
 
+  get motDePasseValide() {
+    const taille = Array.from(this.motDePasse).length;
+    return !!this.motDePasse.trim() && taille >= 15 && taille <= 256;
+  }
+
   soumettre() {
-    if (!this.nom || !this.telephone || !this.motDePasse) return;
+    if (!this.nom.trim() || !this.telephone.trim() || !this.motDePasseValide || this.etat() === 'chargement') return;
     this.etat.set('chargement');
     this.auth.register({
-      nom: this.nom, telephone: this.telephone,
+      nom: this.nom.trim(), telephone: this.telephone.trim(),
       motDePasse: this.motDePasse, email: this.email || undefined,
       role: +this.role
     }).subscribe({

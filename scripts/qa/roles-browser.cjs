@@ -8,7 +8,7 @@ const fs = require('node:fs');
 const os = require('node:os');
 const assert = require('node:assert/strict');
 const { setTimeout: wait } = require('node:timers/promises');
-const [pkg, db] = process.argv.slice(2);
+const [pkg, db, rollbackPublish] = process.argv.slice(2);
 assert(pkg && /^MaMaison_RolesQa_[a-f0-9]{10}$/.test(db), 'Expected release directory and isolated scratch DB');
 const base = path.resolve(pkg), web = path.join(base,'browser'), api = path.join(base,'publish');
 const roles = 'Visiteur Acheteur Locataire Proprietaire Promoteur Demarcheur AgentImmobilier VerificateurTerrain Admin SuperAdmin Support Partenaire'.split(' ');
@@ -28,12 +28,15 @@ async function run() {
   const reserve = http.createServer(), port = await listen(reserve);
   await new Promise(r=>reserve.close(r));
   const origin = 'http://127.0.0.1:'+port;
-  proc=spawn('dotnet',[path.join(api,'MaMaison.Api.dll')],{cwd:api,stdio:'ignore',env:{...process.env,
+  async function start(dir){
+  proc=spawn('dotnet',[path.join(dir,'MaMaison.Api.dll')],{cwd:dir,stdio:'ignore',env:{...process.env,
     ASPNETCORE_URLS:origin, ASPNETCORE_ENVIRONMENT:'Production', DOTNET_ENVIRONMENT:'Production',
     ConnectionStrings__MaMaison:'Server=(localdb)\\MSSQLLocalDB;Database='+db+';Integrated Security=true;TrustServerCertificate=true',
     Jwt__Secret:randomBytes(48).toString('hex'), MAMAISON_PRIVATE_DOCUMENTS:root}});
   for(let i=0;i<80;i++){if(await fetch(origin+'/api/fonctionnalites').then(r=>r.ok).catch(()=>false))break;
     assert.equal(proc.exitCode,null,'Isolated API stopped');await wait(500);}
+  }
+  await start(api);
   async function req(n,method,url,expected,body){
     const h={}, form=body instanceof FormData;
     if(n!==null)h.Authorization='Bearer '+users[n].token;
@@ -43,6 +46,13 @@ async function run() {
     return r.headers.get('content-type')?.includes('application/json')?r.json():null;
   }
   const basic={titre:'Fixture',typeBien:0,commune:'Cocody',quartier:'Riviera',nombrePieces:3,loyer:150000,caution:0,avance:0};
+  const legacyCount = () => {
+    const q=spawnSync('sqlcmd',['-E','-b','-h','-1','-W','-S','(localdb)\\MSSQLLocalDB','-d',db,'-Q',
+      'SET NOCOUNT ON; SELECT COUNT(*) FROM Utilisateurs WHERE LEN(MotDePasseHash)=64'],{encoding:'utf8'});
+    assert.equal(q.status,0);return Number(q.stdout.trim());
+  };
+  await req(null,'POST','auth/login',401,{telephone:tel(6),motDePasse:'incorrect'});
+  assert.equal(legacyCount(),7);
   for(let n=0;n<roles.length;n++){
     const cmd={telephone:tel(n),motDePasse:pwd,role:n,nom:'QA '+roles[n]};
     users[n]=await req(null,'POST','auth/'+(n<5?'register':'login'),n<5?201:200,cmd);
@@ -53,6 +63,10 @@ async function run() {
       assert.equal(info.deposant,true);assert.equal(info.proprietaire,n===3);}
   }
   const id=listings[5], dossier='dossiers-location/'+id+'/',docs='biens/'+id+'/justificatifs',admin='admin/locations/'+id+'/';
+  assert.equal(legacyCount(),0,'New accounts salted and seven legacy logins upgraded');
+  await req(5,'POST','locations',400,{...basic,caution:-1});
+  await req(5,'PUT',admin+'retirer',403);
+  await req(8,'PUT',admin+'retirer',409);
   await req(5,'PUT',dossier+'responsable',404,{telephone:tel(6)});
   await req(8,'PUT',admin+'valider',400);
   await req(8,'PUT',admin+'rejeter',200,'Verifier le loyer');
@@ -106,12 +120,45 @@ async function run() {
       if(n===2){await p.getByText(/Rappel programme/).waitFor();await p.getByText(/Rendez-vous :.*14:35.*Abidjan/).waitFor();}
       else await p.getByText('Aucune demande envoyée',{exact:true}).waitFor();
     }
+    if(n===8){
+      await p.goto(ui+'/admin');
+      await p.getByRole('button',{name:'Locations',exact:true}).click();
+      const row=p.getByRole('row').filter({hasText:'Maison recette'});
+      await row.getByText('Retirer du catalogue',{exact:true}).click();
+      await row.getByRole('button',{name:'Confirmer le retrait'}).click();
+      await row.getByText('Suspendu',{exact:true}).waitFor();
+      await req(null,'GET','locations/'+id,404);
+      assert.equal((await req(2,'GET','profil/demandes',200)).find(d=>d.id===v.id).statut,1);
+      assert.equal((await req(3,'GET',docs,200)).length,2);
+      await row.getByRole('button',{name:'Renvoyer en vérification'}).click();
+      await row.getByText('En vérification',{exact:true}).waitFor();
+      await req(null,'GET','locations/'+id,404);
+      await req(8,'PUT',admin+'valider',200);
+      await req(null,'GET','locations/'+id,200);
+    }
+    if(n===3){
+      await p.goto(ui+'/publier');
+      for(const [name,value] of Object.entries({titre:'Sans avance',quartier:'Riviera',commune:'Cocody',loyer:'100000'}))
+        await p.locator('input[name='+name+']').fill(value);
+      assert.equal(await p.locator('input[name=caution]').inputValue(),'0');
+      assert.equal(await p.locator('input[name=avance]').inputValue(),'0');
+      assert.ok(await p.locator('form button[type=submit]').isEnabled());
+    }
     await ctx.close();console.log('Browser + API OK: '+roles[n]);
   }
   await req(3,'PUT',dossier+'responsable',204,{telephone:null});
   await req(6,'GET',dossier+'visites',404);
   assert.equal((await req(3,'GET',dossier+'visites',200)).length,1);
   console.log('Delegation revocation confirmed.');
+  if(rollbackPublish){
+    const stopped=new Promise(r=>proc.once('exit',r));proc.kill();await stopped;
+    await start(path.resolve(rollbackPublish));
+    for(const n of [0,8]){
+      users[n]=await req(null,'POST','auth/login',200,{telephone:tel(n),motDePasse:pwd});
+      await req(n,'GET',n===8?'admin/dashboard':'profil',200);
+    }
+    console.log('Rollback API accepts upgraded admin and newly registered account on the same SQL database.');
+  }
 }
 run().catch(e=>{console.error(e.message);process.exitCode=1;}).finally(async()=>{
   if(browser)await browser.close();if(server){server.closeAllConnections();server.close();}

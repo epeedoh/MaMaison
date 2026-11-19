@@ -44,8 +44,8 @@
           </select>
         </div>
         <div class="filter-field" style="grid-column:1/-1;margin-bottom:8px">
-          <label style="color:rgba(255,255,255,.55)">Mot de passe *</label>
-          <input type="password" [(ngModel)]="motDePasse" placeholder="Min. 6 caractères"
+          <label for="nouveau-mdp" style="color:rgba(255,255,255,.55)">Mot de passe (15 à 256 caractères) *</label>
+          <input id="nouveau-mdp" autocomplete="new-password" type="password" [(ngModel)]="motDePasse"
                  style="background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.15);color:white"
                  [disabled]="etat() === 'chargement'"
                  (keyup.enter)="soumettre()">
@@ -55,7 +55,7 @@
       <button class="btn btn-gold btn-full"
               style="height:48px;font-size:.95rem"
               (click)="soumettre()"
-              [disabled]="!nom || !telephone || !motDePasse || etat() === 'chargement'">
+              [disabled]="!nom.trim() || !telephone.trim() || !motDePasseValide || etat() === 'chargement'">
         @if (etat() === 'chargement') {
           <span style="width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .7s linear infinite;display:inline-block"></span>
         } @else {

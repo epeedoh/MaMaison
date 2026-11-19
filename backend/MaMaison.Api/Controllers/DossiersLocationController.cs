@@ -26,7 +26,7 @@ public class DossiersLocationController(MaMaisonDbContext db) : ControllerBase
         if (l.Statut is not (StatutLocation.Rejete or StatutLocation.Brouillon)) return Conflict();
         if (string.IsNullOrWhiteSpace(c.Titre) || c.Titre.Length > 200 || string.IsNullOrWhiteSpace(c.Quartier)
             || c.Quartier.Length > 100 || string.IsNullOrWhiteSpace(c.Commune) || c.Commune.Length > 100
-            || c.Pieces < 1 || c.Loyer <= 0 || c.Caution < 0 || c.Avance < 0 || c.Frais < 0)
+            || c.Pieces is < 1 or > 20 || c.Loyer <= 0 || c.Caution < 0 || c.Avance < 0 || c.Frais < 0)
             return BadRequest(new { message = "Vérifiez les champs de la location." });
         l.Corriger(c.Titre, c.Quartier, c.Commune, c.Pieces, c.Loyer, c.Caution, c.Avance, c.Frais);
         return await Sauver(ct);

@@ -145,10 +145,31 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
     {
         var location = await context.Locations.FindAsync([id], ct);
         if (location is null) return NotFound();
+        if (location.Statut is not (StatutLocation.EnVerification or StatutLocation.Brouillon))
+            return Conflict(new { message = "Seul un dossier à examiner peut être rejeté." });
         if (string.IsNullOrWhiteSpace(raison) || raison.Length > 1000) return BadRequest(new { message = "Un motif est requis (1000 caractères maximum)." });
         location.Rejeter(raison.Trim());
         await context.SaveChangesAsync(ct);
         return Ok(new { message = "Location rejetée." });
+    }
+
+    [HttpPut("locations/{id:guid}/retirer")]
+    public Task<IActionResult> RetirerLocation(Guid id, CancellationToken ct) =>
+        ChangerVisibilite(id, retirer: true, ct);
+
+    [HttpPut("locations/{id:guid}/reexaminer")]
+    public Task<IActionResult> ReexaminerLocation(Guid id, CancellationToken ct) =>
+        ChangerVisibilite(id, retirer: false, ct);
+
+    private async Task<IActionResult> ChangerVisibilite(Guid id, bool retirer, CancellationToken ct)
+    {
+        var l = await context.Locations.FindAsync([id], ct);
+        if (l is null) return NotFound();
+        if (l.Statut != (retirer ? StatutLocation.Publie : StatutLocation.Suspendu))
+            return Conflict(new { message = "Le statut de cette location a changé. Actualisez la liste." });
+        if (retirer) l.Suspendre(); else l.Soumettre();
+        try { await context.SaveChangesAsync(ct); return NoContent(); }
+        catch (DbUpdateConcurrencyException) { return Conflict(new { message = "Le dossier a été modifié. Actualisez la liste." }); }
     }
 
     // ── Demandes de visite ───────────────────────────────────────

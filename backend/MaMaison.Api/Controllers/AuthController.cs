@@ -7,7 +7,6 @@ using MaMaison.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace MaMaison.Api.Controllers;
@@ -21,11 +20,15 @@ public class AuthController(MaMaisonDbContext context, TokenService tokenService
     {
         if (string.IsNullOrWhiteSpace(cmd.Telephone) || string.IsNullOrWhiteSpace(cmd.MotDePasse))
             return BadRequest(new { message = "Téléphone et mot de passe requis." });
+        if (string.IsNullOrWhiteSpace(cmd.Nom))
+            return BadRequest(new { message = "Nom requis." });
+        if (cmd.MotDePasse.EnumerateRunes().Count() is < 15 or > 256)
+            return BadRequest(new { message = "Choisissez un mot de passe de 15 à 256 caractères." });
 
         if (await context.Utilisateurs.AnyAsync(u => u.Telephone == cmd.Telephone, ct))
             return Conflict(new { message = "Ce numéro est déjà utilisé." });
 
-        var hash = HashMotDePasse(cmd.MotDePasse);
+        var hash = passwords.Hash(cmd.MotDePasse);
         var utilisateur = Utilisateur.Creer(
             cmd.Nom, cmd.Telephone, hash,
             cmd.Role is RoleUtilisateur.Visiteur or RoleUtilisateur.Acheteur or RoleUtilisateur.Locataire
@@ -50,6 +53,22 @@ public class AuthController(MaMaisonDbContext context, TokenService tokenService
         if (utilisateur is null || match == PasswordVerificationResult.Failed)
             return Unauthorized(new { message = "Téléphone ou mot de passe incorrect." });
 
+        if (match == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            var upgraded = passwords.Hash(cmd.MotDePasse);
+            // Do not overwrite a concurrent reset or reactivate a disabled account.
+            var changed = await context.Utilisateurs
+                .Where(u => u.Id == utilisateur.Id && u.EstActif && u.MotDePasseHash == utilisateur.MotDePasseHash)
+                .ExecuteUpdateAsync(update => update.SetProperty(u => u.MotDePasseHash, upgraded), ct);
+            if (changed == 0)
+            {
+                var id = utilisateur.Id;
+                utilisateur = await context.Utilisateurs.AsNoTracking().SingleOrDefaultAsync(u => u.Id == id && u.EstActif, ct);
+                if (utilisateur is null || passwords.Verify(utilisateur.MotDePasseHash, cmd.MotDePasse) == PasswordVerificationResult.Failed)
+                    return Unauthorized(new { message = "Téléphone ou mot de passe incorrect." });
+            }
+        }
+
         var (token, expiration) = tokenService.GenererToken(utilisateur);
         return Ok(BuildResult(utilisateur, token, expiration));
     }
@@ -57,6 +76,4 @@ public class AuthController(MaMaisonDbContext context, TokenService tokenService
     private static AuthResultDto BuildResult(Utilisateur u, string token, DateTime exp) =>
         new(token, exp, u.Nom, u.Telephone, u.Role, u.Id);
 
-    private static string HashMotDePasse(string mdp) =>
-        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(mdp)));
 }
