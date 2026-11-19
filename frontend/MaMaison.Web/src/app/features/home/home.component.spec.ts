@@ -110,6 +110,18 @@ describe('Home catalogue', () => {
     expect(fixture.nativeElement.querySelector('[role=status]').textContent).toBe('0 annonce');
   });
 
+  it('distinguishes a connection failure from throttling and does not show a false count', () => {
+    request('villas').error(new ProgressEvent('error'));
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role=alert]').textContent).toContain('Vérifiez votre connexion');
+    expect(fixture.nativeElement.querySelector('[role=status]').textContent.trim()).toBe('');
+    fixture.componentInstance.charger();
+    request('villas').flush(null, { status: 429, statusText: 'Too Many Requests' });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role=alert]').textContent).toContain('Patientez');
+    http.expectNone(req => req.url.includes('/villas'));
+  });
+
   it('handles broken photos and gates publication with the current auth contract', () => {
     request('villas').flush({ items: [{ ...villa, imagePrincipaleUrl: '/broken.jpg' }], total: 1 });
     fixture.detectChanges();

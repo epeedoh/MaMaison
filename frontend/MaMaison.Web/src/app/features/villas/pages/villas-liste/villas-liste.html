@@ -1,36 +1,10 @@
-<!-- ============ HERO PLEIN ÉCRAN ============ -->
-<section class="hero">
-  <div class="orb orb-1"></div>
-  <div class="orb orb-2"></div>
-  <div class="orb orb-3"></div>
-  <div class="orb orb-4"></div>
-
-  <div class="hero-content">
-    <div class="hero-eyebrow">✦ Côte d'Ivoire — Immobilier de confiance</div>
-    <h1 class="hero-title">
-      Votre villa idéale,<br>
-      <span class="gold-text">visitée avant d'acheter</span>
-    </h1>
-    <p class="hero-sub">
-      Biens vérifiés · Promoteurs certifiés · Visites immersives 3D
-    </p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <strong>{{ villas.length || '—' }}</strong>
-        <span>Villa(s)</span>
-      </div>
-      <div class="hero-stat">
-        <strong>3D</strong>
-        <span>Visite immersive</span>
-      </div>
-      <div class="hero-stat">
-        <strong>100%</strong>
-        <span>Biens vérifiés</span>
-      </div>
-    </div>
+<header class="catalog-header">
+  <div class="page-container">
+    <p class="hero-eyebrow">Acheter · Côte d’Ivoire</p>
+    <h1 class="hero-title">Villas et résidences</h1>
+    <p class="hero-sub">Prix de vente, surfaces habitables et quartiers.</p>
   </div>
-
-</section>
+</header>
 
 <!-- Filter glassmorphism — hors du hero pour éviter le clipping -->
 <div class="hero-filter-wrap">
@@ -60,8 +34,8 @@
       <label>Pièces min</label>
       <input type="number" [(ngModel)]="filtrePiecesMin" placeholder="3" min="1" max="20">
     </div>
-    <button class="btn btn-navy" (click)="charger()" style="flex-shrink:0">Rechercher</button>
-    <button class="btn btn-outline" (click)="resetFiltres()" style="flex-shrink:0">✕</button>
+    <button class="btn btn-navy" (click)="charger(1)" style="flex-shrink:0">Rechercher</button>
+    <button class="btn btn-outline" type="button" (click)="resetFiltres()" aria-label="Effacer les filtres" title="Effacer les filtres">✕</button>
   </div>
 </div>
 
@@ -76,10 +50,9 @@
     }
 
     @if (!loading && error) {
-      <div class="empty-state">
-        <span class="empty-icon">⚡</span>
-        <h3>API non disponible</h3>
-        <p>Démarrez l'API : <code>dotnet run --launch-profile http</code></p>
+      <div class="empty-state" role="alert">
+        <h3>Annonces indisponibles</h3><p>{{ error }}</p>
+        <button type="button" class="btn btn-outline" (click)="charger()">Réessayer</button>
       </div>
     }
 
@@ -100,8 +73,7 @@
         @for (villa of villas; track villa.id) {
           <a class="prop-card" [routerLink]="['/villas', villa.id]">
             <div class="card-visual">
-              <div class="card-visual-bg"></div>
-              <span class="card-visual-icon">🏠</span>
+              <app-property-photo [src]="villa.imagePrincipaleUrl" [title]="villa.titre"/>
               <div class="card-price">
                 {{ formatPrix(villa.prix) }}
               </div>
@@ -144,7 +116,7 @@
                   </div>
                   <span>{{ villa.scoreMaMaison }}/100</span>
                 </div>
-                <span class="badge badge-gold">● Vérifié</span>
+                <span class="card-open">Voir le bien</span>
               </div>
             </div>
           </a>

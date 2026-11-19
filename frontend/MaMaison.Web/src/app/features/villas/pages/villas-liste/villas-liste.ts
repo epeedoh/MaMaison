@@ -1,6 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { catalogueErrorMessage, catalogueTimeoutMs } from '../../../../shared/catalogue-request';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { PropertyPhotoComponent } from '../../../../shared/components/property-photo.component';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { VillaListe, TypeVilla, TypeVillaLabels } from '../../../../core/models/villa.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
@@ -11,12 +14,14 @@ interface VillaPage { items: VillaListe[]; total: number; page: number; pageSize
 
 @Component({
   selector: 'app-villas-liste',
-  imports: [FormsModule, RouterLink, PaginationComponent],
+  imports: [FormsModule, RouterLink, PaginationComponent, PropertyPhotoComponent],
   templateUrl: './villas-liste.html',
   styleUrl: './villas-liste.scss'
 })
 export class VillasListeComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  private pending?: Subscription;
+  constructor() { inject(DestroyRef).onDestroy(() => this.pending?.unsubscribe()); }
   readonly favoris = inject(FavorisService);
 
   villas:     VillaListe[] = [];
@@ -25,7 +30,7 @@ export class VillasListeComponent implements OnInit {
   pageSize   = 12;
   totalPages = 0;
   loading    = true;
-  error      = false;
+  error      = '';
 
   filtreType: TypeVilla | '' = '';
   filtreQuartier     = '';
@@ -41,7 +46,8 @@ export class VillasListeComponent implements OnInit {
 
   charger(p = this.page) {
     this.loading = true;
-    this.error   = false;
+    this.pending?.unsubscribe();
+    this.error   = '';
     this.page    = p;
 
     let params = new HttpParams().set('page', p).set('pageSize', this.pageSize);
@@ -51,9 +57,9 @@ export class VillasListeComponent implements OnInit {
     if (this.filtreSurfaceMin)    params = params.set('surfaceMin', this.filtreSurfaceMin);
     if (this.filtrePiecesMin)     params = params.set('piecesMin', this.filtrePiecesMin);
 
-    this.http.get<VillaPage>(`${environment.apiUrl}/villas`, { params }).subscribe({
+    this.pending = this.http.get<VillaPage>(`${environment.apiUrl}/villas`, { params, timeout: catalogueTimeoutMs }).subscribe({
       next: r => { this.villas = r.items; this.total = r.total; this.totalPages = r.totalPages; this.loading = false; },
-      error: () => { this.error = true; this.loading = false; }
+      error: err => { this.error = catalogueErrorMessage(err); this.loading = false; }
     });
   }
 
@@ -75,6 +81,6 @@ export class VillasListeComponent implements OnInit {
     this.filtrePrixMax  = null;
     this.filtreSurfaceMin = null;
     this.filtrePiecesMin  = null;
-    this.charger();
+    this.charger(1);
   }
 }

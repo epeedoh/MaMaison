@@ -18,7 +18,7 @@
   @if (loading) {
     <div class="card-grid skeleton-grid" aria-hidden="true">@for (n of [1,2,3]; track n) { <div class="skeleton-card"><div></div><span></span><span></span></div> }</div>
   } @else if (error) {
-    <div class="empty-state" role="alert"><h3>Les annonces sont momentanément indisponibles.</h3><p>Veuillez réessayer dans quelques instants.</p><button type="button" class="btn btn-outline" (click)="charger()"><img class="ui-icon" src="/viewer-3d/vendor/icons/rotate-ccw.svg" alt="">Réessayer</button></div>
+    <div class="empty-state" role="alert"><h3>Annonces indisponibles</h3><p>{{ error }}</p><button type="button" class="btn btn-outline" (click)="charger()"><img class="ui-icon" src="/viewer-3d/vendor/icons/rotate-ccw.svg" alt="">Réessayer</button></div>
   } @else if (!properties.length) {
     <div class="empty-state"><h3>Aucun bien disponible pour le moment.</h3><p>Consultez les autres catégories ou revenez prochainement.</p></div>
   } @else {
@@ -26,8 +26,7 @@
       @for (property of properties; track property.id) {
         <a class="prop-card" [routerLink]="['/', category, property.id]">
           <div class="card-visual">
-            @if (property.image) { <img class="property-photo" [src]="property.image" [alt]="property.title" loading="lazy" (error)="property.image = null"> }
-            @else { <div class="photo-pending"><img src="/viewer-3d/vendor/icons/home.svg" alt=""><span>Photos non communiquées</span></div> }
+            <app-property-photo [src]="property.image" [title]="property.title"/>
             <div class="card-price">{{ prix(property.price) }} @if (category === 'locations') { <small>/ mois</small> }</div>
           </div>
           <div class="card-body"><h3 class="card-title">{{ property.title }}</h3><p class="card-loc">{{ property.place }}</p><div class="card-footer"><span>{{ property.specs }}</span><span class="card-open">Découvrir<img class="icon-forward" src="/viewer-3d/vendor/icons/arrow-left.svg" alt=""></span></div></div>

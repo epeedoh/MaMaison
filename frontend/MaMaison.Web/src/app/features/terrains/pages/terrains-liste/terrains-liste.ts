@@ -1,6 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { Subscription } from 'rxjs';
+import { catalogueErrorMessage, catalogueTimeoutMs } from '../../../../shared/catalogue-request';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
+import { PropertyPhotoComponent } from '../../../../shared/components/property-photo.component';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { TerrainListe, NiveauVerificationTerrain, NiveauVerificationLabels } from '../../../../core/models/terrain.model';
 import { PaginationComponent } from '../../../../shared/components/pagination/pagination.component';
@@ -11,12 +14,14 @@ interface TerrainPage { items: TerrainListe[]; total: number; page: number; page
 
 @Component({
   selector: 'app-terrains-liste',
-  imports: [FormsModule, RouterLink, PaginationComponent],
+  imports: [FormsModule, RouterLink, PaginationComponent, PropertyPhotoComponent],
   templateUrl: './terrains-liste.html',
   styleUrl: './terrains-liste.scss'
 })
 export class TerrainsListeComponent implements OnInit {
   private readonly http = inject(HttpClient);
+  private pending?: Subscription;
+  constructor() { inject(DestroyRef).onDestroy(() => this.pending?.unsubscribe()); }
   readonly favoris = inject(FavorisService);
 
   terrains:  TerrainListe[] = [];
@@ -25,7 +30,7 @@ export class TerrainsListeComponent implements OnInit {
   pageSize  = 12;
   totalPages = 0;
   loading   = true;
-  error     = false;
+  error     = '';
 
   filtreCommune   = '';
   filtreSurfaceMin: number | null = null;
@@ -39,7 +44,8 @@ export class TerrainsListeComponent implements OnInit {
 
   charger(p = this.page) {
     this.loading = true;
-    this.error   = false;
+    this.pending?.unsubscribe();
+    this.error   = '';
     this.page    = p;
 
     let params = new HttpParams().set('page', p).set('pageSize', this.pageSize);
@@ -47,9 +53,9 @@ export class TerrainsListeComponent implements OnInit {
     if (this.filtreSurfaceMin) params = params.set('surfaceMin', this.filtreSurfaceMin!);
     if (this.filtrePrixMax)    params = params.set('prixMax', this.filtrePrixMax!);
 
-    this.http.get<TerrainPage>(`${environment.apiUrl}/terrains`, { params }).subscribe({
+    this.pending = this.http.get<TerrainPage>(`${environment.apiUrl}/terrains`, { params, timeout: catalogueTimeoutMs }).subscribe({
       next: r => { this.terrains = r.items; this.total = r.total; this.totalPages = r.totalPages; this.loading = false; },
-      error: () => { this.error = true; this.loading = false; }
+      error: err => { this.error = catalogueErrorMessage(err); this.loading = false; }
     });
   }
 
@@ -59,12 +65,13 @@ export class TerrainsListeComponent implements OnInit {
     return new Intl.NumberFormat('fr-CI', { style: 'currency', currency: 'XOF', maximumFractionDigits: 0 }).format(prix);
   }
 
+  readonly usages: Record<number, string> = { 0: 'Résidentiel', 1: 'Commercial', 2: 'Mixte', 3: 'Agricole' };
   niveauLabel(n: NiveauVerificationTerrain) { return NiveauVerificationLabels[n]; }
 
   resetFiltres() {
     this.filtreCommune   = '';
     this.filtreSurfaceMin = null;
     this.filtrePrixMax   = null;
-    this.charger();
+    this.charger(1);
   }
 }

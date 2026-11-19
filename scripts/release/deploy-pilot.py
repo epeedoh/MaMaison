@@ -45,6 +45,18 @@ def public_json(path):
     with urllib.request.urlopen(DOMAIN + path, timeout=20) as response:
         return json.load(response)
 
+def verify_catalogue(fetch):
+    terrains = fetch('/api/fonctionnalites')['terrainsActifs']
+    if type(terrains) is not bool:
+        raise ValueError('Invalid pilot feature flags')
+    for category in ['villas', 'locations'] + (['terrains'] if terrains else []):
+        page = fetch(f'/api/{category}?page=1&pageSize=6')
+        items, total = page['items'], page['total']
+        if (page['page'] != 1 or page['pageSize'] != 6 or type(total) is not int or total < 0
+                or not isinstance(items, list) or len(items) != min(6, total)
+                or not all(isinstance(item, dict) and item.get('id') and item.get('titre') for item in items)):
+            raise ValueError(f'Invalid pilot catalogue page: {category}')
+
 def activate(override):
     subprocess.run(['docker', 'compose', '-p', 'mamaison-pilote', '-f', str(ROOT / 'compose.yml'),
         '-f', str(override), 'up', '-d', '--no-deps', 'api', 'web'], check=True)
@@ -123,8 +135,9 @@ def main():
         verified = False
         for attempt in range(18):
             try:
-                assert public_json('/release.json')['commit'] == sha
-                assert isinstance(public_json('/api/villas')['items'], list)
+                identity = public_json('/release.json')
+                assert (identity['projectId'], identity['environment'], identity['commit']) == ('mamaison', 'pilote', sha)
+                verify_catalogue(public_json)
                 assert public_json('/site-config.json')['demo3dEnabled'] is expected_demo
                 verified = True
                 break

@@ -1,35 +1,10 @@
-<!-- HERO -->
-<section class="hero" style="background:linear-gradient(140deg,#071A07 0%,#0D2810 45%,#0E2A12 80%,#051005 100%)">
-  <div class="orb orb-1" style="background:radial-gradient(circle,rgba(34,197,94,.12) 0%,transparent 65%)"></div>
-  <div class="orb orb-2" style="background:radial-gradient(circle,rgba(200,151,42,.1) 0%,transparent 65%)"></div>
-  <div class="orb orb-3" style="background:radial-gradient(circle,rgba(34,197,94,.06) 0%,transparent 70%)"></div>
-
-  <div class="hero-content">
-    <div class="hero-eyebrow">✦ Terrains sélectionnés — Publication interne MaMaison</div>
-    <h1 class="hero-title">
-      Terrains documentés,<br>
-      <span class="gold-text">vendeurs identifiés</span>
-    </h1>
-    <p class="hero-sub">
-      Sélectionnés · Localisés GPS · Classés par niveau de vérification
-    </p>
-    <div class="hero-stats">
-      <div class="hero-stat">
-        <strong>{{ terrains.length || '—' }}</strong>
-        <span>Terrain(s)</span>
-      </div>
-      <div class="hero-stat">
-        <strong>5</strong>
-        <span>Niveaux vérif.</span>
-      </div>
-      <div class="hero-stat">
-        <strong>GPS</strong>
-        <span>Localisé</span>
-      </div>
-    </div>
+<header class="catalog-header">
+  <div class="page-container">
+    <p class="hero-eyebrow">Acheter · Côte d’Ivoire</p>
+    <h1 class="hero-title">Terrains à vendre</h1>
+    <p class="hero-sub">Surfaces, usages et niveaux de vérification déclarés.</p>
   </div>
-
-</section>
+</header>
 
 <div class="hero-filter-wrap">
   <div class="hero-filter">
@@ -49,8 +24,8 @@
       <label>Prix max (FCFA)</label>
       <input type="number" [(ngModel)]="filtrePrixMax" placeholder="30 000 000">
     </div>
-    <button class="btn btn-navy" (click)="charger()" style="flex-shrink:0">Rechercher</button>
-    <button class="btn btn-outline" (click)="resetFiltres()" style="flex-shrink:0">✕</button>
+    <button class="btn btn-navy" (click)="charger(1)" style="flex-shrink:0">Rechercher</button>
+    <button class="btn btn-outline" type="button" (click)="resetFiltres()" aria-label="Effacer les filtres" title="Effacer les filtres">✕</button>
   </div>
 </div>
 
@@ -61,8 +36,9 @@
       <div class="loading-wrap"><div class="spinner"></div><span>Chargement…</span></div>
     }
     @if (!loading && error) {
-      <div class="empty-state">
-        <span class="empty-icon">⚡</span><h3>API non disponible</h3>
+      <div class="empty-state" role="alert">
+        <h3>Annonces indisponibles</h3><p>{{ error }}</p>
+        <button type="button" class="btn btn-outline" (click)="charger()">Réessayer</button>
       </div>
     }
     @if (!loading && !error && terrains.length === 0) {
@@ -80,12 +56,11 @@
       <div class="card-grid">
         @for (terrain of terrains; track terrain.id) {
           <a class="prop-card" [routerLink]="['/terrains', terrain.id]">
-            <div class="card-visual" style="background:linear-gradient(140deg,#071A07 0%,#0D2810 50%,#102E14 100%)">
-              <div class="card-visual-bg" style="background:linear-gradient(135deg,rgba(34,197,94,.06) 0%,transparent 60%)"></div>
-              <span class="card-visual-icon">📍</span>
+            <div class="card-visual">
+              <app-property-photo [src]="terrain.imagePrincipaleUrl" [title]="terrain.titre"/>
               <div class="card-price">{{ formatPrix(terrain.prix) }}</div>
               <div class="card-badges">
-                <span style="background:rgba(34,197,94,.2);color:#86efac;border:1px solid rgba(34,197,94,.3);padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:700">
+                <span class="badge badge-navy">
                   Niv. {{ terrain.niveauVerification }} — {{ niveauLabel(terrain.niveauVerification) }}
                 </span>
               </div>
@@ -101,7 +76,7 @@
                   <span class="spec-l">Surface</span>
                 </div>
                 <div class="spec">
-                  <span class="spec-v" style="font-size:.82rem;color:var(--text-mid)">Résidentiel</span>
+                  <span class="spec-v">{{ usages[terrain.usage] || 'Non précisé' }}</span>
                   <span class="spec-l">Usage</span>
                 </div>
               </div>
@@ -110,7 +85,7 @@
                   <div class="score-track"><div class="score-fill" [style.width.%]="terrain.scoreMaMaison"></div></div>
                   <span>{{ terrain.scoreMaMaison }}/100</span>
                 </div>
-                <button class="btn btn-outline btn-sm">Dossier →</button>
+                <span class="card-open">Voir le terrain</span>
               </div>
             </div>
             <!-- Favori -->

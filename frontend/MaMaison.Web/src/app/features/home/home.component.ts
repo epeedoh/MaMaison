@@ -1,6 +1,7 @@
 import { Component, DestroyRef, OnInit, computed, effect, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RouterLink } from '@angular/router';
+import { PropertyPhotoComponent } from '../../shared/components/property-photo.component';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { BehaviorSubject, catchError, map, of, switchMap, tap } from 'rxjs';
 import { VillaListe } from '../../core/models/villa.model';
@@ -9,6 +10,7 @@ import { TerrainListe } from '../../core/models/terrain.model';
 import { AuthService } from '../../core/services/auth.service';
 import { FonctionnalitesService } from '../../core/services/fonctionnalites.service';
 import { environment } from '../../../environments/environment';
+import { catalogueErrorMessage, catalogueTimeoutMs } from '../../shared/catalogue-request';
 
 type Category = 'villas' | 'locations' | 'terrains';
 type Listing = VillaListe | LocationListe | TerrainListe;
@@ -17,7 +19,7 @@ interface PropertyPreview { id: string; title: string; place: string; price: num
 
 @Component({
   selector: 'app-home',
-  imports: [RouterLink],
+  imports: [RouterLink, PropertyPhotoComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -34,7 +36,7 @@ export class HomeComponent implements OnInit {
   properties: PropertyPreview[] = [];
   total = 0;
   loading = true;
-  error = false;
+  error = '';
   cityPhotoAvailable = true;
   readonly options = computed<{ value: Category; label: string }[]>(() => [
     { value: 'villas', label: 'Acheter' },
@@ -51,9 +53,9 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {
     this.category$.pipe(
-      tap(() => { this.loading = true; this.error = false; this.properties = []; this.total = 0; }),
+      tap(() => { this.loading = true; this.error = ''; this.properties = []; this.total = 0; }),
       switchMap(category => this.http.get<ListingPage>(`${environment.apiUrl}/${category}`, {
-        params: { page: 1, pageSize: 6 }
+        params: { page: 1, pageSize: 6 }, timeout: catalogueTimeoutMs
       }).pipe(
         map(result => ({
           total: result.total,
@@ -65,7 +67,7 @@ export class HomeComponent implements OnInit {
               : 'surface' in item ? `${item.surface} m²` : `${item.nombrePieces} pièces`
           }))
         })),
-        catchError(() => { this.error = true; return of({ properties: [], total: 0 }); })
+        catchError(err => { this.error = catalogueErrorMessage(err); return of({ properties: [], total: 0 }); })
       )),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe(result => {
