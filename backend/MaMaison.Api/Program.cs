@@ -11,6 +11,7 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+builder.Services.AddSingleton<MaMaison.Api.Security.AccountPasswords>();
 builder.Services.AddSingleton<MaMaison.Api.Controllers.SiteSettingsStore>();
 builder.Services.AddOpenApi();
 builder.Services.AddInfrastructure(builder.Configuration);

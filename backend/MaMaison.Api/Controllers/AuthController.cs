@@ -1,9 +1,11 @@
 using MaMaison.Application.Features.Auth;
+using MaMaison.Api.Security;
 using MaMaison.Domain.Entities;
 using MaMaison.Domain.Enums;
 using MaMaison.Infrastructure.Data;
 using MaMaison.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,7 +14,7 @@ namespace MaMaison.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController(MaMaisonDbContext context, TokenService tokenService) : ControllerBase
+public class AuthController(MaMaisonDbContext context, TokenService tokenService, AccountPasswords passwords) : ControllerBase
 {
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterCommand cmd, CancellationToken ct)
@@ -41,13 +43,11 @@ public class AuthController(MaMaisonDbContext context, TokenService tokenService
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginCommand cmd, CancellationToken ct)
     {
-        var hash = HashMotDePasse(cmd.MotDePasse);
-        var utilisateur = await context.Utilisateurs
-            .FirstOrDefaultAsync(u => u.Telephone == cmd.Telephone
-                                   && u.MotDePasseHash == hash
-                                   && u.EstActif, ct);
+        var utilisateur = await context.Utilisateurs.AsNoTracking()
+            .FirstOrDefaultAsync(u => u.Telephone == cmd.Telephone && u.EstActif, ct);
+        var match = passwords.Verify(utilisateur?.MotDePasseHash, cmd.MotDePasse);
 
-        if (utilisateur is null)
+        if (utilisateur is null || match == PasswordVerificationResult.Failed)
             return Unauthorized(new { message = "Téléphone ou mot de passe incorrect." });
 
         var (token, expiration) = tokenService.GenererToken(utilisateur);
