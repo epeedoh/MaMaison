@@ -9,26 +9,27 @@ namespace MaMaison.Api.Controllers;
 [ApiController, Authorize, Route("api/biens/{bienId:guid}/justificatifs")]
 public class JustificatifsController(MaMaisonDbContext context, IWebHostEnvironment env) : ControllerBase
 {
-    private string Dossier => Path.Combine(env.ContentRootPath, "App_Data", "justificatifs");
+    private string Dossier => Environment.GetEnvironmentVariable("MAMAISON_PRIVATE_DOCUMENTS")
+        ?? Path.Combine(env.ContentRootPath, "App_Data", "justificatifs");
     private bool Admin => User.IsInRole("Admin") || User.IsInRole("SuperAdmin");
-    private async Task<bool> Autorise(Guid id, CancellationToken ct)
+    private async Task<bool> Autorise(Guid id, CancellationToken ct, bool depot = false)
     {
         if (Admin) return await context.Locations.AnyAsync(b => b.Id == id, ct)
             || await context.Villas.AnyAsync(b => b.Id == id, ct) || await context.Terrains.AnyAsync(b => b.Id == id, ct);
         return Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var userId)
-            && await context.Locations.AnyAsync(b => b.Id == id && b.ProprietaireId == userId, ct);
+            && await context.Locations.AnyAsync(b => b.Id == id && (b.ProprietaireId == userId || (depot && b.DeposantId == userId)), ct);
     }
     [HttpGet]
     public async Task<IActionResult> Lister(Guid bienId, CancellationToken ct)
     {
-        if (!await Autorise(bienId, ct)) return NotFound();
+        if (!await Autorise(bienId, ct, depot: true)) return NotFound();
         return Ok(await context.JustificatifsBien.Where(d => d.BienId == bienId)
             .Select(d => new { d.Id, d.Categorie, d.Valide }).ToListAsync(ct));
     }
     [HttpPost, RequestSizeLimit(10 * 1024 * 1024)]
     public async Task<IActionResult> Ajouter(Guid bienId, [FromForm] string categorie, IFormFile file, CancellationToken ct)
     {
-        if (!await Autorise(bienId, ct)) return NotFound();
+        if (!await Autorise(bienId, ct, depot: true)) return NotFound();
         if (categorie is not ("Propriete" or "IdentiteProprietaire")) return BadRequest(new { message = "Catégorie invalide." });
         if (file is null || file.Length == 0 || file.Length > 10 * 1024 * 1024) return BadRequest(new { message = "Fichier requis, maximum 10 Mo." });
         // Vérifier le contenu, sans se fier à l'extension fournie par le client.

@@ -80,7 +80,7 @@ public class PilotPublicDetailTests
         Assert.IsType<OkObjectResult>(await locations.ObtenirDetail(location.Id, default));
         Assert.IsType<OkObjectResult>(await villas.ObtenirDetail(villa.Id, default));
 
-        Assert.IsType<OkObjectResult>(await new AdminController(context).RejeterLocation(location.Id, null, default));
+        Assert.IsType<OkObjectResult>(await new AdminController(context).RejeterLocation(location.Id, "Dossier incomplet", default));
         Assert.IsType<OkObjectResult>(await new AdminController(context).SuspendreVilla(villa.Id, default));
         context.ChangeTracker.Clear();
         Assert.IsType<NotFoundResult>(await locations.ObtenirDetail(location.Id, default));

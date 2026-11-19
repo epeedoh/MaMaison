@@ -91,7 +91,7 @@ describe('DemandeVisiteModalComponent', () => {
     const request = http.expectOne('/api/demandesvisite');
     expect(request.request.method).toBe('POST');
     expect(request.request.headers.get('Authorization')).toBe('Bearer synthetic-test');
-    expect(request.request.body).toEqual({ bienId: 'bien-test', nom: identity.nom, telephone: identity.telephone, dateSouhaitee: '2099-12-31', commentaire: 'Disponible demain' });
+    expect(request.request.body).toEqual({ bienId: 'bien-test', nature: component.mode, nom: identity.nom, telephone: identity.telephone, dateSouhaitee: '2099-12-31', commentaire: 'Disponible demain' });
     expect(request.request.body.utilisateurId).toBeUndefined();
     request.flush({ id: 'demande-test', message: 'OK' });
     fixture.detectChanges();

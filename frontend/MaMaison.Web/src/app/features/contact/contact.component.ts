@@ -68,7 +68,7 @@ export class ContactComponent {
     if (!this.nom.trim() || !this.telephone.trim() || !this.message.trim()) return;
     this.etat.set('chargement');
     this.demandes.soumettre({
-      bienId: '00000000-0000-0000-0000-000000000000',
+      nature: 'contact', bienId: '00000000-0000-0000-0000-000000000000',
       nom: this.nom.trim(),
       telephone: this.telephone.trim(),
       email: this.email.trim() || undefined,

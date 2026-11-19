@@ -55,7 +55,11 @@ public class ProfilController(MaMaisonDbContext context) : ControllerBase
         var demandes = await context.DemandesVisite
             .Where(d => d.UtilisateurId == UtilisateurId)
             .OrderByDescending(d => d.DateCreation)
-            .Select(d => new { d.Id, d.BienId, d.Statut, d.DateSouhaitee, d.Commentaire, d.DateCreation })
+            .Select(d => new { d.Id, d.BienId, d.Statut, d.DateSouhaitee, d.DateConfirmee, d.Commentaire, d.DateCreation, d.Reponse,
+                Nature = d.Nature ?? (d.BienId == Guid.Empty ? "contact" : "historique"),
+                Titre = context.Locations.Where(l => l.Id == d.BienId).Select(l => l.Titre).FirstOrDefault()
+                    ?? context.Villas.Where(v => v.Id == d.BienId).Select(v => v.Titre).FirstOrDefault()
+                    ?? context.Terrains.Where(t => t.Id == d.BienId).Select(t => t.Titre).FirstOrDefault() })
             .ToListAsync(ct);
         return Ok(demandes);
     }
@@ -64,9 +68,14 @@ public class ProfilController(MaMaisonDbContext context) : ControllerBase
     public async Task<IActionResult> MesLocations(CancellationToken ct)
     {
         var locations = await context.Locations
-            .Where(l => l.ProprietaireId == UtilisateurId)
+            .Where(l => l.ProprietaireId == UtilisateurId || l.DeposantId == UtilisateurId || l.ResponsableVisitesId == UtilisateurId)
             .OrderByDescending(l => l.DateCreation)
-            .Select(l => new { l.Id, l.Titre, l.Quartier, l.Commune, l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation })
+            .Select(l => new { l.Id, l.Titre, l.Quartier, l.Commune, l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation,
+                l.NombrePieces, l.Caution, l.Avance, l.FraisAgence,
+                MotifRejet = l.DeposantId == UtilisateurId || l.ProprietaireId == UtilisateurId ? l.MotifRejet : null,
+                Deposant = l.DeposantId == UtilisateurId, Proprietaire = l.ProprietaireId == UtilisateurId,
+                Responsable = l.ResponsableVisitesId == UtilisateurId, TitulaireIdentifie = l.ProprietaireId != null,
+                ResponsableNom = context.Utilisateurs.Where(u => u.Id == l.ResponsableVisitesId).Select(u => u.Nom).FirstOrDefault() })
             .ToListAsync(ct);
         return Ok(locations);
     }
@@ -88,7 +97,7 @@ public class ProfilController(MaMaisonDbContext context) : ControllerBase
         var userId = UtilisateurId;
         return Ok(new {
             NbDemandes     = await context.DemandesVisite.CountAsync(d => d.UtilisateurId == userId, ct),
-            NbLocations    = await context.Locations.CountAsync(l => l.ProprietaireId == userId, ct),
+            NbLocations    = await context.Locations.CountAsync(l => l.ProprietaireId == userId || l.DeposantId == userId || l.ResponsableVisitesId == userId, ct),
             NbSignalements = await context.Signalements.CountAsync(s => s.UtilisateurId == userId, ct),
         });
     }

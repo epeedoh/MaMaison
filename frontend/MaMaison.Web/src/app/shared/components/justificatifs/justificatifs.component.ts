@@ -13,7 +13,7 @@ interface Justificatif { id: string; categorie: string; valide: boolean; }
     <p>PDF, JPEG ou PNG, 10 Mo maximum par fichier.</p>
     @for (doc of documents(); track doc.id) {
       <p>{{ doc.categorie === 'Propriete' ? 'Preuve de propriété' : 'Identité du propriétaire' }} — {{ doc.valide ? 'Validé' : 'À examiner' }}
-        <button type="button" (click)="ouvrir(doc)">Consulter</button>
+        @if (admin || lecture) { <button type="button" (click)="ouvrir(doc)">Consulter</button> }
         @if (admin && !doc.valide) { <button type="button" (click)="valider(doc)">Valider après examen</button> }
       </p>
     }
@@ -23,6 +23,7 @@ interface Justificatif { id: string; categorie: string; valide: boolean; }
 export class JustificatifsComponent implements OnChanges {
   @Input({ required: true }) bienId = '';
   @Input() admin = false;
+  @Input() lecture = false;
   private http = inject(HttpClient);
   documents = signal<Justificatif[]>([]);
   message = signal('');

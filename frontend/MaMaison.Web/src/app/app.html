@@ -24,7 +24,7 @@
       } @else {
         <a routerLink="/login" class="nav-link account-link" aria-label="Connexion" title="Connexion"><img class="ui-icon" src="/viewer-3d/vendor/icons/user.svg" alt=""><span>Connexion</span></a>
       }
-      @if (auth.peutPublier()) { <a routerLink="/publier" class="btn-cta"><img class="ui-icon icon-light" src="/viewer-3d/vendor/icons/plus.svg" alt="">Publier un bien</a> }
+      @if (auth.peutPublier()) { <a routerLink="/publier" class="btn-cta"><img class="ui-icon icon-light" src="/viewer-3d/vendor/icons/plus.svg" alt="">Proposer une location</a> }
     </div>
   </div>
 </nav>
@@ -58,7 +58,7 @@
     </section>
     <section class="mobile-menu-section" aria-labelledby="menu-projet-title">
       <h2 id="menu-projet-title">Un projet avec MaMaison</h2>
-      @if (auth.peutPublier()) { <a class="menu-project-link" routerLink="/publier" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/plus.svg" alt=""><span>Publier une annonce</span></a> }
+      @if (auth.peutPublier()) { <a class="menu-project-link" routerLink="/publier" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/plus.svg" alt=""><span>Proposer une location</span></a> }
       <a class="menu-project-link" routerLink="/diaspora" routerLinkActive="menu-link-active" ariaCurrentWhenActive="page"><img src="/viewer-3d/vendor/icons/navigation.svg" alt=""><span>Acheter depuis l'étranger</span></a>
       <details class="menu-partners" [open]="rubriquePartenairesActive()">
         <summary><span>Partenaires et apporteurs</span><img src="/viewer-3d/vendor/icons/plus.svg" alt=""></summary>
@@ -93,7 +93,7 @@
   <div class="footer-grid">
     <div class="footer-brand"><a routerLink="/" class="brand-name">MaMaison<span class="brand-dot">.</span></a><p>Votre projet immobilier<br>en Côte d'Ivoire.</p><span>Abidjan, Côte d'Ivoire</span></div>
     <div><div class="footer-section-title">Votre recherche</div><div class="footer-links"><a routerLink="/villas">Villas et résidences</a><a routerLink="/locations">Locations</a>@if (fonctionnalites.terrainsActifs()) { <a routerLink="/terrains">Terrains</a> }<a routerLink="/diaspora">Depuis l'étranger</a></div></div>
-    <div><div class="footer-section-title">Votre espace</div><div class="footer-links"><a routerLink="/profil">Compte et favoris</a>@if (auth.peutPublier()) { <a routerLink="/publier">Publier un bien</a> }<a routerLink="/devenir-apporteur">Devenir apporteur</a>@if (auth.estAdmin()) { <a routerLink="/admin">Administration</a> }</div></div>
+    <div><div class="footer-section-title">Votre espace</div><div class="footer-links"><a routerLink="/profil">Compte et favoris</a>@if (auth.peutPublier()) { <a routerLink="/publier">Proposer une location</a> }<a routerLink="/devenir-apporteur">Devenir apporteur</a>@if (auth.estAdmin()) { <a routerLink="/admin">Administration</a> }</div></div>
     <div><div class="footer-section-title">MaMaison</div><div class="footer-links"><a routerLink="/partenaires">Nos partenaires</a><a routerLink="/contact">Nous contacter</a>@if (siteConfig.demo3dEnabled()) { <a [href]="siteConfig.demo3dUrl">La villa témoin 3D</a> }</div></div>
   </div>
   <div class="footer-bottom"><span>© 2026 MaMaison</span><span>Acheter. Louer. Se projeter.</span></div>

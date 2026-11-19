@@ -10,7 +10,7 @@ namespace MaMaison.Api.Tests;
 public class PilotIdentityTests
 {
     private static SoumettreDemandeVisiteCommand Visit(Guid? bienId = null) =>
-        new(bienId ?? Guid.NewGuid(), "Contact fourni non fiable", "1111111111", null, null, "Commentaire fixture");
+        new(bienId ?? Guid.Empty, "Contact fourni non fiable", "1111111111", null, null, "Commentaire fixture","contact");
 
     [Theory]
     [InlineData(null, false)]

@@ -42,6 +42,7 @@ public class PublicationTests
     {
         await using var context = Context();
         var bien = Location.Creer(Guid.NewGuid(), "Maison", TypeLocationBien.Maison, "Zone", "Abidjan", 3, 100000, 0, 0);
+        bien.Soumettre();
         context.Locations.Add(bien);
         context.JustificatifsBien.AddRange(
             new() { BienId = bien.Id, Categorie = "Propriete", Valide = propriete },
@@ -49,7 +50,7 @@ public class PublicationTests
         await context.SaveChangesAsync();
         var result = await new AdminController(context).ValiderLocation(bien.Id, default);
         if (propriete && identite) Assert.IsType<OkObjectResult>(result);
-        else { Assert.IsType<BadRequestObjectResult>(result); Assert.Equal(StatutLocation.Brouillon, bien.Statut); }
+        else { Assert.IsType<BadRequestObjectResult>(result); Assert.Equal(StatutLocation.EnVerification, bien.Statut); }
     }
 
     [Fact]
@@ -91,7 +92,7 @@ public class PublicationTests
                 User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, userId.ToString()), new Claim(ClaimTypes.Role, "Proprietaire") }, "test"))
             } }
         };
-        Assert.IsType<CreatedResult>(await controller.Soumettre(new("Maison", TypeLocationBien.Maison, "Zone", "Abidjan", 3, 100000, 0, 0), default));
+        Assert.IsType<CreatedResult>(await controller.Soumettre(new("Maison", TypeLocationBien.Maison, "Zone", "Abidjan", 3, 100000, 0, 0, PourMonCompte:true), default));
         Assert.Equal(userId, (await context.Locations.SingleAsync()).ProprietaireId);
     }
 

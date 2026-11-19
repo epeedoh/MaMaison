@@ -77,10 +77,14 @@ public class LocationsController(ILocationRepository locationRepository, MaMaiso
         if (!Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var proprietaireId))
             return Unauthorized();
 
+        if (cmd.PourMonCompte && !User.IsInRole("Proprietaire")) return Forbid();
+        if (User.IsInRole("Demarcheur") && await context.Demarcheurs.AnyAsync(d =>
+            d.UtilisateurId == proprietaireId && d.Statut == StatutDemarcheur.Suspendu, ct)) return Forbid();
         var location = Location.Creer(
             proprietaireId, cmd.Titre, cmd.TypeBien,
             cmd.Quartier, cmd.Commune, cmd.NombrePieces,
-            cmd.Loyer, cmd.Caution, cmd.Avance, cmd.FraisAgence);
+            cmd.Loyer, cmd.Caution, cmd.Avance, cmd.FraisAgence, pourSonCompte: cmd.PourMonCompte);
+        location.Soumettre();
 
         if (cmd.Latitude.HasValue != cmd.Longitude.HasValue) return BadRequest(new { message = "Renseignez les deux coordonnées." });
         if (cmd.Latitude.HasValue)
@@ -92,6 +96,6 @@ public class LocationsController(ILocationRepository locationRepository, MaMaiso
         await locationRepository.SauvegarderAsync(ct);
 
         return Created($"/api/locations/{location.Id}", new { id = location.Id,
-            message = "Votre bien a été soumis. Vérification en cours (48h)." });
+            message = "Votre location est en vérification." });
     }
 }

@@ -1,11 +1,11 @@
 import { Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { SlicePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
-import { JustificatifsComponent } from '../../shared/components/justificatifs/justificatifs.component';
+import { Annonce, DossierLocationComponent } from './dossier-location.component';
 import { AuthService } from '../../core/services/auth.service';
 import { Role, RoleLabels } from '../../core/models/auth.model';
 import { FavorisService } from '../../core/services/favoris.service';
@@ -15,12 +15,11 @@ import { environment } from '../../../environments/environment';
 type Onglet = 'resume' | 'demandes' | 'annonces' | 'favoris';
 interface Profil { nom: string; telephone: string; email: string | null; role: Role; }
 interface Stats { nbDemandes: number; nbLocations: number; nbSignalements: number; }
-interface Demande { id: string; bienId: string; statut: number; dateSouhaitee: string | null; commentaire: string | null; dateCreation: string; }
-interface Annonce { id: string; titre: string; quartier: string; commune: string; loyer: number; statut: number; dateCreation: string; }
+interface Demande { id: string; titre?: string; nature: string; reponse?: string; dateConfirmee?: string; bienId: string; statut: number; dateSouhaitee: string | null; commentaire: string | null; dateCreation: string; }
 
 @Component({
   selector: 'app-profil',
-  imports: [JustificatifsComponent, RouterLink, SlicePipe, FormsModule],
+  imports: [DossierLocationComponent, RouterLink, DatePipe, FormsModule],
   templateUrl: './profil.component.html',
   styleUrl: './profil.component.scss',
 })
@@ -63,6 +62,7 @@ export class ProfilComponent implements OnInit {
   editEmail = '';
   editMode = false;
   readonly statutDemandeLabel = ['En attente', 'Confirmée', 'Annulée', 'Effectuée'];
+  readonly objets:Record<string,string>={visite:'Visite',rappel:'Rappel',contact:'Contact MaMaison','3d':'Visite 3D',historique:'Demande ancienne'};
   readonly statutLocationLabel = ['Brouillon', 'En vérification', 'Publié', 'Loué', 'Expiré', 'Suspendu', 'Rejeté'];
   readonly typeFavoriLabel = { villa: 'Villa', location: 'Location', terrain: 'Terrain' };
 

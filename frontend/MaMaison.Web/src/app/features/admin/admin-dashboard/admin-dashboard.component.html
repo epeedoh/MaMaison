@@ -50,7 +50,7 @@
           {label:'En validation',    val:dashboard.villas?.enValidation, sub:'villas à traiter',                            icon:'⏳'},
           {label:'Locations',        val:dashboard.locations?.publiees,  sub:'/ '+dashboard.locations?.total+' total',      icon:'🔑'},
           {label:'En vérification',  val:dashboard.locations?.enVerification, sub:'locations à valider',                   icon:'🔍'},
-          {label:'Demandes visite',  val:dashboard.demandesVisite?.enAttente, sub:'/ '+dashboard.demandesVisite?.total+' total', icon:'📋'},
+          {label:'Demandes',  val:dashboard.demandesVisite?.enAttente, sub:'/ '+dashboard.demandesVisite?.total+' total', icon:'📋'},
           {label:'Signalements',     val:dashboard.signalements?.enAttente,   sub:'en attente',                            icon:'🚨'},
           {label:'Utilisateurs',     val:dashboard.utilisateurs,         sub:'inscrits',                                   icon:'👤'},
           {label:'Terrains',         val:dashboard.terrains?.publies,    sub:'/ '+dashboard.terrains?.total+' total',      icon:'📍'},
@@ -161,12 +161,19 @@
                     </span>
                   </td>
                   <td style="padding:12px 18px;display:flex;gap:6px">
+                    <details><summary>Attributions</summary><p>Déposant : {{ l.deposantNom || 'non renseigné' }}</p>
+                      <p>Propriétaire : {{ l.proprietaireNom || 'à identifier' }}</p><p>Visites : {{ l.responsableNom || 'non attribuées' }}</p>
+                      @if (!l.titulaireIdentifie) { <label>Téléphone du propriétaire vérifié<input type="tel" #tel></label>
+                        <button class="btn btn-outline btn-sm" (click)="identifierTitulaire(l.id,tel.value)">Rattacher le titulaire</button> }
+                    </details>
                     @if (l.statut === 1 || l.statut === 0) {
-                      <button class="btn btn-navy btn-sm" (click)="validerLocation(l.id)">✓ Valider</button>
-                      <button class="btn btn-ghost btn-sm" style="color:#E53E3E" (click)="rejeterLocation(l.id)">✗ Rejeter</button>
+                      @if (l.statut===1 && l.titulaireIdentifie) { <button class="btn btn-navy btn-sm" (click)="validerLocation(l.id)">Valider</button> }
+                      <details><summary>Demander une correction</summary>
+                        <label>Motif du rejet<textarea #motif maxlength="1000"></textarea></label>
+                        <button class="btn btn-outline btn-sm" (click)="rejeterLocation(l.id,motif.value)">Notifier le rejet</button></details>
                     }
                     <button type="button" class="btn btn-ghost btn-sm" (click)="ouvrirDossier(l)">Dossier et position</button>
-                    <a [routerLink]="['/locations', l.id]" class="btn btn-ghost btn-sm">Voir</a>
+                    @if (l.statut===2) { <a [routerLink]="['/locations', l.id]" class="btn btn-ghost btn-sm">Voir</a> }
                   </td>
                 </tr>
               }
@@ -310,7 +317,7 @@
   @if (onglet() === 'demandes') {
     <div style="background:white;border:1px solid var(--border);border-radius:var(--r-lg);overflow:hidden;box-shadow:var(--shadow-sm)">
       <div style="padding:16px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Demandes de visite</h2>
+        <h2 style="font-family:var(--font-disp);font-size:1.1rem;font-weight:700;color:var(--navy-mid)">Demandes reçues</h2>
         <button class="btn btn-ghost btn-sm" (click)="chargerDemandes()">↺ Actualiser</button>
       </div>
       @if (demandes.length === 0) {
@@ -320,7 +327,7 @@
           <table style="width:100%;border-collapse:collapse;font-size:.84rem">
             <thead><tr style="background:var(--cream)">
               <th style="text-align:left;padding:11px 18px">Contact</th>
-              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">ID Bien</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Objet et bien</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Date souhaitée</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Commentaire</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Statut</th>
@@ -330,7 +337,7 @@
               @for (d of demandes; track d.id) {
                 <tr style="border-top:1px solid var(--border)">
                   <td style="padding:12px 18px"><strong>{{ d.nom || 'Compte non disponible' }}</strong><br>{{ d.telephone || 'Non renseigné' }}</td>
-                  <td style="padding:12px 18px;font-family:monospace;font-size:.78rem;color:var(--text-mid)">{{ d.bienId === '00000000-0000-0000-0000-000000000000' ? 'Contact général' : (d.bienId | slice:0:8) }}</td>
+                  <td>{{ d.nature === 'contact' ? 'Contact général' : d.nature === 'rappel' ? 'Rappel' : d.nature === '3d' ? 'Visite 3D' : d.nature === 'visite' ? 'Visite' : 'Demande ancienne' }}<br>{{ d.titre }}</td>
                   <td style="padding:12px 18px;color:var(--text-mid)">{{ d.dateSouhaitee ? formatDate(d.dateSouhaitee) : '—' }}</td>
                   <td style="padding:12px 18px;color:var(--text-mid);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ d.commentaire || '—' }}</td>
                   <td style="padding:12px 18px">
@@ -338,12 +345,15 @@
                           [class.badge-amber]="d.statut===0"
                           [class.badge-green]="d.statut===1"
                           [class.badge-gray]="d.statut===2||d.statut===3">
-                      {{ statutDemandeLabel(d.statut) }}
+                      {{ d.reponse ? 'Répondu' : statutDemandeLabel(d.statut) }}
                     </span>
                   </td>
                   <td style="padding:12px 18px">
                     @if (d.statut === 0) {
-                      <button class="btn btn-navy btn-sm" (click)="confirmerDemande(d.id)">✓ Confirmer</button>
+                      @if (d.nature==='visite' && d.location) { <span>Responsable des visites</span> }
+                      @else if (d.nature==='visite' || d.nature==='3d') { <button class="btn btn-navy btn-sm" (click)="confirmerDemande(d.id)">Confirmer</button> }
+                      @else { <label>Réponse au demandeur<textarea #texte maxlength="1000"></textarea>
+                        <button class="btn btn-outline btn-sm" (click)="repondre(d.id,texte.value)">Répondre</button></label> }
                     }
                   </td>
                 </tr>
@@ -367,7 +377,7 @@
         <div style="overflow-x:auto">
           <table style="width:100%;border-collapse:collapse;font-size:.84rem">
             <thead><tr style="background:var(--cream)">
-              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">ID Bien</th>
+              <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Objet et bien</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Motif</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Description</th>
               <th style="text-align:left;padding:11px 18px;font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-soft)">Date</th>

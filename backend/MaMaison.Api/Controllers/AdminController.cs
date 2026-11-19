@@ -112,7 +112,11 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
         var query = context.Locations.AsQueryable();
         if (statut.HasValue) query = query.Where(l => l.Statut == statut.Value);
         var locations = await query.OrderByDescending(l => l.DateCreation)
-            .Select(l => new { l.Id, l.Titre, l.Latitude, l.Longitude, l.Quartier, l.Commune, l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation })
+            .Select(l => new { l.Id, l.Titre, l.Latitude, l.Longitude, l.Quartier, l.Commune, l.Loyer, l.Statut, l.ScoreMaMaison, l.DateCreation,
+                TitulaireIdentifie = l.ProprietaireId != null, l.MotifRejet,
+                DeposantNom = context.Utilisateurs.Where(u => u.Id == l.DeposantId).Select(u => u.Nom).FirstOrDefault(),
+                ProprietaireNom = context.Utilisateurs.Where(u => u.Id == l.ProprietaireId).Select(u => u.Nom).FirstOrDefault(),
+                ResponsableNom = context.Utilisateurs.Where(u => u.Id == l.ResponsableVisitesId).Select(u => u.Nom).FirstOrDefault() })
             .ToListAsync(ct);
         return Ok(locations);
     }
@@ -122,6 +126,8 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
     {
         var location = await context.Locations.Include(l => l.Medias).FirstOrDefaultAsync(l => l.Id == id, ct);
         if (location is null) return NotFound();
+        if (location.Statut != StatutLocation.EnVerification || location.ProprietaireId is null)
+            return BadRequest(new { message = "Le dossier doit être soumis et son propriétaire identifié." });
         var categories = await context.JustificatifsBien.Where(d => d.BienId == id && d.Valide)
             .Select(d => d.Categorie).Distinct().ToListAsync(ct);
         if (!categories.Contains("Propriete") || !categories.Contains("IdentiteProprietaire"))
@@ -139,7 +145,8 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
     {
         var location = await context.Locations.FindAsync([id], ct);
         if (location is null) return NotFound();
-        location.Rejeter();
+        if (string.IsNullOrWhiteSpace(raison) || raison.Length > 1000) return BadRequest(new { message = "Un motif est requis (1000 caractères maximum)." });
+        location.Rejeter(raison.Trim());
         await context.SaveChangesAsync(ct);
         return Ok(new { message = "Location rejetée." });
     }
@@ -155,7 +162,12 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
             orderby d.DateCreation descending
             select new
             {
-                d.Id, d.BienId, d.Statut, d.DateSouhaitee, d.Commentaire, d.DateCreation,
+                d.Id, d.BienId, d.Statut, d.DateSouhaitee, d.Commentaire, d.DateCreation, d.Reponse,
+                Nature = d.Nature ?? (d.BienId == Guid.Empty ? "contact" : "historique"),
+                Location = context.Locations.Any(l => l.Id == d.BienId),
+                Titre = context.Locations.Where(l => l.Id == d.BienId).Select(l => l.Titre).FirstOrDefault()
+                    ?? context.Villas.Where(v => v.Id == d.BienId).Select(v => v.Titre).FirstOrDefault()
+                    ?? context.Terrains.Where(t => t.Id == d.BienId).Select(t => t.Titre).FirstOrDefault(),
                 Nom = u == null ? null : u.Nom,
                 Telephone = u == null ? null : u.Telephone
             })
@@ -168,9 +180,23 @@ public class AdminController(MaMaisonDbContext context) : ControllerBase
     {
         var demande = await context.DemandesVisite.FindAsync([id], ct);
         if (demande is null) return NotFound();
+        if (demande.Statut != StatutDemandeVisite.EnAttente || demande.Nature is not ("visite" or "3d")
+            || (demande.Nature == "visite" && await context.Locations.AnyAsync(l => l.Id == demande.BienId, ct))) return Conflict();
         demande.Confirmer();
         await context.SaveChangesAsync(ct);
         return Ok(new { message = "Demande confirmée." });
+    }
+
+    [HttpPut("demandes/{id}/repondre")]
+    public async Task<IActionResult> Repondre(Guid id, [FromBody] string texte, CancellationToken ct)
+    {
+        var d = await context.DemandesVisite.FindAsync([id], ct);
+        if (d is null) return NotFound();
+        if (d.Statut != StatutDemandeVisite.EnAttente || d.Nature is "visite" or "3d") return Conflict();
+        if (string.IsNullOrWhiteSpace(texte) || texte.Length > 1000) return BadRequest();
+        d.Repondre(texte.Trim());
+        await context.SaveChangesAsync(ct);
+        return NoContent();
     }
 
     // ── Signalements ─────────────────────────────────────────────

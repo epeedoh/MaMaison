@@ -7,6 +7,7 @@ import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../core/services/auth.service';
+import { Role } from '../../../core/models/auth.model';
 
 @Component({
   selector: 'app-soumettre-location',
@@ -20,6 +21,8 @@ export class SoumettreLocationComponent {
   etat = signal<'form' | 'chargement' | 'succes' | 'erreur'>('form');
 
   bienId = '';
+  pourMonCompte = false;
+  estProprietaire() { return this.auth.user()?.role === Role.Proprietaire; }
   form = {
     latitude: null as number | null,
     longitude: null as number | null,
@@ -57,6 +60,7 @@ export class SoumettreLocationComponent {
     this.etat.set('chargement');
 
     const payload = {
+      pourMonCompte: this.pourMonCompte,
       latitude: this.form.latitude, longitude: this.form.longitude,
       titre: this.form.titre, typeBien: +this.form.typeBien,
       quartier: this.form.quartier, commune: this.form.commune,
@@ -72,6 +76,7 @@ export class SoumettreLocationComponent {
   }
 
   nouvelleAnnonce() {
+    this.pourMonCompte = false;
     this.bienId = '';
     this.form = { latitude: null, longitude: null, titre: '', typeBien: 6,
       quartier: '', commune: '', nombrePieces: 2, loyer: null, caution: null,

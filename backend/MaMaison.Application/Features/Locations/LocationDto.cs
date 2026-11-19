@@ -55,5 +55,6 @@ public record SoumettreLocationCommand(
     decimal Avance,
     decimal FraisAgence = 0,
     double? Latitude = null,
-    double? Longitude = null
+    double? Longitude = null,
+    bool PourMonCompte = false
 );

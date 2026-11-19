@@ -25,11 +25,22 @@ public class DemandesVisiteController(MaMaisonDbContext context) : ControllerBas
         if (!await context.Utilisateurs.AnyAsync(u => u.Id == utilisateurId && u.EstActif, ct))
             return Unauthorized();
 
+        // Older clients did not distinguish a callback from a visit.
+        var nature = cmd.Nature ?? (cmd.BienId == Guid.Empty ? "contact" : "historique");
+        if (nature is not ("contact" or "rappel" or "visite" or "3d" or "historique")
+            || (nature == "contact") != (cmd.BienId == Guid.Empty)
+            || (nature is "contact" or "rappel" && cmd.DateSouhaitee.HasValue))
+            return BadRequest(new { message = "Objet de la demande invalide." });
+        if (nature != "contact" && !await context.Locations.AnyAsync(l => l.Id == cmd.BienId && l.EstDisponible && l.Statut == MaMaison.Domain.Enums.StatutLocation.Publie, ct)
+            && !await context.Villas.AnyAsync(v => v.Id == cmd.BienId && v.Statut == MaMaison.Domain.Enums.StatutVilla.Publie, ct)
+            && !(await context.ParametresPlateforme.AnyAsync(p => p.Cle == "terrains" && p.Actif, ct)
+                 && await context.Terrains.AnyAsync(t => t.Id == cmd.BienId && t.Statut == MaMaison.Domain.Enums.StatutTerrain.Publie, ct)))
+            return NotFound();
         var demande = DemandeVisite.Creer(
             bienId: cmd.BienId,
             utilisateurId: utilisateurId,
             dateSouhaitee: cmd.DateSouhaitee,
-            commentaire: cmd.Commentaire);
+            commentaire: cmd.Commentaire, nature: nature);
 
         await context.DemandesVisite.AddAsync(demande, ct);
         await context.SaveChangesAsync(ct);
@@ -37,7 +48,7 @@ public class DemandesVisiteController(MaMaisonDbContext context) : ControllerBas
         return Created($"/api/demandes-visite/{demande.Id}",
             new DemandeVisiteCreeeDto(
                 demande.Id,
-                "Votre demande a bien été enregistrée. Nous vous contacterons dans les 24h."));
+                "Votre demande a été enregistrée."));
     }
 
     [HttpGet]

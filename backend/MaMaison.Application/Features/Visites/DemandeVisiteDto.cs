@@ -6,7 +6,8 @@ public record SoumettreDemandeVisiteCommand(
     string Telephone,
     string? Email,
     DateTime? DateSouhaitee,
-    string? Commentaire
+    string? Commentaire,
+    string? Nature = null
 );
 
 public record DemandeVisiteCreeeDto(Guid Id, string Message);

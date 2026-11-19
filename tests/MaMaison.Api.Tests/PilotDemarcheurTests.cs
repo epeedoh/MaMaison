@@ -42,8 +42,9 @@ public class PilotDemarcheurTests
         Assert.Equal(user.Id, broker.UtilisateurId);
         Assert.IsType<OkObjectResult>(await controller.SoumettreOpportunite(broker.Id, Opportunity(), default));
         var location = await context.Locations.SingleAsync();
-        Assert.Equal(user.Id, location.ProprietaireId);
-        Assert.Equal(StatutLocation.Brouillon, location.Statut);
+        Assert.Equal(user.Id, location.DeposantId);
+        Assert.Null(location.ProprietaireId);
+        Assert.Equal(StatutLocation.EnVerification, location.Statut);
         Assert.Equal(1, broker.NombreSoumissions);
     }
 
@@ -138,8 +139,9 @@ public class PilotDemarcheurTests
 
         Assert.IsType<OkObjectResult>(await controller.SoumettreOpportunite(broker.Id, Opportunity(), default));
         var location = await context.Locations.SingleAsync();
-        Assert.Equal(broker.UtilisateurId, location.ProprietaireId);
-        Assert.Equal(StatutLocation.Brouillon, location.Statut);
+        Assert.Equal(broker.UtilisateurId, location.DeposantId);
+        Assert.Null(location.ProprietaireId);
+        Assert.Equal(StatutLocation.EnVerification, location.Statut);
         Assert.Equal(1, broker.NombreSoumissions);
     }
 

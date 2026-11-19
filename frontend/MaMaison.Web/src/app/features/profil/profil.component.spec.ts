@@ -117,7 +117,7 @@ describe('ProfilComponent', () => {
     component.chargerDemandes();
     http.expectOne('/api/profil/demandes').flush([]);
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).toContain('Aucune demande de visite');
+    expect(fixture.nativeElement.textContent).toContain('Aucune demande envoyée');
     component.allerOnglet('resume');
     component.allerOnglet('demandes');
     http.expectNone('/api/profil/demandes');
@@ -143,11 +143,15 @@ describe('ProfilComponent', () => {
   it('preserves listing details, status and the existing justificatifs component', () => {
     user.set({ ...user()!, role: Role.Proprietaire });
     component.allerOnglet('annonces');
-    http.expectOne('/api/profil/locations').flush([{ id: 'location-test', titre: 'Location test', quartier: 'Quartier', commune: 'Commune', loyer: 150000, statut: 1, dateCreation: '2026-11-16' }]);
+    http.expectOne('/api/profil/locations').flush([{ id: 'location-test', titre: 'Location test', quartier: 'Quartier', commune: 'Commune', loyer: 150000, statut: 1, proprietaire:true, dateCreation: '2026-11-16' }]);
+    fixture.detectChanges();
+    const detail=fixture.nativeElement.querySelector('app-dossier-location details') as HTMLDetailsElement;
+    detail.open=true;
+    detail.dispatchEvent(new Event('toggle'));
     fixture.detectChanges();
     http.expectOne('/api/biens/location-test/justificatifs').flush([]);
     expect(fixture.nativeElement.querySelector('app-justificatifs')).not.toBeNull();
-    expect(fixture.nativeElement.querySelector('a[href="/locations/location-test"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/locations/location-test"]')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('En vérification');
   });
 });

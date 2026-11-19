@@ -132,7 +132,7 @@ export class DemandeVisiteModalComponent implements OnInit, AfterViewInit, OnDes
     this.messageErreur = '';
     this.etat.set('chargement');
     this.service.soumettre({
-      bienId: this.bienId,
+      bienId: this.bienId, nature: this.mode,
       nom: compte.nom,
       telephone: compte.telephone,
       dateSouhaitee: this.mode === 'rappel' ? undefined : this.dateSouhaitee || undefined,

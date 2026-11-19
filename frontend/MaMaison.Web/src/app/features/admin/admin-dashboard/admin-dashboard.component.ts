@@ -147,8 +147,20 @@ export class AdminDashboardComponent implements OnInit {
     });
   }
 
-  rejeterLocation(id: string) {
-    this.http.put(`${this.base}/locations/${id}/rejeter`, 'null', { headers: {'Content-Type':'application/json'} }).subscribe({
+  identifierTitulaire(id: string, telephone: string) {
+    this.http.put(`${environment.apiUrl}/dossiers-location/${id}/proprietaire`, { telephone:telephone.trim() }).subscribe({
+      next: () => {this.message.set('Titulaire identifié.');this.chargerLocations();},
+      error:e=>this.message.set(e.error?.message ?? 'Attribution refusée.')
+    });
+  }
+  repondre(id: string, texte: string) {
+    this.http.put(`${this.base}/demandes/${id}/repondre`, JSON.stringify(texte.trim()), { headers:{'Content-Type':'application/json'} }).subscribe({
+      next:()=>{this.message.set('Réponse envoyée au demandeur.');this.chargerDemandes();},
+      error:e=>this.message.set(e.error?.message ?? 'Réponse non envoyée.')
+    });
+  }
+  rejeterLocation(id: string, motif: string) {
+    this.http.put(`${this.base}/locations/${id}/rejeter`, JSON.stringify(motif.trim()), { headers: {'Content-Type':'application/json'} }).subscribe({
       next: () => { this.message.set('🗑 Location rejetée.'); this.chargerLocations(); },
       error: e => this.message.set(e.error?.message ?? '❌ Erreur.')
     });

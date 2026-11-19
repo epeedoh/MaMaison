@@ -49,15 +49,15 @@
         <div class="feedback error" role="alert"><p>{{ statsErreur }}</p><button class="action" type="button" (click)="chargerStats()">Réessayer</button></div>
       } @else if (stats) {
         <dl class="stats-grid">
-          <div><dt>Demandes de visite</dt><dd>{{ stats.nbDemandes }}</dd></div>
+          <div><dt>Demandes envoyées</dt><dd>{{ stats.nbDemandes }}</dd></div>
           @if (auth.peutPublier()) { <div><dt>Mes annonces</dt><dd>{{ stats.nbLocations }}</dd></div> }
           <div><dt>Biens favoris</dt><dd>{{ favoris.count() }}</dd></div>
           <div><dt>Signalements</dt><dd>{{ stats.nbSignalements }}</dd></div>
         </dl>
       }
       <div class="actions">
-        <button class="action primary" type="button" (click)="allerOnglet('demandes')">Mes demandes de visite</button>
-        @if (auth.peutPublier()) { <a routerLink="/publier" class="action"><img src="/viewer-3d/vendor/icons/plus.svg" alt="">Publier un bien</a> }
+        <button class="action primary" type="button" (click)="allerOnglet('demandes')">Mes demandes envoyées</button>
+        @if (auth.peutPublier()) { <a routerLink="/publier" class="action"><img src="/viewer-3d/vendor/icons/plus.svg" alt="">Proposer une location</a> }
         @if (auth.estAdmin()) { <a routerLink="/admin" class="action"><img src="/viewer-3d/vendor/icons/sliders-horizontal.svg" alt="">Administration</a> }
         <a routerLink="/locations" class="action">Explorer les locations</a>
         <a routerLink="/villas" class="action">Explorer les villas</a>
@@ -81,23 +81,25 @@
   }
   @if (onglet() === 'demandes') {
     <section class="profile-section" aria-labelledby="requests-title">
-      <div class="section-heading"><h2 id="requests-title">Mes demandes de visite</h2><button type="button" class="icon-action" title="Actualiser les demandes" aria-label="Actualiser les demandes" (click)="chargerDemandes()" [disabled]="demandesLoading()"><img src="/viewer-3d/vendor/icons/rotate-ccw.svg" alt=""></button></div>
+      <div class="section-heading"><h2 id="requests-title">Mes demandes envoyées</h2><button type="button" class="icon-action" title="Actualiser les demandes" aria-label="Actualiser les demandes" (click)="chargerDemandes()" [disabled]="demandesLoading()"><img src="/viewer-3d/vendor/icons/rotate-ccw.svg" alt=""></button></div>
       @if (demandesLoading()) {
         <p class="feedback" role="status">Chargement des demandes…</p>
       } @else if (demandesErreur) {
         <div class="feedback error" role="alert"><p>{{ demandesErreur }}</p><button type="button" class="action" (click)="chargerDemandes()">Réessayer</button></div>
       } @else if (demandes.length === 0) {
-        <div class="empty-state"><h3>Aucune demande de visite</h3><a routerLink="/villas" class="action">Explorer les villas</a></div>
+        <div class="empty-state"><h3>Aucune demande envoyée</h3><a routerLink="/villas" class="action">Explorer les villas</a></div>
       } @else {
         <ul class="record-list">
           @for (d of demandes; track d.id) {
             <li class="record-row">
-              <div><h3>Bien {{ d.bienId | slice:0:8 }}</h3>
+              <div><h3>{{ objets[d.nature] || 'Demande' }}{{ d.titre ? ' · ' + d.titre : '' }}</h3>
+                @if (d.dateConfirmee) { <p>Rendez-vous : {{ d.dateConfirmee | date:'dd/MM/yyyy HH:mm':'+0000' }} (Abidjan)</p> }
+                @if (d.reponse) { <p>Réponse de MaMaison : {{ d.reponse }}</p> }
                 @if (d.dateSouhaitee) { <p>Date souhaitée : {{ formatDate(d.dateSouhaitee) }}</p> }
                 @if (d.commentaire) { <p class="comment">{{ d.commentaire }}</p> }
                 <p class="muted">Demande du {{ formatDate(d.dateCreation) }}</p>
               </div>
-              <span class="status" [class.pending]="d.statut === 0" [class.confirmed]="d.statut === 1">{{ statutDemandeLabel[d.statut] ?? 'Statut inconnu' }}</span>
+              <span class="status" [class.pending]="d.statut === 0" [class.confirmed]="d.statut === 1">{{ d.reponse ? 'Répondu' : statutDemandeLabel[d.statut] ?? 'Statut inconnu' }}</span>
             </li>
           }
         </ul>
@@ -118,9 +120,9 @@
           <article class="listing">
             <div class="record-row">
               <div><h3>{{ a.titre }}</h3><p>{{ a.quartier }}, {{ a.commune }}</p><p class="price">{{ formatPrix(a.loyer) }} / mois</p><p class="muted">Créée le {{ formatDate(a.dateCreation) }}</p></div>
-              <div class="actions"><span class="status" [class.confirmed]="a.statut === 2" [class.pending]="a.statut === 1">{{ statutLocationLabel[a.statut] ?? 'Statut inconnu' }}</span><a [routerLink]="['/locations', a.id]" class="action"><img src="/viewer-3d/vendor/icons/eye.svg" alt="">Voir</a></div>
+              <div class="actions"><span class="status" [class.confirmed]="a.statut === 2" [class.pending]="a.statut === 1">{{ statutLocationLabel[a.statut] ?? 'Statut inconnu' }}</span>@if (a.statut===2) { <a [routerLink]="['/locations', a.id]" class="action">Fiche publique</a> }</div>
             </div>
-            <details class="documents"><summary>Justificatifs confidentiels</summary><app-justificatifs [bienId]="a.id" /></details>
+            <app-dossier-location [a]="a" (changed)="chargerAnnonces()"/>
           </article>
         }
       }

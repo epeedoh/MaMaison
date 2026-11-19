@@ -61,13 +61,13 @@ public class DemarcheursController(MaMaisonDbContext context) : ControllerBase
             loc = Location.Creer(
                 demarcheur.UtilisateurId, cmd.Titre, cmd.TypeBien,
                 cmd.Quartier, cmd.Commune, cmd.NombrePieces,
-                cmd.Loyer, cmd.Caution, cmd.Avance, 0m);
+                cmd.Loyer, cmd.Caution, cmd.Avance, 0m, pourSonCompte: false);
         }
         catch (ArgumentException ex)
         {
             return BadRequest(new { message = ex.Message });
         }
-        // Reste en brouillon pour validation admin
+        loc.Soumettre();
         demarcheur.EnregistrerSoumission();
         await context.Locations.AddAsync(loc, ct);
         await context.SaveChangesAsync(ct);

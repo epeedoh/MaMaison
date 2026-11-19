@@ -34,6 +34,9 @@ namespace MaMaison.Infrastructure.Migrations
                     b.Property<string>("Commentaire")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("DateConfirmee")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("DateCreation")
                         .HasColumnType("datetime2");
 
@@ -43,7 +46,16 @@ namespace MaMaison.Infrastructure.Migrations
                     b.Property<DateTime?>("DateSouhaitee")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("Nature")
+                        .HasMaxLength(16)
+                        .HasColumnType("nvarchar(16)");
+
+                    b.Property<string>("Reponse")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<int>("Statut")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<Guid>("UtilisateurId")
@@ -253,6 +265,10 @@ namespace MaMaison.Infrastructure.Migrations
                     b.Property<DateTime?>("DateModification")
                         .HasColumnType("datetime2");
 
+                    b.Property<Guid>("DeposantId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("ProprietaireId");
+
                     b.Property<bool>("EstDisponible")
                         .HasColumnType("bit");
 
@@ -274,21 +290,31 @@ namespace MaMaison.Infrastructure.Migrations
                         .HasPrecision(18)
                         .HasColumnType("decimal(18,0)");
 
+                    b.Property<string>("MotifRejet")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
                     b.Property<int>("NombrePieces")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("ProprietaireId")
-                        .HasColumnType("uniqueidentifier");
+                    b.Property<Guid?>("ProprietaireId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("TitulaireId");
 
                     b.Property<string>("Quartier")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<Guid?>("ResponsableVisitesId")
+                        .IsConcurrencyToken()
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<int>("ScoreMaMaison")
                         .HasColumnType("int");
 
                     b.Property<int>("Statut")
+                        .IsConcurrencyToken()
                         .HasColumnType("int");
 
                     b.Property<string>("Titre")

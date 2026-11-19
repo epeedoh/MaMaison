@@ -12,7 +12,10 @@ public class Location : BaseEntity
         Coordonnees.Valider(latitude, longitude);
         Latitude = latitude; Longitude = longitude; MarquerModifie();
     }
-    public Guid ProprietaireId { get; private set; }
+    public Guid DeposantId { get; private set; }
+    public Guid? ProprietaireId { get; private set; }
+    public Guid? ResponsableVisitesId { get; private set; }
+    public string? MotifRejet { get; private set; }
     public string Titre { get; private set; } = string.Empty;
     public TypeLocationBien TypeBien { get; private set; }
     public string Quartier { get; private set; } = string.Empty;
@@ -38,14 +41,16 @@ public class Location : BaseEntity
 
     public static Location Creer(Guid proprietaireId, string titre, TypeLocationBien type,
         string quartier, string commune, int nombrePieces,
-        decimal loyer, decimal caution, decimal avance, decimal fraisAgence = 0)
+        decimal loyer, decimal caution, decimal avance, decimal fraisAgence = 0, bool pourSonCompte = true)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(titre);
         if (loyer <= 0) throw new ArgumentException("Le loyer doit être positif.");
 
         return new Location
         {
-            ProprietaireId = proprietaireId,
+            DeposantId = proprietaireId,
+            ProprietaireId = pourSonCompte ? proprietaireId : null,
+            ResponsableVisitesId = pourSonCompte ? proprietaireId : null,
             Titre = titre,
             TypeBien = type,
             Quartier = quartier,
@@ -61,7 +66,16 @@ public class Location : BaseEntity
     public void Publier() { Statut = StatutLocation.Publie; MarquerModifie(); }
     public void MarquerLoue() { Statut = StatutLocation.Loue; EstDisponible = false; MarquerModifie(); }
     public void Suspendre() { Statut = StatutLocation.Suspendu; MarquerModifie(); }
-    public void Rejeter() { Statut = StatutLocation.Rejete; MarquerModifie(); }
+    public void Rejeter(string motif) { MotifRejet = motif; Statut = StatutLocation.Rejete; MarquerModifie(); }
+    public void Soumettre() { Statut = StatutLocation.EnVerification; MarquerModifie(); }
+    public void IdentifierProprietaire(Guid titulaire) { ProprietaireId = titulaire; ResponsableVisitesId = titulaire; MarquerModifie(); }
+    public void DeleguerVisites(Guid responsable) { ResponsableVisitesId = responsable; MarquerModifie(); }
+    public void Corriger(string titre, string quartier, string commune, int pieces, decimal loyer, decimal caution, decimal avance, decimal frais)
+    {
+        Titre = titre.Trim(); Quartier = quartier.Trim(); Commune = commune.Trim(); NombrePieces = pieces;
+        Loyer = loyer; Caution = caution; Avance = avance; FraisAgence = frais;
+        Soumettre();
+    }
     public void ConfirmerDisponibilite()
     {
         DateConfirmationDisponibilite = DateTime.UtcNow;

@@ -141,7 +141,7 @@ describe('Pilot contact paths', () => {
       const request = http.expectOne(endpoint);
       expect(request.request.method).toBe('POST');
       expect(request.request.body).toEqual({
-        bienId: '00000000-0000-0000-0000-000000000000', nom: account.nom,
+        bienId: '00000000-0000-0000-0000-000000000000', nature: 'contact', nom: account.nom,
         telephone: account.telephone, email: undefined, commentaire: `[${sujet}] Mon projet`,
       });
       request.flush({ id: 'saved-request', message: 'OK' }, { status: 201, statusText: 'Created' });
